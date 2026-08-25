@@ -3,7 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import { BookmarkWithDetails } from "@/lib/db/queries";
-import { parseDimensions, calculateScreenDimensions } from "@/lib/utils/dimensions";
+import { parseDimensions } from "@/lib/utils/dimensions";
 import { MapPin, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -20,7 +20,6 @@ export function BookmarkCard({ bookmark, index, onInspect }: BookmarkCardProps) 
 
   const store = bookmark.bookstore;
   const parsedDim = parseDimensions(bookmark.dimensions);
-  const screenDims = calculateScreenDimensions(parsedDim, 350);
 
   return (
     <motion.div
@@ -33,17 +32,17 @@ export function BookmarkCard({ bookmark, index, onInspect }: BookmarkCardProps) 
         scale: 1.04,
         transition: { duration: 0.2, ease: "easeOut" },
       }}
-      className="relative group cursor-pointer select-none flex flex-col items-center justify-end h-full"
+      className="relative group cursor-pointer select-none flex flex-col items-center justify-end h-full w-full"
       onClick={() => onInspect(bookmark)}
     >
-      {/* Specimen Bookmark Object with True Physical Proportions */}
-      <div className="w-full flex items-center justify-center min-h-[370px]">
+      {/* Specimen Bookmark Container - 100% height container */}
+      <div className="w-full h-[380px] sm:h-[420px] flex items-center justify-center">
         <button
           type="button"
           aria-label={`Inspect ${bookmark.title}`}
           style={{
-            width: `${screenDims.widthPx}px`,
-            height: `${screenDims.heightPx}px`,
+            height: "100%",
+            aspectRatio: `${parsedDim.aspectRatio}`,
           }}
           className="rounded-[4px] overflow-hidden bg-[#FBF9F5] border border-parchment-border shadow-archival group-hover:shadow-archival-lift group-hover:border-archival-amber transition-all duration-300 relative flex flex-col focus:outline-none focus:ring-2 focus:ring-amber-700/40 shrink-0"
         >
@@ -60,14 +59,14 @@ export function BookmarkCard({ bookmark, index, onInspect }: BookmarkCardProps) 
             </div>
           )}
 
-          {/* Bookmark Graphic Image with Object Contain to prevent any distortion */}
+          {/* Bookmark Graphic Image filling 100% height with preserved aspect ratio */}
           <div className="relative w-full h-full bg-[#FAF6EE] flex items-center justify-center overflow-hidden">
             <Image
               src={bookmark.frontImageUrl}
               alt={bookmark.title}
               fill
-              sizes="(max-width: 768px) 150px, 220px"
-              className="object-contain object-top filter contrast-[1.02]"
+              sizes="(max-width: 768px) 200px, 300px"
+              className="object-contain object-center filter contrast-[1.02]"
               priority={index < 4}
             />
           </div>

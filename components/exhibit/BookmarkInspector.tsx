@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { BookmarkWithDetails } from "@/lib/db/queries";
-import { parseDimensions, calculateScreenDimensions } from "@/lib/utils/dimensions";
+import { parseDimensions } from "@/lib/utils/dimensions";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import {
@@ -33,7 +33,6 @@ export function BookmarkInspector({
   const [isFlipped, setIsFlipped] = useState(false);
   const store = bookmark.bookstore;
   const parsedDim = parseDimensions(bookmark.dimensions);
-  const screenDims = calculateScreenDimensions(parsedDim, 480);
 
   return (
     <div className="relative w-full max-w-5xl bg-[#FAF8F3] border border-parchment-border rounded-2xl shadow-2xl overflow-hidden p-6 sm:p-8 lg:p-10">
@@ -79,9 +78,9 @@ export function BookmarkInspector({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 pt-8 items-center">
         {/* 3D Paper Turn Canvas (Left Column) */}
         <div className="lg:col-span-7 flex flex-col items-center justify-center space-y-6">
-          {/* 3D Flip Container with True Physical Aspect Ratio */}
+          {/* 3D Flip Container with 100% Height */}
           <div
-            className="w-full flex items-center justify-center p-4 min-h-[460px] sm:min-h-[520px]"
+            className="w-full flex items-center justify-center p-4 h-[480px] sm:h-[540px]"
             style={{ perspective: 1200 }}
           >
             <motion.div
@@ -89,8 +88,8 @@ export function BookmarkInspector({
               transition={{ duration: 0.7, ease: [0.23, 1, 0.32, 1] }}
               style={{
                 transformStyle: "preserve-3d",
-                width: `${screenDims.widthPx}px`,
-                height: `${screenDims.heightPx}px`,
+                height: "100%",
+                aspectRatio: `${parsedDim.aspectRatio}`,
               }}
               onClick={() => setIsFlipped(!isFlipped)}
               className="relative cursor-pointer select-none rounded-[6px] shadow-2xl border border-parchment-border/80 bg-[#FAF6EE] group"
@@ -104,7 +103,7 @@ export function BookmarkInspector({
                   src={bookmark.frontImageUrl}
                   alt={`${bookmark.title} - Recto (Front)`}
                   fill
-                  className="object-contain object-top"
+                  className="object-contain object-center"
                   sizes="400px"
                   priority
                 />
@@ -126,7 +125,7 @@ export function BookmarkInspector({
                     src={bookmark.backImageUrl}
                     alt={`${bookmark.title} - Verso (Back)`}
                     fill
-                    className="object-contain object-top"
+                    className="object-contain object-center"
                     sizes="400px"
                   />
                 ) : (
