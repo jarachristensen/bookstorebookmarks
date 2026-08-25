@@ -4,6 +4,9 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  experimental: {
+    serverComponentsExternalPackages: ["tesseract.js"],
+  },
 };
 
 module.exports = nextConfig;

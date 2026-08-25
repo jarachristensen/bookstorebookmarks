@@ -27,13 +27,26 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Run Tesseract OCR
-    const worker = await createWorker("eng");
+    // Explicit worker path to avoid Next.js webpack worker bundling issues
+    const workerPath = path.join(
+      process.cwd(),
+      "node_modules/tesseract.js/src/worker-script/node/index.js"
+    );
+
+    const worker = await createWorker("eng", 1, {
+      workerPath,
+      logger: (m) => {
+        if (process.env.NODE_ENV !== "production") {
+          // Debug progress
+        }
+      },
+    });
+
     const ret = await worker.recognize(imageSource);
     await worker.terminate();
 
     // Clean up recognized text
-    const cleanedText = ret.data.text
+    const cleanedText = (ret.data.text || "")
       .replace(/\r\n/g, "\n")
       .replace(/[ \t]+/g, " ")
       .replace(/\n{3,}/g, "\n\n")
@@ -44,6 +57,7 @@ export async function POST(req: NextRequest) {
       confidence: ret.data.confidence,
     });
   } catch (err: any) {
+    console.error("OCR Route Error:", err);
     return NextResponse.json(
       { error: err.message || "Failed to extract text via OCR" },
       { status: 500 }
