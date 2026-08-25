@@ -6,6 +6,8 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: [],
+    fileParallelism: false,
+    maxConcurrency: 1,
   },
   resolve: {
     alias: {

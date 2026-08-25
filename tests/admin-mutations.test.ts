@@ -14,6 +14,8 @@ describe("Admin Mutations", () => {
 
   it("should create a new bookmark and bookstore record with media", async () => {
     const uniqueSlug = `strand-bookstore-rare-${Date.now()}`;
+    const bookstoreSlug = `strand-bookstore-${Date.now()}`;
+
     const resultSlug = await saveBookmarkAndBookstore({
       bookmark: {
         id: uniqueSlug,
@@ -32,7 +34,7 @@ describe("Admin Mutations", () => {
         accentColor: "#881337",
       },
       bookstore: {
-        id: "strand-bookstore",
+        id: bookstoreSlug,
         name: "Strand Book Store",
         city: "New York",
         stateProvince: "NY",
