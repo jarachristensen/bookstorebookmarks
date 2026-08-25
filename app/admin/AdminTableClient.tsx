@@ -22,7 +22,6 @@ export function AdminTableClient({ initialBookmarks }: AdminTableClientProps) {
     const q = search.toLowerCase();
     return (
       b.title.toLowerCase().includes(q) ||
-      b.accessionNo.toLowerCase().includes(q) ||
       b.bookstore?.name.toLowerCase().includes(q) ||
       b.bookstore?.city.toLowerCase().includes(q)
     );
@@ -71,10 +70,10 @@ export function AdminTableClient({ initialBookmarks }: AdminTableClientProps) {
           <thead className="bg-parchment-muted/60 border-b border-parchment-border font-mono uppercase text-ink-muted text-[11px]">
             <tr>
               <th className="py-3 px-4">Scan</th>
-              <th className="py-3 px-4">Accession</th>
               <th className="py-3 px-4">Bookmark Title</th>
               <th className="py-3 px-4">Historic Bookstore</th>
               <th className="py-3 px-4">Location</th>
+              <th className="py-3 px-4">Physical Specs</th>
               <th className="py-3 px-4">Clippings</th>
               <th className="py-3 px-4 text-right">Actions</th>
             </tr>
@@ -101,20 +100,13 @@ export function AdminTableClient({ initialBookmarks }: AdminTableClientProps) {
                     </div>
                   </td>
 
-                  {/* Accession */}
-                  <td className="py-3 px-4 font-mono font-bold text-ink">
-                    <Badge variant="mono" size="sm">
-                      {b.accessionNo}
-                    </Badge>
-                  </td>
-
-                  {/* Title & Badge */}
+                  {/* Title & Year */}
                   <td className="py-3 px-4 font-serif">
                     <div className="font-bold text-ink hover:text-archival-oxblood text-sm">
                       {b.title}
                     </div>
                     <div className="text-[11px] text-ink-muted italic">
-                      {b.material} · {b.dimensions}
+                      {b.yearProduced ? `c. ${b.yearProduced}` : "Vintage Edition"}
                     </div>
                   </td>
 
@@ -135,6 +127,12 @@ export function AdminTableClient({ initialBookmarks }: AdminTableClientProps) {
                   {/* Location */}
                   <td className="py-3 px-4 text-ink-light">
                     {b.bookstore?.city}, {b.bookstore?.country}
+                  </td>
+
+                  {/* Physical Specs */}
+                  <td className="py-3 px-4 text-ink-muted font-mono text-[11px]">
+                    <div>{b.dimensions}</div>
+                    <div className="text-ink-light font-serif text-xs">{b.material}</div>
                   </td>
 
                   {/* Clippings count */}

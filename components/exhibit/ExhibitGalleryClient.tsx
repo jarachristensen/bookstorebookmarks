@@ -205,6 +205,7 @@ export function ExhibitGalleryClient({
         {dossierBookmark && (
           <BookstoreDossier
             bookmark={dossierBookmark}
+            allBookmarks={initialBookmarks}
             onClose={() => setDossierBookmark(null)}
           />
         )}

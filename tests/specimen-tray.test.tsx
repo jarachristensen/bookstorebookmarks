@@ -45,7 +45,7 @@ const mockBookmark: BookmarkWithDetails = {
 };
 
 describe("Specimen Tray Components", () => {
-  it("should render BookmarkCard with title and accession badge", () => {
+  it("should render BookmarkCard with title, location, and dimensions", () => {
     let inspectedId = "";
     render(
       <BookmarkCard
@@ -56,7 +56,7 @@ describe("Specimen Tray Components", () => {
     );
 
     expect(screen.getByText(/Gotham Book Mart/i)).toBeDefined();
-    expect(screen.getByText("BM-1934-NY-01")).toBeDefined();
+    expect(screen.getByText("2.25\" × 7.75\"")).toBeDefined();
 
     const card = screen.getByRole("button", { name: /gotham book mart/i });
     card.click();

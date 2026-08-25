@@ -1,11 +1,22 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import { BookmarkWithDetails } from "@/lib/db/queries";
+import { parseDimensions } from "@/lib/utils/dimensions";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { RotateCw, X, Sparkles, MapPin, Calendar, Info, Layers, Maximize2 } from "lucide-react";
+import {
+  RotateCw,
+  X,
+  BookOpen,
+  MapPin,
+  Calendar,
+  Layers,
+  Sparkles,
+  Info,
+  Maximize2,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export interface BookmarkInspectorProps {
@@ -20,199 +31,200 @@ export function BookmarkInspector({
   onOpenDossier,
 }: BookmarkInspectorProps) {
   const [isFlipped, setIsFlipped] = useState(false);
-
-  // Close on Escape key
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
-
   const store = bookmark.bookstore;
+  const parsedDim = parseDimensions(bookmark.dimensions);
 
   return (
-    <div className="flex flex-col lg:flex-row items-center justify-between gap-8 w-full max-w-5xl mx-auto p-4 sm:p-6 lg:p-8 bg-white/95 backdrop-blur-xl rounded-2xl border border-parchment-border shadow-2xl">
-      {/* Left: 3D Flippable Bookmark Display */}
-      <div className="w-full lg:w-1/2 flex flex-col items-center justify-center">
-        {/* Interaction hint */}
-        <div className="mb-3 text-center">
-          <span className="text-xs font-mono text-ink-muted flex items-center justify-center gap-1">
-            <RotateCw className="w-3 h-3 text-archival-amber" />
-            <span>Click bookmark or button below to flip 3D view</span>
-          </span>
-        </div>
-
-        {/* 3D Perspective Paper Canvas */}
-        <div className="perspective-1000 w-full max-w-[260px] aspect-[1/3.1] relative">
-          <motion.div
-            className="w-full h-full relative preserve-3d cursor-pointer rounded-[8px] transition-transform duration-700 select-none shadow-2xl"
-            animate={{ rotateY: isFlipped ? 180 : 0 }}
-            transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
-            onClick={() => setIsFlipped(!isFlipped)}
-          >
-            {/* Front Side */}
-            <div className="absolute inset-0 w-full h-full backface-hidden rounded-[8px] overflow-hidden bg-[#FAF6EE] border-2 border-stone-800 shadow-paper-depth flex items-center justify-center">
-              <Image
-                src={bookmark.frontImageUrl}
-                alt={`${bookmark.title} (Front)`}
-                fill
-                sizes="300px"
-                className="object-cover object-top"
-                priority
-              />
-              {/* Front Label Pill */}
-              <div className="absolute bottom-2 left-2 z-10 px-2 py-0.5 rounded bg-black/70 backdrop-blur-xs text-[10px] font-mono text-white tracking-widest uppercase">
-                Front Scan
-              </div>
-            </div>
-
-            {/* Back Side (180deg rotated) */}
-            <div className="absolute inset-0 w-full h-full backface-hidden rotate-y-180 rounded-[8px] overflow-hidden bg-[#F5EFE4] border-2 border-stone-800 shadow-paper-depth flex items-center justify-center">
-              {bookmark.backImageUrl ? (
-                <Image
-                  src={bookmark.backImageUrl}
-                  alt={`${bookmark.title} (Back)`}
-                  fill
-                  sizes="300px"
-                  className="object-cover object-top"
-                  priority
-                />
-              ) : (
-                <div className="p-6 text-center text-ink-muted font-serif italic text-sm">
-                  Blank verso / plain backing paper.
-                </div>
+    <div className="relative w-full max-w-5xl bg-[#FAF8F3] border border-parchment-border rounded-2xl shadow-2xl overflow-hidden p-6 sm:p-8 lg:p-10">
+      {/* Top Header Bar */}
+      <div className="flex items-center justify-between pb-6 border-b border-parchment-border">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-archival-oxblood/10 text-archival-oxblood border border-archival-oxblood/20">
+            <BookOpen className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="font-serif text-lg sm:text-xl font-bold text-ink">
+              {store?.name || "Bookstore Archive"}
+            </h2>
+            <div className="flex items-center gap-2 text-xs text-ink-muted">
+              {store && (
+                <span className="flex items-center gap-1">
+                  <MapPin className="w-3 h-3 text-archival-oxblood" />
+                  <span>{store.city}, {store.country}</span>
+                </span>
               )}
-              {/* Back Label Pill */}
-              <div className="absolute bottom-2 left-2 z-10 px-2 py-0.5 rounded bg-black/70 backdrop-blur-xs text-[10px] font-mono text-white tracking-widest uppercase">
-                Verso / Back Scan
-              </div>
+              {bookmark.yearProduced && (
+                <>
+                  <span>·</span>
+                  <span className="font-serif italic">c. {bookmark.yearProduced}</span>
+                </>
+              )}
             </div>
-          </motion.div>
+          </div>
         </div>
 
-        {/* Flip Action Button */}
-        <div className="mt-4 flex items-center gap-3">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsFlipped(!isFlipped)}
-            aria-label="Flip Bookmark"
-            className="flex items-center gap-1.5 font-serif text-xs"
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onClose}
+            aria-label="Close Inspector"
+            className="p-2 rounded-full hover:bg-parchment-muted text-ink-muted hover:text-ink transition-colors cursor-pointer"
           >
-            <RotateCw className="w-3.5 h-3.5 text-archival-amber" />
-            <span>{isFlipped ? "Show Front Side" : "Flip to Verso (Back)"}</span>
-          </Button>
+            <X className="w-5 h-5" />
+          </button>
         </div>
       </div>
 
-      {/* Right: Archival Specifications & Curator Summary */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-between space-y-6">
-        {/* Header with Close */}
-        <div>
-          <div className="flex items-start justify-between gap-4">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <Badge variant="mono">{bookmark.accessionNo}</Badge>
-                {bookmark.isFeatured && (
-                  <Badge variant="amber" size="sm">
-                    <Sparkles className="w-3 h-3" />
-                    Key Collection Piece
-                  </Badge>
-                )}
-              </div>
-              <h2 className="font-serif text-2xl sm:text-3xl font-bold text-ink tracking-tight mt-2">
-                {bookmark.title}
-              </h2>
-            </div>
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Close"
-              className="p-1.5 rounded-full hover:bg-parchment-muted text-ink-muted hover:text-ink transition-colors cursor-pointer"
+      {/* Main Inspection Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 pt-8 items-center">
+        {/* 3D Paper Turn Canvas (Left Column) */}
+        <div className="lg:col-span-7 flex flex-col items-center justify-center space-y-6">
+          {/* 3D Flip Container with Dynamic Aspect Ratio */}
+          <div
+            className="w-full flex items-center justify-center p-4 min-h-[440px] sm:min-h-[500px]"
+            style={{ perspective: 1200 }}
+          >
+            <motion.div
+              animate={{ rotateY: isFlipped ? 180 : 0 }}
+              transition={{ duration: 0.7, ease: [0.23, 1, 0.32, 1] }}
+              style={{
+                transformStyle: "preserve-3d",
+                width: `${Math.round(230 * (parsedDim.widthPercentScale / 100))}px`,
+                height: `${Math.round(480 * (parsedDim.heightPercentScale / 100))}px`,
+                aspectRatio: `${parsedDim.aspectRatio}`,
+              }}
+              onClick={() => setIsFlipped(!isFlipped)}
+              className="relative cursor-pointer select-none rounded-lg shadow-2xl border border-parchment-border/80 bg-stone-900 group"
             >
-              <X className="w-5 h-5" />
-            </button>
+              {/* FRONT SIDE (Recto) */}
+              <div
+                className="absolute inset-0 w-full h-full rounded-lg overflow-hidden bg-white backface-hidden"
+                style={{ backfaceVisibility: "hidden" }}
+              >
+                <Image
+                  src={bookmark.frontImageUrl}
+                  alt={`${bookmark.title} - Recto (Front)`}
+                  fill
+                  className="object-cover object-top"
+                  sizes="400px"
+                  priority
+                />
+                <div className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/60 backdrop-blur-xs text-[10px] font-mono text-white">
+                  RECTO (FRONT)
+                </div>
+              </div>
+
+              {/* BACK SIDE (Verso) */}
+              <div
+                className="absolute inset-0 w-full h-full rounded-lg overflow-hidden bg-[#FBF9F5] backface-hidden"
+                style={{
+                  backfaceVisibility: "hidden",
+                  transform: "rotateY(180deg)",
+                }}
+              >
+                {bookmark.backImageUrl ? (
+                  <Image
+                    src={bookmark.backImageUrl}
+                    alt={`${bookmark.title} - Verso (Back)`}
+                    fill
+                    className="object-cover object-top"
+                    sizes="400px"
+                  />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center text-ink-muted bg-[#F5EFE6]">
+                    <Layers className="w-8 h-8 opacity-40 mb-2 text-archival-oxblood" />
+                    <p className="font-serif italic text-sm text-ink">Blank Verso (Plain Back)</p>
+                    <p className="text-xs text-ink-muted mt-1 font-serif">Original blank paper stock without advertising imprint.</p>
+                  </div>
+                )}
+                <div className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/60 backdrop-blur-xs text-[10px] font-mono text-white">
+                  VERSO (BACK)
+                </div>
+              </div>
+            </motion.div>
           </div>
 
-          {store && (
-            <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-ink-light font-serif">
-              <div className="flex items-center gap-1 text-archival-oxblood font-semibold">
-                <MapPin className="w-4 h-4" />
-                <span>{store.name} · {store.city}, {store.country}</span>
+          {/* Interactive Flip Trigger Button */}
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="md"
+              onClick={() => setIsFlipped(!isFlipped)}
+              className="flex items-center gap-2 font-serif text-xs sm:text-sm bg-white"
+            >
+              <RotateCw className="w-4 h-4 text-archival-amber transition-transform group-hover:rotate-180" />
+              <span>{isFlipped ? "Flip to Recto (Front)" : "Flip to Verso (Back)"}</span>
+            </Button>
+            <span className="text-xs font-mono text-ink-muted hidden sm:inline">
+              (or click paper directly to rotate)
+            </span>
+          </div>
+        </div>
+
+        {/* Physical Specimen Details (Right Column) */}
+        <div className="lg:col-span-5 space-y-6">
+          <div className="space-y-2">
+            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-ink tracking-tight">
+              {bookmark.title}
+            </h2>
+            {store && (
+              <p className="font-serif text-sm text-archival-oxblood font-semibold">
+                {store.name} · {store.city}, {store.country}
+              </p>
+            )}
+          </div>
+
+          {/* Physical Specimen Properties Card */}
+          <div className="bg-white/80 p-5 rounded-xl border border-parchment-border shadow-xs space-y-3">
+            <h4 className="font-mono text-xs font-bold text-archival-amber uppercase tracking-wider flex items-center gap-1.5">
+              <Layers className="w-3.5 h-3.5" />
+              <span>Physical Specimen Specifications</span>
+            </h4>
+
+            <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-xs font-serif pt-1">
+              <div>
+                <span className="text-ink-muted block text-[11px] font-mono">DIMENSIONS</span>
+                <span className="font-bold text-ink">{bookmark.dimensions}</span>
               </div>
-              <span className="text-parchment-border">|</span>
-              <div className="flex items-center gap-1 text-ink-muted">
-                <Calendar className="w-3.5 h-3.5" />
-                <span>
-                  {store.yearOpened} – {store.yearClosed ? store.yearClosed : "Present"}
+              <div>
+                <span className="text-ink-muted block text-[11px] font-mono">MATERIAL STOCK</span>
+                <span className="font-bold text-ink">{bookmark.material}</span>
+              </div>
+              <div>
+                <span className="text-ink-muted block text-[11px] font-mono">CONDITION</span>
+                <span className="font-bold text-ink">{bookmark.condition}</span>
+              </div>
+              <div>
+                <span className="text-ink-muted block text-[11px] font-mono">ESTIMATED ERA</span>
+                <span className="font-bold text-ink">
+                  {bookmark.yearProduced ? `c. ${bookmark.yearProduced}` : "Mid 20th Century"}
                 </span>
               </div>
             </div>
-          )}
-        </div>
 
-        {/* Physical Ephemera Specifications Box */}
-        <div className="p-4 rounded-xl bg-parchment-light border border-parchment-border space-y-3">
-          <h4 className="text-xs font-mono font-bold text-archival-amber tracking-wider uppercase flex items-center gap-1.5">
-            <Layers className="w-3.5 h-3.5" />
-            <span>Physical Specimen Properties</span>
-          </h4>
-
-          <div className="grid grid-cols-2 gap-3 text-xs">
-            <div>
-              <span className="text-ink-muted block text-[11px]">Material &amp; Stock</span>
-              <strong className="text-ink font-medium">{bookmark.material}</strong>
-            </div>
-            <div>
-              <span className="text-ink-muted block text-[11px]">Dimensions</span>
-              <strong className="text-ink font-medium font-mono">{bookmark.dimensions}</strong>
-            </div>
-            <div>
-              <span className="text-ink-muted block text-[11px]">Condition Grade</span>
-              <strong className="text-ink font-medium">{bookmark.condition}</strong>
-            </div>
-            <div>
-              <span className="text-ink-muted block text-[11px]">Estimated Era</span>
-              <strong className="text-ink font-medium">
-                {bookmark.yearProduced ? `circa ${bookmark.yearProduced}` : "Unknown era"}
-              </strong>
-            </div>
+            {bookmark.acquisitionNotes && (
+              <div className="pt-3 border-t border-parchment-border/60 text-xs font-serif text-ink-light">
+                <span className="text-ink-muted block text-[11px] font-mono mb-0.5">
+                  CURATOR'S PROVENANCE
+                </span>
+                <p className="italic">"{bookmark.acquisitionNotes}"</p>
+              </div>
+            )}
           </div>
 
-          {bookmark.acquisitionNotes && (
-            <div className="pt-2 border-t border-parchment-border/60">
-              <span className="text-ink-muted block text-[11px]">Curator's Provenance Note</span>
-              <p className="text-xs text-ink-light font-serif italic mt-0.5">
-                "{bookmark.acquisitionNotes}"
-              </p>
+          {/* Action to open Bookstore Dossier */}
+          {store && onOpenDossier && (
+            <div className="pt-2">
+              <Button
+                variant="oxblood"
+                size="lg"
+                onClick={onOpenDossier}
+                className="w-full flex items-center justify-center gap-2 font-serif text-sm"
+              >
+                <Sparkles className="w-4 h-4 text-amber-300" />
+                <span>Read Full Bookstore Dossier &amp; Historical Clippings →</span>
+              </Button>
             </div>
           )}
-        </div>
-
-        {/* Action Button: Open Complete Bookstore Dossier */}
-        <div className="pt-2 flex flex-col sm:flex-row items-center gap-3">
-          {onOpenDossier && (
-            <Button
-              variant="oxblood"
-              size="md"
-              onClick={onOpenDossier}
-              className="w-full sm:w-auto font-serif flex items-center justify-center gap-2"
-            >
-              <Info className="w-4 h-4" />
-              <span>Read Full Bookstore Dossier &amp; Clippings →</span>
-            </Button>
-          )}
-
-          <Button
-            variant="secondary"
-            size="md"
-            onClick={onClose}
-            className="w-full sm:w-auto font-serif"
-          >
-            Return to Exhibit Tray
-          </Button>
         </div>
       </div>
     </div>

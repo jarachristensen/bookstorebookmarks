@@ -25,14 +25,26 @@ import { motion } from "framer-motion";
 
 export interface BookstoreDossierProps {
   bookmark: BookmarkWithDetails;
+  allBookmarks?: BookmarkWithDetails[];
   onClose: () => void;
+  onSelectBookmark?: (bm: BookmarkWithDetails) => void;
 }
 
-export function BookstoreDossier({ bookmark, onClose }: BookstoreDossierProps) {
+export function BookstoreDossier({
+  bookmark,
+  allBookmarks = [],
+  onClose,
+  onSelectBookmark,
+}: BookstoreDossierProps) {
+  const [activeBookmark, setActiveBookmark] = useState<BookmarkWithDetails>(bookmark);
   const [selectedMedia, setSelectedMedia] = useState<ArchivalMedia | null>(null);
 
-  const store = bookmark.bookstore;
+  const store = activeBookmark.bookstore || bookmark.bookstore;
   if (!store) return null;
+
+  // Filter all bookmarks that belong to this specific bookstore
+  const storeBookmarks = allBookmarks.filter((b) => b.bookstoreId === store.id);
+  const displayedBookmarks = storeBookmarks.length > 0 ? storeBookmarks : [activeBookmark];
 
   // Parse JSON fields safely
   let specialties: string[] = [];
@@ -64,7 +76,6 @@ export function BookstoreDossier({ bookmark, onClose }: BookstoreDossierProps) {
           </button>
 
           <div className="flex items-center gap-2">
-            <Badge variant="mono">{bookmark.accessionNo}</Badge>
             <button
               onClick={onClose}
               aria-label="Close Dossier"
@@ -142,41 +153,78 @@ export function BookstoreDossier({ bookmark, onClose }: BookstoreDossierProps) {
 
           {/* Grid Layout: Bookmark & Research Narrative */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            {/* Left Column: Bookmark Artifact Preview */}
-            <div className="lg:col-span-4 p-5 rounded-2xl bg-parchment-light border border-parchment-border shadow-xs space-y-4">
+            {/* Left Column: Bookmark Artifact Preview & Multiple Bookmark Selector */}
+            <div className="lg:col-span-5 p-5 rounded-2xl bg-parchment-light border border-parchment-border shadow-xs space-y-4">
               <div className="flex items-center justify-between text-xs font-mono font-bold text-archival-oxblood uppercase tracking-wider">
                 <span className="flex items-center gap-1.5">
                   <BookOpen className="w-3.5 h-3.5" />
-                  <span>Collection Bookmark</span>
+                  <span>Active Specimen</span>
                 </span>
-                <span>c. {bookmark.yearProduced}</span>
+                <span>c. {activeBookmark.yearProduced}</span>
               </div>
 
-              <div className="relative w-full aspect-[1/3] max-w-[200px] mx-auto rounded-lg overflow-hidden border border-parchment-border shadow-md bg-white">
+              <div className="relative w-full aspect-[1/2.8] max-w-[200px] mx-auto rounded-lg overflow-hidden border border-parchment-border shadow-md bg-white">
                 <Image
-                  src={bookmark.frontImageUrl}
-                  alt={bookmark.title}
+                  src={activeBookmark.frontImageUrl}
+                  alt={activeBookmark.title}
                   fill
                   className="object-cover object-top"
                 />
               </div>
 
               <div className="pt-2 space-y-1.5 text-xs text-ink-light">
-                <p className="font-serif font-bold text-ink text-sm">{bookmark.title}</p>
-                <p className="font-mono text-[11px] text-ink-muted">Accession: {bookmark.accessionNo}</p>
-                <p><span className="text-ink-muted">Material:</span> {bookmark.material}</p>
-                <p><span className="text-ink-muted">Dimensions:</span> {bookmark.dimensions}</p>
-                <p><span className="text-ink-muted">Condition:</span> {bookmark.condition}</p>
-                {bookmark.acquisitionNotes && (
+                <p className="font-serif font-bold text-ink text-sm">{activeBookmark.title}</p>
+                <p><span className="text-ink-muted">Material:</span> {activeBookmark.material}</p>
+                <p><span className="text-ink-muted">Dimensions:</span> {activeBookmark.dimensions}</p>
+                <p><span className="text-ink-muted">Condition:</span> {activeBookmark.condition}</p>
+                {activeBookmark.acquisitionNotes && (
                   <p className="pt-2 italic text-ink-muted border-t border-parchment-border/60">
-                    "{bookmark.acquisitionNotes}"
+                    "{activeBookmark.acquisitionNotes}"
                   </p>
                 )}
               </div>
+
+              {/* Multi-Bookmark Edition Switcher */}
+              {displayedBookmarks.length > 1 && (
+                <div className="pt-4 border-t border-parchment-border space-y-2">
+                  <p className="text-xs font-mono font-bold text-ink-muted uppercase">
+                    All Bookmarks from this Bookstore ({displayedBookmarks.length})
+                  </p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {displayedBookmarks.map((bm) => (
+                      <button
+                        key={bm.id}
+                        type="button"
+                        onClick={() => {
+                          setActiveBookmark(bm);
+                          if (onSelectBookmark) onSelectBookmark(bm);
+                        }}
+                        className={`p-1.5 rounded-lg border text-left transition-all cursor-pointer flex flex-col items-center gap-1 ${
+                          activeBookmark.id === bm.id
+                            ? "bg-white border-archival-oxblood ring-2 ring-archival-oxblood/20 shadow-xs"
+                            : "bg-parchment-muted/50 border-parchment-border hover:bg-white"
+                        }`}
+                      >
+                        <div className="relative w-8 h-16 rounded overflow-hidden bg-stone-900 border border-parchment-border">
+                          <Image
+                            src={bm.frontImageUrl}
+                            alt={bm.title}
+                            fill
+                            className="object-cover object-top"
+                          />
+                        </div>
+                        <span className="text-[10px] font-mono text-ink-light truncate w-full text-center">
+                          {bm.yearProduced ? `c. ${bm.yearProduced}` : "Edition"}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Right Column: Research Narrative & History Blurb */}
-            <div className="lg:col-span-8 space-y-6">
+            <div className="lg:col-span-7 space-y-6">
               <div className="bg-white p-6 sm:p-8 rounded-2xl border border-parchment-border shadow-xs">
                 <h2 className="text-xs font-mono font-bold text-archival-amber tracking-wider uppercase mb-4 flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5" />

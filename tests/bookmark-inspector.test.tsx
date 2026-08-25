@@ -7,14 +7,14 @@ import { BookmarkWithDetails } from "@/lib/db/queries";
 const mockBookmark: BookmarkWithDetails = {
   id: "gotham-wise-men-fish-here",
   bookstoreId: "gotham-book-mart",
-  title: "Gotham Book Mart “Wise Men Fish Here”",
+  title: "Gotham Book Mart “Wise Men Fish Here” Letterpress Bookmark",
   accessionNo: "BM-1934-NY-01",
   frontImageUrl: "/seed-images/gotham-front.svg",
   backImageUrl: "/seed-images/gotham-back.svg",
   yearProduced: 1934,
   material: "Letterpress Cardstock",
   dimensions: "2.25\" × 7.75\"",
-  condition: "Very Good (Light corner patina)",
+  condition: "Very Good",
   acquisitionDate: "1988-05-12",
   acquisitionNotes: "Acquired in NYC",
   isFeatured: true,
@@ -44,25 +44,21 @@ const mockBookmark: BookmarkWithDetails = {
 };
 
 describe("BookmarkInspector Component", () => {
-  it("should render bookmark details, accession number, and flip controls", () => {
-    let closed = false;
+  it("should render 3D flip inspection canvas and physical specs", () => {
     render(
       <BookmarkInspector
         bookmark={mockBookmark}
-        onClose={() => (closed = true)}
+        onClose={() => {}}
+        onOpenDossier={() => {}}
       />
     );
 
-    expect(screen.getByText("BM-1934-NY-01")).toBeDefined();
     expect(screen.getByText(/Letterpress Cardstock/i)).toBeDefined();
     expect(screen.getByText(/2.25" × 7.75"/i)).toBeDefined();
+    expect(screen.getByRole("button", { name: /flip to verso/i })).toBeDefined();
 
-    const flipBtn = screen.getByRole("button", { name: /flip bookmark/i });
-    expect(flipBtn).toBeDefined();
+    const flipBtn = screen.getByRole("button", { name: /flip to verso/i });
     fireEvent.click(flipBtn);
-
-    const closeBtn = screen.getByRole("button", { name: /close/i });
-    fireEvent.click(closeBtn);
-    expect(closed).toBe(true);
+    expect(screen.getByRole("button", { name: /flip to recto/i })).toBeDefined();
   });
 });

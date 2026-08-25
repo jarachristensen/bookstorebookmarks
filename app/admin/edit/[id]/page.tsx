@@ -1,8 +1,10 @@
 import React from "react";
 import { getAdminSession } from "@/lib/auth";
 import { redirect, notFound } from "next/navigation";
-import { getBookmarkBySlug } from "@/lib/db/queries";
+import { getBookmarkBySlug, getAllBookstores } from "@/lib/db/queries";
 import { BookmarkForm, BookmarkFormData } from "@/components/admin/BookmarkForm";
+
+export const dynamic = "force-dynamic";
 
 export default async function AdminEditBookmarkPage({
   params,
@@ -14,7 +16,11 @@ export default async function AdminEditBookmarkPage({
     redirect("/admin/login");
   }
 
-  const bookmark = await getBookmarkBySlug(params.id);
+  const [bookmark, bookstores] = await Promise.all([
+    getBookmarkBySlug(params.id),
+    getAllBookstores(),
+  ]);
+
   if (!bookmark) {
     notFound();
   }
@@ -41,6 +47,7 @@ export default async function AdminEditBookmarkPage({
   const initialData: BookmarkFormData = {
     bookmark: {
       id: bookmark.id,
+      bookstoreId: bookmark.bookstoreId,
       title: bookmark.title,
       accessionNo: bookmark.accessionNo,
       frontImageUrl: bookmark.frontImageUrl,
@@ -88,11 +95,15 @@ export default async function AdminEditBookmarkPage({
         <div>
           <h1 className="font-serif text-3xl font-bold text-ink">Edit Archive Record</h1>
           <p className="text-xs text-ink-muted font-serif italic">
-            Updating {bookmark.title} ({bookmark.accessionNo})
+            Updating {bookmark.title}
           </p>
         </div>
 
-        <BookmarkForm initialData={initialData} isEditing={true} />
+        <BookmarkForm
+          initialData={initialData}
+          existingBookstores={bookstores}
+          isEditing={true}
+        />
       </div>
     </div>
   );

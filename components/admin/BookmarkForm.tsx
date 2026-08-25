@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ImageDropzone } from "./ImageDropzone";
 import { MediaManager, MediaItem } from "./MediaManager";
 import { MarkdownRenderer } from "@/components/exhibit/MarkdownRenderer";
 import { Button } from "@/components/ui/Button";
+import { Bookstore } from "@/db/schema";
+import { parseDimensions } from "@/lib/utils/dimensions";
 import {
   Bookmark,
   Building2,
@@ -16,14 +18,17 @@ import {
   Eye,
   FileEdit,
   CheckCircle,
+  PlusCircle,
+  Link as LinkIcon,
 } from "lucide-react";
 import Link from "next/link";
 
 export interface BookmarkFormData {
   bookmark: {
     id?: string;
+    bookstoreId?: string;
     title: string;
-    accessionNo: string;
+    accessionNo?: string;
     frontImageUrl: string;
     backImageUrl: string;
     yearProduced: string | number;
@@ -57,25 +62,40 @@ export interface BookmarkFormData {
 
 export interface BookmarkFormProps {
   initialData?: BookmarkFormData;
+  existingBookstores?: Bookstore[];
   isEditing?: boolean;
 }
 
-export function BookmarkForm({ initialData, isEditing = false }: BookmarkFormProps) {
+export function BookmarkForm({
+  initialData,
+  existingBookstores = [],
+  isEditing = false,
+}: BookmarkFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [blurbTab, setBlurbTab] = useState<"edit" | "preview">("edit");
 
+  // Existing stores list state
+  const [bookstoresList, setBookstoresList] = useState<Bookstore[]>(existingBookstores);
+  const [selectedStoreMode, setSelectedStoreMode] = useState<"existing" | "new">(
+    initialData?.bookstore?.id && existingBookstores.some((s) => s.id === initialData.bookstore.id)
+      ? "existing"
+      : existingBookstores.length > 0 && !isEditing
+      ? "existing"
+      : "new"
+  );
+
   const [formData, setFormData] = useState<BookmarkFormData>(
     initialData || {
       bookmark: {
         title: "",
-        accessionNo: `BM-${new Date().getFullYear()}-01`,
+        accessionNo: "",
         frontImageUrl: "",
         backImageUrl: "",
         yearProduced: "",
         material: "Letterpress Heavy Cardstock",
-        dimensions: "2.25\" × 7.5\"",
+        dimensions: '2.25" × 7.5"',
         condition: "Fine",
         acquisitionDate: "",
         acquisitionNotes: "",
@@ -84,23 +104,86 @@ export function BookmarkForm({ initialData, isEditing = false }: BookmarkFormPro
         accentColor: "#881337",
       },
       bookstore: {
-        name: "",
-        city: "",
-        stateProvince: "",
-        country: "United States",
-        streetAddress: "",
-        yearOpened: "",
-        yearClosed: "",
-        isStillOperating: false,
-        founders: "",
-        specialties: "Literature, Rare Books, Poetry",
-        historicalBlurb: `### Bookstore Heritage & Cultural Story\n\nWrite your historical research blurb here...`,
-        notablePatronsTrivia: "Famous author signing\nHistoric event",
-        websiteUrl: "",
+        id: existingBookstores[0]?.id || "",
+        name: existingBookstores[0]?.name || "",
+        city: existingBookstores[0]?.city || "",
+        stateProvince: existingBookstores[0]?.stateProvince || "",
+        country: existingBookstores[0]?.country || "United States",
+        streetAddress: existingBookstores[0]?.streetAddress || "",
+        yearOpened: existingBookstores[0]?.yearOpened || "",
+        yearClosed: existingBookstores[0]?.yearClosed || "",
+        isStillOperating: existingBookstores[0]?.isStillOperating || false,
+        founders: existingBookstores[0]?.founders || "",
+        specialties: existingBookstores[0]?.specialties
+          ? JSON.parse(existingBookstores[0].specialties).join(", ")
+          : "Literature, Rare Books, Poetry",
+        historicalBlurb:
+          existingBookstores[0]?.historicalBlurb ||
+          `### Bookstore Heritage & Cultural Story\n\nWrite your historical research blurb here...`,
+        notablePatronsTrivia: existingBookstores[0]?.notablePatronsTrivia
+          ? JSON.parse(existingBookstores[0].notablePatronsTrivia).join("\n")
+          : "Famous author signing\nHistoric event",
+        websiteUrl: existingBookstores[0]?.websiteUrl || "",
       },
       archivalMedia: [],
     }
   );
+
+  // Fetch bookstores if not provided
+  useEffect(() => {
+    if (bookstoresList.length === 0) {
+      fetch("/api/bookstores")
+        .then((res) => res.json())
+        .then((data) => {
+          if (Array.isArray(data)) {
+            setBookstoresList(data);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [bookstoresList.length]);
+
+  const handleSelectExistingStore = (storeId: string) => {
+    const found = bookstoresList.find((s) => s.id === storeId);
+    if (!found) return;
+
+    let specStr = "";
+    try {
+      if (found.specialties) specStr = JSON.parse(found.specialties).join(", ");
+    } catch {}
+
+    let triviaStr = "";
+    try {
+      if (found.notablePatronsTrivia)
+        triviaStr = JSON.parse(found.notablePatronsTrivia).join("\n");
+    } catch {}
+
+    setFormData((prev) => ({
+      ...prev,
+      bookmark: {
+        ...prev.bookmark,
+        bookstoreId: found.id,
+      },
+      bookstore: {
+        id: found.id,
+        name: found.name,
+        city: found.city,
+        stateProvince: found.stateProvince || "",
+        country: found.country,
+        streetAddress: found.streetAddress || "",
+        yearOpened: found.yearOpened,
+        yearClosed: found.yearClosed || "",
+        isStillOperating: found.isStillOperating,
+        founders: found.founders || "",
+        specialties: specStr,
+        historicalBlurb: found.historicalBlurb,
+        notablePatronsTrivia: triviaStr,
+        websiteUrl: found.websiteUrl || "",
+      },
+    }));
+  };
+
+  const parsedDimensions = parseDimensions(formData.bookmark.dimensions);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -133,12 +216,14 @@ export function BookmarkForm({ initialData, isEditing = false }: BookmarkFormPro
       const payload = {
         bookmark: {
           ...formData.bookmark,
+          bookstoreId: selectedStoreMode === "existing" ? formData.bookstore.id : undefined,
           yearProduced: formData.bookmark.yearProduced
             ? Number(formData.bookmark.yearProduced)
             : null,
         },
         bookstore: {
           ...formData.bookstore,
+          id: selectedStoreMode === "existing" ? formData.bookstore.id : undefined,
           yearOpened: Number(formData.bookstore.yearOpened) || 1900,
           yearClosed: formData.bookstore.yearClosed
             ? Number(formData.bookstore.yearClosed)
@@ -194,7 +279,13 @@ export function BookmarkForm({ initialData, isEditing = false }: BookmarkFormPro
             className="font-serif flex items-center gap-2"
           >
             <Save className="w-4 h-4 text-amber-300" />
-            <span>{loading ? "Cataloging..." : isEditing ? "Update Archive Record" : "Save New Bookmark & Dossier"}</span>
+            <span>
+              {loading
+                ? "Cataloging..."
+                : isEditing
+                ? "Update Archive Record"
+                : "Save Bookmark & Dossier"}
+            </span>
           </Button>
         </div>
       </div>
@@ -210,7 +301,7 @@ export function BookmarkForm({ initialData, isEditing = false }: BookmarkFormPro
       <div className="p-6 rounded-2xl bg-white border border-parchment-border shadow-xs space-y-6">
         <div className="flex items-center gap-2 pb-3 border-b border-parchment-border text-sm font-mono font-bold text-archival-oxblood uppercase tracking-wider">
           <Bookmark className="w-4 h-4" />
-          <span>1. Bookmark Specimen &amp; Scans</span>
+          <span>1. Bookmark Specimen &amp; Physical Scans</span>
         </div>
 
         {/* Dual-Side Image Scanners */}
@@ -245,7 +336,7 @@ export function BookmarkForm({ initialData, isEditing = false }: BookmarkFormPro
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
           <div className="sm:col-span-2">
             <label className="block text-xs font-mono text-ink-light mb-1">
-              BOOKMARK TITLE *
+              BOOKMARK TITLE / MOTTO *
             </label>
             <input
               type="text"
@@ -264,48 +355,30 @@ export function BookmarkForm({ initialData, isEditing = false }: BookmarkFormPro
 
           <div>
             <label className="block text-xs font-mono text-ink-light mb-1">
-              ACCESSION NUMBER *
+              YEAR PRODUCED (CIRCA)
             </label>
             <input
-              type="text"
-              required
-              placeholder="e.g. BM-1934-NY-01"
-              value={formData.bookmark.accessionNo}
+              type="number"
+              placeholder="e.g. 1934 or 1975"
+              value={formData.bookmark.yearProduced}
               onChange={(e) =>
                 setFormData({
                   ...formData,
-                  bookmark: { ...formData.bookmark, accessionNo: e.target.value },
+                  bookmark: { ...formData.bookmark, yearProduced: e.target.value },
                 })
               }
               className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-mono"
             />
           </div>
 
+          {/* Dynamic Measurements Field with scale preview */}
           <div>
             <label className="block text-xs font-mono text-ink-light mb-1">
-              MATERIAL &amp; STOCK
+              PHYSICAL MEASUREMENTS (WIDTH × HEIGHT)
             </label>
             <input
               type="text"
-              placeholder="e.g. Letterpress Cream Cardstock"
-              value={formData.bookmark.material}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  bookmark: { ...formData.bookmark, material: e.target.value },
-                })
-              }
-              className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-serif"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-mono text-ink-light mb-1">
-              DIMENSIONS
-            </label>
-            <input
-              type="text"
-              placeholder={'e.g. 2.25" × 7.75"'}
+              placeholder={'e.g. 2.25" × 7.75" or 55mm × 190mm'}
               value={formData.bookmark.dimensions}
               onChange={(e) =>
                 setFormData({
@@ -314,6 +387,27 @@ export function BookmarkForm({ initialData, isEditing = false }: BookmarkFormPro
                 })
               }
               className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-mono"
+            />
+            <p className="text-[11px] font-mono text-ink-muted mt-1">
+              Parsed ratio: {parsedDimensions.aspectRatio} (Tray scale: {parsedDimensions.widthPercentScale}% W × {parsedDimensions.heightPercentScale}% H)
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-xs font-mono text-ink-light mb-1">
+              MATERIAL &amp; STOCK
+            </label>
+            <input
+              type="text"
+              placeholder="e.g. Letterpress Cream Cardstock, Gloss Paper, Silk"
+              value={formData.bookmark.material}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  bookmark: { ...formData.bookmark, material: e.target.value },
+                })
+              }
+              className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-serif"
             />
           </div>
 
@@ -337,25 +431,7 @@ export function BookmarkForm({ initialData, isEditing = false }: BookmarkFormPro
 
           <div>
             <label className="block text-xs font-mono text-ink-light mb-1">
-              YEAR PRODUCED (CIRCA)
-            </label>
-            <input
-              type="number"
-              placeholder="e.g. 1934"
-              value={formData.bookmark.yearProduced}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  bookmark: { ...formData.bookmark, yearProduced: e.target.value },
-                })
-              }
-              className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-mono"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-mono text-ink-light mb-1">
-              DATE ACQUIRED
+              DATE ACQUIRED (OPTIONAL)
             </label>
             <input
               type="date"
@@ -384,7 +460,7 @@ export function BookmarkForm({ initialData, isEditing = false }: BookmarkFormPro
               className="w-4 h-4 rounded text-archival-oxblood border-parchment-border focus:ring-amber-700/30"
             />
             <label htmlFor="isFeatured" className="text-xs font-serif font-semibold text-ink cursor-pointer">
-              Highlight as Featured Key Piece
+              Highlight as Featured Key Specimen
             </label>
           </div>
         </div>
@@ -408,12 +484,92 @@ export function BookmarkForm({ initialData, isEditing = false }: BookmarkFormPro
         </div>
       </div>
 
-      {/* 2. Bookstore Research Profile & Narrative */}
+      {/* 2. Associated Bookstore Selection & Dossier */}
       <div className="p-6 rounded-2xl bg-white border border-parchment-border shadow-xs space-y-6">
-        <div className="flex items-center gap-2 pb-3 border-b border-parchment-border text-sm font-mono font-bold text-archival-oxblood uppercase tracking-wider">
-          <Building2 className="w-4 h-4" />
-          <span>2. Associated Bookstore Research Dossier</span>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-parchment-border">
+          <div className="flex items-center gap-2 text-sm font-mono font-bold text-archival-oxblood uppercase tracking-wider">
+            <Building2 className="w-4 h-4" />
+            <span>2. Associated Bookstore Research Dossier</span>
+          </div>
+
+          {/* Existing Store Selector vs New Store Toggle */}
+          {bookstoresList.length > 0 && !isEditing && (
+            <div className="inline-flex rounded-lg border border-parchment-border p-0.5 bg-parchment-muted text-xs font-serif">
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedStoreMode("existing");
+                  if (bookstoresList[0]) handleSelectExistingStore(bookstoresList[0].id);
+                }}
+                className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-all ${
+                  selectedStoreMode === "existing"
+                    ? "bg-white text-ink font-semibold shadow-xs"
+                    : "text-ink-muted hover:text-ink"
+                }`}
+              >
+                <LinkIcon className="w-3.5 h-3.5 text-archival-oxblood" />
+                <span>Link to Existing Bookstore</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedStoreMode("new");
+                  setFormData((prev) => ({
+                    ...prev,
+                    bookmark: { ...prev.bookmark, bookstoreId: undefined },
+                    bookstore: {
+                      name: "",
+                      city: "",
+                      stateProvince: "",
+                      country: "United States",
+                      streetAddress: "",
+                      yearOpened: "",
+                      yearClosed: "",
+                      isStillOperating: false,
+                      founders: "",
+                      specialties: "",
+                      historicalBlurb: "### Bookstore Heritage & Cultural Story\n\n",
+                      notablePatronsTrivia: "",
+                      websiteUrl: "",
+                    },
+                  }));
+                }}
+                className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-all ${
+                  selectedStoreMode === "new"
+                    ? "bg-white text-ink font-semibold shadow-xs"
+                    : "text-ink-muted hover:text-ink"
+                }`}
+              >
+                <PlusCircle className="w-3.5 h-3.5 text-archival-amber" />
+                <span>+ Add New Bookstore</span>
+              </button>
+            </div>
+          )}
         </div>
+
+        {/* Existing Store Selector Dropdown */}
+        {selectedStoreMode === "existing" && bookstoresList.length > 0 && (
+          <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-600/20 space-y-2">
+            <label className="block text-xs font-mono font-bold text-ink mb-1 flex items-center gap-1.5">
+              <LinkIcon className="w-3.5 h-3.5 text-archival-oxblood" />
+              <span>SELECT EXISTING BOOKSTORE IN YOUR ARCHIVE:</span>
+            </label>
+            <select
+              value={formData.bookstore.id || bookstoresList[0]?.id}
+              onChange={(e) => handleSelectExistingStore(e.target.value)}
+              className="w-full px-3 py-2 text-sm bg-white border border-parchment-border rounded-lg text-ink font-serif focus:outline-none focus:ring-2 focus:ring-amber-700/30"
+            >
+              {bookstoresList.map((store) => (
+                <option key={store.id} value={store.id}>
+                  {store.name} — {store.city}, {store.country} ({store.yearOpened}–{store.yearClosed || "Present"})
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-ink-muted font-serif italic">
+              This bookmark will be added to this bookstore's collection. You can also view and edit the bookstore research details below.
+            </p>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="sm:col-span-2">
@@ -697,7 +853,13 @@ export function BookmarkForm({ initialData, isEditing = false }: BookmarkFormPro
           className="font-serif flex items-center gap-2"
         >
           <CheckCircle className="w-4 h-4 text-amber-300" />
-          <span>{loading ? "Cataloging..." : isEditing ? "Update Archive Record" : "Save New Bookmark & Dossier"}</span>
+          <span>
+            {loading
+              ? "Cataloging..."
+              : isEditing
+              ? "Update Archive Record"
+              : "Save Bookmark & Dossier"}
+          </span>
         </Button>
       </div>
     </form>

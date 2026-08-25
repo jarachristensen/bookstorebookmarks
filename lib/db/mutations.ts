@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { bookmarks, bookstores, archivalMedia, Bookmark, Bookstore, ArchivalMedia } from "@/db/schema";
+import { bookmarks, bookstores, archivalMedia } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 export interface FullBookmarkInput {
@@ -7,7 +7,7 @@ export interface FullBookmarkInput {
     id?: string;
     bookstoreId?: string;
     title: string;
-    accessionNo: string;
+    accessionNo?: string;
     frontImageUrl: string;
     backImageUrl?: string | null;
     yearProduced?: number | null;
@@ -67,23 +67,36 @@ export async function saveBookmarkAndBookstore(data: FullBookmarkInput): Promise
   const now = new Date().toISOString();
 
   // 1. Prepare Bookstore ID & Data
-  const bookstoreId = data.bookstore.id || generateSlug(data.bookstore.name);
+  const bookstoreId =
+    data.bookmark.bookstoreId ||
+    data.bookstore.id ||
+    generateSlug(data.bookstore.name);
+
+  // Check if store already exists or needs update
+  const existingStore = await db.query.bookstores.findFirst({
+    where: eq(bookstores.id, bookstoreId),
+  });
+
   const bookstoreValues = {
     id: bookstoreId,
-    name: data.bookstore.name,
-    city: data.bookstore.city,
-    stateProvince: data.bookstore.stateProvince || null,
-    country: data.bookstore.country || "United States",
-    streetAddress: data.bookstore.streetAddress || null,
-    yearOpened: Number(data.bookstore.yearOpened) || 1900,
-    yearClosed: data.bookstore.yearClosed ? Number(data.bookstore.yearClosed) : null,
-    isStillOperating: Boolean(data.bookstore.isStillOperating),
-    founders: data.bookstore.founders || null,
-    specialties: JSON.stringify(data.bookstore.specialties || []),
-    historicalBlurb: data.bookstore.historicalBlurb || "",
-    notablePatronsTrivia: JSON.stringify(data.bookstore.notablePatronsTrivia || []),
-    websiteUrl: data.bookstore.websiteUrl || null,
-    createdAt: now,
+    name: data.bookstore.name || existingStore?.name || "Independent Bookstore",
+    city: data.bookstore.city || existingStore?.city || "Unknown City",
+    stateProvince: data.bookstore.stateProvince ?? existingStore?.stateProvince ?? null,
+    country: data.bookstore.country || existingStore?.country || "United States",
+    streetAddress: data.bookstore.streetAddress ?? existingStore?.streetAddress ?? null,
+    yearOpened: Number(data.bookstore.yearOpened) || existingStore?.yearOpened || 1900,
+    yearClosed: data.bookstore.yearClosed !== undefined
+      ? (data.bookstore.yearClosed ? Number(data.bookstore.yearClosed) : null)
+      : (existingStore?.yearClosed ?? null),
+    isStillOperating: data.bookstore.isStillOperating !== undefined
+      ? Boolean(data.bookstore.isStillOperating)
+      : (existingStore?.isStillOperating ?? false),
+    founders: data.bookstore.founders ?? existingStore?.founders ?? null,
+    specialties: JSON.stringify(data.bookstore.specialties || (existingStore?.specialties ? JSON.parse(existingStore.specialties) : [])),
+    historicalBlurb: data.bookstore.historicalBlurb || existingStore?.historicalBlurb || "",
+    notablePatronsTrivia: JSON.stringify(data.bookstore.notablePatronsTrivia || (existingStore?.notablePatronsTrivia ? JSON.parse(existingStore.notablePatronsTrivia) : [])),
+    websiteUrl: data.bookstore.websiteUrl ?? existingStore?.websiteUrl ?? null,
+    createdAt: existingStore?.createdAt || now,
     updatedAt: now,
   };
 
@@ -91,18 +104,20 @@ export async function saveBookmarkAndBookstore(data: FullBookmarkInput): Promise
     target: bookstores.id,
     set: {
       ...bookstoreValues,
-      createdAt: undefined, // preserve original creation timestamp
+      createdAt: undefined,
       updatedAt: now,
     },
   });
 
   // 2. Prepare Bookmark ID & Data
-  const bookmarkId = data.bookmark.id || generateSlug(data.bookmark.title);
+  const bookmarkId = data.bookmark.id || generateSlug(`${data.bookmark.title}-${Date.now().toString().slice(-4)}`);
+  const accessionNo = data.bookmark.accessionNo || `BM-${Date.now().toString().slice(-6)}`;
+
   const bookmarkValues = {
     id: bookmarkId,
     bookstoreId: bookstoreId,
     title: data.bookmark.title,
-    accessionNo: data.bookmark.accessionNo,
+    accessionNo: accessionNo,
     frontImageUrl: data.bookmark.frontImageUrl,
     backImageUrl: data.bookmark.backImageUrl || null,
     yearProduced: data.bookmark.yearProduced ? Number(data.bookmark.yearProduced) : null,
@@ -130,13 +145,14 @@ export async function saveBookmarkAndBookstore(data: FullBookmarkInput): Promise
   // 3. Upsert Archival Media
   if (data.archivalMedia && data.archivalMedia.length > 0) {
     for (const [idx, item] of data.archivalMedia.entries()) {
+      if (!item.imageUrl) continue;
       const mediaId = item.id || `media-${bookstoreId}-${Date.now()}-${idx}`;
       const mediaValues = {
         id: mediaId,
         bookstoreId: bookstoreId,
         mediaType: item.mediaType || "photo",
         imageUrl: item.imageUrl,
-        caption: item.caption,
+        caption: item.caption || "Archival Press Clipping",
         sourcePublication: item.sourcePublication || null,
         publicationDate: item.publicationDate || null,
         transcriptionText: item.transcriptionText || null,
@@ -158,7 +174,7 @@ export async function saveBookmarkAndBookstore(data: FullBookmarkInput): Promise
  * Delete a bookmark by ID.
  */
 export async function deleteBookmark(bookmarkId: string): Promise<boolean> {
-  const result = await db.delete(bookmarks).where(eq(bookmarks.id, bookmarkId));
+  await db.delete(bookmarks).where(eq(bookmarks.id, bookmarkId));
   return true;
 }
 
