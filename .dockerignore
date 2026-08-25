@@ -1,0 +1,13 @@
+Dockerfile
+docker-compose.yml
+.dockerignore
+node_modules
+.next
+.git
+.gitignore
+*.md
+tests
+coverage
+eng.traineddata
+.env*.local
+*.log
