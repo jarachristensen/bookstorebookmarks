@@ -9,6 +9,17 @@ import { bookmarks as bookmarksTable } from "@/db/schema";
 
 export const dynamic = "force-dynamic";
 
+const defaultFilterOptions = {
+  cities: [] as string[],
+  eras: [
+    { label: "All Eras", value: "all" },
+    { label: "Early Century (Pre-1940)", value: "pre-1940" },
+    { label: "Mid-Century & Post-War (1940–1960)", value: "1940-1960" },
+    { label: "Late 20th Century (Post-1960)", value: "post-1960" },
+  ],
+  specialties: [] as string[],
+};
+
 export default async function HomePage() {
   try {
     await initDb();
@@ -23,7 +34,7 @@ export default async function HomePage() {
   }
 
   const bookmarks = await getBookmarksWithBookstores().catch(() => []);
-  const filterOptions = await getFilterOptions().catch(() => ({ cities: [], eras: [] }));
+  const filterOptions = await getFilterOptions().catch(() => defaultFilterOptions);
 
   const totalBookstores = new Set(bookmarks.map((b) => b.bookstoreId)).size;
 
