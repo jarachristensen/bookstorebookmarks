@@ -17,6 +17,7 @@ if (dbPath.startsWith("file:")) {
 
 export const client = createClient({
   url: dbPath,
+  authToken: process.env.DATABASE_AUTH_TOKEN,
 });
 
 export const db = drizzle(client, { schema });
