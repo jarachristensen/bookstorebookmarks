@@ -4,6 +4,8 @@ import path from "path";
 import fs from "fs";
 import { createWorker } from "tesseract.js";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req: NextRequest) {
   const isAuth = await getAdminSession();
   if (!isAuth) {
@@ -35,11 +37,7 @@ export async function POST(req: NextRequest) {
 
     const worker = await createWorker("eng", 1, {
       workerPath,
-      logger: (m) => {
-        if (process.env.NODE_ENV !== "production") {
-          // Debug progress
-        }
-      },
+      logger: () => {},
     });
 
     const ret = await worker.recognize(imageSource);

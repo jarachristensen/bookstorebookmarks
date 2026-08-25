@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { bookstores, bookmarks, archivalMedia } from "@/db/schema";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const allStores = await db.select().from(bookstores);

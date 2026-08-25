@@ -3,6 +3,8 @@ import { getAdminSession } from "@/lib/auth";
 import fs from "fs";
 import path from "path";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req: NextRequest) {
   const isAuth = await getAdminSession();
   if (!isAuth) {

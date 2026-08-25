@@ -3,6 +3,8 @@ import { getAdminSession } from "@/lib/auth";
 import { getBookmarkBySlug } from "@/lib/db/queries";
 import { saveBookmarkAndBookstore, deleteBookmark } from "@/lib/db/mutations";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
