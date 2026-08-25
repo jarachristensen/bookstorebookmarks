@@ -14,7 +14,7 @@ services:
       - PORT=3000
       - HOSTNAME=0.0.0.0
       - DATABASE_URL=file:/app/data/archive.db
-      - ADMIN_PASSPHRASE=curator123
+      - ADMIN_PASSPHRASE=${ADMIN_PASSPHRASE:-curator123}
     volumes:
       - ./data:/app/data
       - ./public/uploads:/app/public/uploads
