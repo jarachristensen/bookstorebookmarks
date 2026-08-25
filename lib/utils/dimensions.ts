@@ -1,13 +1,11 @@
 /**
  * Dimension parser and aspect ratio calculator for physical bookmarks.
- * Standard benchmark bookmark size is ~ 2.25" width x 7.5" height (ratio: 0.3).
+ * Standard benchmark bookmark size is ~ 2.25" width x 7.5" height (ratio: ~0.3).
  */
 export interface ParsedDimensions {
   widthInches: number;
   heightInches: number;
   aspectRatio: number; // width / height
-  widthPercentScale: number; // 85% to 125% relative width
-  heightPercentScale: number; // 85% to 125% relative height
   formatted: string;
 }
 
@@ -15,9 +13,7 @@ export function parseDimensions(dimStr: string | null | undefined): ParsedDimens
   const defaultDimensions: ParsedDimensions = {
     widthInches: 2.25,
     heightInches: 7.5,
-    aspectRatio: 2.25 / 7.5, // 0.3
-    widthPercentScale: 100,
-    heightPercentScale: 100,
+    aspectRatio: 2.25 / 7.5, // ~0.30
     formatted: '2.25" × 7.5"',
   };
 
@@ -61,23 +57,31 @@ export function parseDimensions(dimStr: string | null | undefined): ParsedDimens
 
   const aspectRatio = w / h;
 
-  // Calculate relative scaling based on baseline 2.25" x 7.5"
-  // Clamp scaling between 75% and 130% for aesthetic layout stability
-  const baseW = 2.25;
-  const baseH = 7.5;
-
-  const rawWidthScale = (w / baseW) * 100;
-  const rawHeightScale = (h / baseH) * 100;
-
-  const widthPercentScale = Math.min(Math.max(rawWidthScale, 75), 130);
-  const heightPercentScale = Math.min(Math.max(rawHeightScale, 75), 130);
-
   return {
     widthInches: Number(w.toFixed(2)),
     heightInches: Number(h.toFixed(2)),
     aspectRatio: Number(aspectRatio.toFixed(3)),
-    widthPercentScale: Number(widthPercentScale.toFixed(1)),
-    heightPercentScale: Number(heightPercentScale.toFixed(1)),
     formatted: dimStr,
+  };
+}
+
+/**
+ * Calculates exact screen display dimensions for a bookmark based on its real physical measurements.
+ */
+export function calculateScreenDimensions(
+  dim: ParsedDimensions,
+  baseHeightPx: number = 340
+) {
+  // Height scales with physical height, normalized around 7.5" standard
+  const rawHeight = baseHeightPx * (dim.heightInches / 7.5);
+  const heightPx = Math.round(Math.min(Math.max(rawHeight, 270), 390));
+
+  // Width is strictly determined by true aspect ratio (width = height * ratio)
+  const widthPx = Math.round(heightPx * dim.aspectRatio);
+
+  return {
+    widthPx,
+    heightPx,
+    aspectRatio: dim.aspectRatio,
   };
 }
