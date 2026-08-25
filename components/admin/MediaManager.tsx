@@ -1,9 +1,10 @@
 "use client";
 
-import React from "react";
-import { Plus, Trash2, Newspaper, Image as ImageIcon, FileText } from "lucide-react";
+import React, { useState } from "react";
+import { Plus, Trash2, Newspaper, Image as ImageIcon, FileText, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { ImageDropzone } from "./ImageDropzone";
+import { parseClippingFilename } from "@/lib/utils/clipping-parser";
 
 export interface MediaItem {
   id?: string;
@@ -21,6 +22,9 @@ export interface MediaManagerProps {
 }
 
 export function MediaManager({ mediaList, onChange }: MediaManagerProps) {
+  const [ocrLoadingIndex, setOcrLoadingIndex] = useState<number | null>(null);
+  const [ocrError, setOcrError] = useState<string>("");
+
   const addMedia = () => {
     onChange([
       ...mediaList,
@@ -46,6 +50,66 @@ export function MediaManager({ mediaList, onChange }: MediaManagerProps) {
     onChange(next);
   };
 
+  const handleImageUploaded = (index: number, url: string, file?: File) => {
+    const item = mediaList[index];
+    if (!item) return;
+
+    let updates: Partial<MediaItem> = { imageUrl: url };
+
+    // Auto-parse filename if file is available
+    if (file && file.name) {
+      const parsed = parseClippingFilename(file.name);
+      if (parsed.sourcePublication && (!item.sourcePublication || item.sourcePublication === "")) {
+        updates.sourcePublication = parsed.sourcePublication;
+      }
+      if (parsed.publicationDate && (!item.publicationDate || item.publicationDate === "")) {
+        updates.publicationDate = parsed.publicationDate;
+      }
+      if (
+        parsed.caption &&
+        (!item.caption || item.caption === "" || item.caption === "Archival Press Clipping")
+      ) {
+        updates.caption = parsed.caption;
+      }
+    }
+
+    updateMedia(index, updates);
+  };
+
+  const handleRunOcr = async (index: number) => {
+    const item = mediaList[index];
+    if (!item || !item.imageUrl) {
+      setOcrError("Please upload a clipping scan first before running OCR.");
+      return;
+    }
+
+    setOcrError("");
+    setOcrLoadingIndex(index);
+
+    try {
+      const res = await fetch("/api/ocr", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageUrl: item.imageUrl }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "OCR extraction failed");
+      }
+
+      if (data.text) {
+        updateMedia(index, { transcriptionText: data.text });
+      } else {
+        setOcrError("No legible text recognized in this scan.");
+      }
+    } catch (err: any) {
+      setOcrError(err.message || "Failed to extract text via OCR.");
+    } finally {
+      setOcrLoadingIndex(null);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -55,7 +119,7 @@ export function MediaManager({ mediaList, onChange }: MediaManagerProps) {
             <span>Archival Photos &amp; Newspaper Clippings</span>
           </h3>
           <p className="text-xs text-ink-muted font-serif italic">
-            Add historical press articles, exterior bookstore photographs, and readable transcriptions.
+            Upload scans (e.g. <code className="text-archival-oxblood font-mono">San_Francisco_Chronicle_2026_05_29_B8.jpg</code>) for automatic publication and date detection.
           </p>
         </div>
 
@@ -70,6 +134,12 @@ export function MediaManager({ mediaList, onChange }: MediaManagerProps) {
           <span>Add Media Item</span>
         </Button>
       </div>
+
+      {ocrError && (
+        <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs font-serif">
+          {ocrError}
+        </div>
+      )}
 
       {mediaList.length === 0 ? (
         <div className="p-6 rounded-xl border border-dashed border-parchment-border text-center bg-parchment-light space-y-2">
@@ -113,7 +183,7 @@ export function MediaManager({ mediaList, onChange }: MediaManagerProps) {
                 <button
                   type="button"
                   onClick={() => removeMedia(index)}
-                  className="p-1 rounded text-rose-700 hover:bg-rose-100 transition-colors"
+                  className="p-1 rounded text-rose-700 hover:bg-rose-100 transition-colors cursor-pointer"
                   title="Remove this item"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -126,7 +196,7 @@ export function MediaManager({ mediaList, onChange }: MediaManagerProps) {
                   <ImageDropzone
                     label="Media Scan / Photo"
                     value={item.imageUrl}
-                    onChange={(url) => updateMedia(index, { imageUrl: url })}
+                    onChange={(url, file) => handleImageUploaded(index, url, file)}
                     aspectRatio="photo"
                     required
                   />
@@ -142,7 +212,7 @@ export function MediaManager({ mediaList, onChange }: MediaManagerProps) {
                       type="text"
                       value={item.caption}
                       onChange={(e) => updateMedia(index, { caption: e.target.value })}
-                      placeholder="e.g. The New York Times: 'Frances Steloff & Her Haven on 47th St'"
+                      placeholder="e.g. San Francisco Chronicle (May 29, 2026)"
                       required
                       className="w-full px-3 py-1.5 text-xs bg-white border border-parchment-border rounded-lg text-ink focus:outline-none font-serif"
                     />
@@ -157,7 +227,7 @@ export function MediaManager({ mediaList, onChange }: MediaManagerProps) {
                         type="text"
                         value={item.sourcePublication || ""}
                         onChange={(e) => updateMedia(index, { sourcePublication: e.target.value })}
-                        placeholder="e.g. Chicago Tribune"
+                        placeholder="e.g. San Francisco Chronicle"
                         className="w-full px-3 py-1.5 text-xs bg-white border border-parchment-border rounded-lg text-ink focus:outline-none font-serif"
                       />
                     </div>
@@ -169,21 +239,43 @@ export function MediaManager({ mediaList, onChange }: MediaManagerProps) {
                         type="text"
                         value={item.publicationDate || ""}
                         onChange={(e) => updateMedia(index, { publicationDate: e.target.value })}
-                        placeholder="e.g. Oct 14, 1957"
+                        placeholder="e.g. May 29, 2026"
                         className="w-full px-3 py-1.5 text-xs bg-white border border-parchment-border rounded-lg text-ink focus:outline-none font-serif"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-mono text-ink-light mb-1">
-                      ARTICLE TRANSCRIPTION (FOR FADED / SMALL NEWSPRINT)
-                    </label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-[11px] font-mono text-ink-light">
+                        ARTICLE TRANSCRIPTION (FOR FADED / SMALL NEWSPRINT)
+                      </label>
+                      {item.imageUrl && (
+                        <button
+                          type="button"
+                          disabled={ocrLoadingIndex === index}
+                          onClick={() => handleRunOcr(index)}
+                          className="inline-flex items-center gap-1 text-[11px] font-mono text-archival-oxblood hover:underline disabled:opacity-50 cursor-pointer font-bold"
+                        >
+                          {ocrLoadingIndex === index ? (
+                            <>
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                              <span>Running OCR...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="w-3 h-3 text-archival-amber" />
+                              <span>Extract Text via OCR</span>
+                            </>
+                          )}
+                        </button>
+                      )}
+                    </div>
                     <textarea
                       rows={3}
                       value={item.transcriptionText || ""}
                       onChange={(e) => updateMedia(index, { transcriptionText: e.target.value })}
-                      placeholder="Type or paste the transcribed text of the article for readers to read easily in the lightbox..."
+                      placeholder="Type or paste the transcribed text of the article, or click 'Extract Text via OCR' above..."
                       className="w-full px-3 py-2 text-xs bg-white border border-parchment-border rounded-lg text-ink focus:outline-none font-serif"
                     />
                   </div>

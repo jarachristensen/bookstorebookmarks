@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/Button";
 export interface ImageDropzoneProps {
   label: string;
   value: string;
-  onChange: (url: string) => void;
+  onChange: (url: string, file?: File) => void;
+  onFileSelected?: (file: File) => void;
   aspectRatio?: "bookmark" | "photo";
   placeholder?: string;
   required?: boolean;
@@ -18,6 +19,7 @@ export function ImageDropzone({
   label,
   value,
   onChange,
+  onFileSelected,
   aspectRatio = "bookmark",
   placeholder,
   required = false,
@@ -30,6 +32,10 @@ export function ImageDropzone({
     if (!file) return;
     setError("");
     setUploading(true);
+
+    if (onFileSelected) {
+      onFileSelected(file);
+    }
 
     try {
       const formData = new FormData();
@@ -45,7 +51,7 @@ export function ImageDropzone({
         throw new Error(data.error || "Upload failed");
       }
 
-      onChange(data.url);
+      onChange(data.url, file);
     } catch (err: any) {
       setError(err.message || "Failed to upload image");
     } finally {

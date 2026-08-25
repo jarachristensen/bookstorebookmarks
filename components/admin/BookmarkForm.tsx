@@ -389,7 +389,7 @@ export function BookmarkForm({
               className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-mono"
             />
             <p className="text-[11px] font-mono text-ink-muted mt-1">
-              Parsed ratio: {parsedDimensions.aspectRatio} (Tray scale: {parsedDimensions.widthPercentScale}% W × {parsedDimensions.heightPercentScale}% H)
+              Parsed ratio: {parsedDimensions.aspectRatio} ({parsedDimensions.widthInches}" W × {parsedDimensions.heightInches}" H)
             </p>
           </div>
 
