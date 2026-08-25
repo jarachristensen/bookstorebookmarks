@@ -4,20 +4,62 @@ import * as schema from "./schema";
 import fs from "fs";
 import path from "path";
 
-// Ensure data directory exists for local sqlite file
-const dbPath = process.env.DATABASE_URL || "file:data/archive.db";
+/**
+ * Sanitizes and normalizes the Database URL to prevent LibsqlError URL_INVALID.
+ */
+function sanitizeDatabaseUrl(rawUrl?: string): string {
+  if (!rawUrl || typeof rawUrl !== "string" || rawUrl.trim() === "") {
+    return "file:data/archive.db";
+  }
 
-if (dbPath.startsWith("file:")) {
-  const filePath = dbPath.replace("file:", "");
-  const dir = path.dirname(path.resolve(process.cwd(), filePath));
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
+  // Remove surrounding quotes and whitespace
+  let clean = rawUrl.trim().replace(/^["'`]|["'`]$/g, "");
+
+  // Fix common copy-paste typos
+  if (clean.startsWith("libsql://https://")) {
+    clean = clean.replace("libsql://https://", "libsql://");
+  } else if (clean.startsWith("libsql://http://")) {
+    clean = clean.replace("libsql://http://", "libsql://");
+  } else if (clean.startsWith("https://") && clean.includes("turso.io")) {
+    clean = clean.replace("https://", "libsql://");
+  } else if (!clean.startsWith("libsql://") && !clean.startsWith("file:") && !clean.startsWith("http://") && !clean.startsWith("https://")) {
+    // If user provided just "bookmark-archive-name.turso.io"
+    if (clean.includes("turso.io")) {
+      clean = `libsql://${clean}`;
+    } else {
+      clean = `file:${clean}`;
+    }
+  }
+
+  return clean;
+}
+
+function sanitizeAuthToken(rawToken?: string): string | undefined {
+  if (!rawToken || typeof rawToken !== "string" || rawToken.trim() === "") {
+    return undefined;
+  }
+  return rawToken.trim().replace(/^["'`]|["'`]$/g, "");
+}
+
+const dbUrl = sanitizeDatabaseUrl(process.env.DATABASE_URL);
+const authToken = sanitizeAuthToken(process.env.DATABASE_AUTH_TOKEN);
+
+// Ensure data directory exists if using local sqlite file
+if (dbUrl.startsWith("file:")) {
+  try {
+    const filePath = dbUrl.replace("file:", "");
+    const dir = path.dirname(path.resolve(process.cwd(), filePath));
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+  } catch {
+    // Ignore file system errors on read-only serverless environments
   }
 }
 
 export const client = createClient({
-  url: dbPath,
-  authToken: process.env.DATABASE_AUTH_TOKEN,
+  url: dbUrl,
+  authToken: authToken,
 });
 
 export const db = drizzle(client, { schema });
