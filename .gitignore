@@ -34,3 +34,6 @@ next-env.d.ts
 
 # local sqlite db
 /data/*.db*
+
+# tesseract trained data
+*.traineddata
