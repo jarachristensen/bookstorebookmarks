@@ -10,16 +10,20 @@ import { bookmarks as bookmarksTable } from "@/db/schema";
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  await initDb();
+  try {
+    await initDb();
 
-  // Auto-seed if database has no bookmarks yet
-  const count = await db.select().from(bookmarksTable);
-  if (count.length === 0) {
-    await seedDatabase();
+    // Auto-seed if database has no bookmarks yet
+    const count = await db.select().from(bookmarksTable);
+    if (count.length === 0) {
+      await seedDatabase();
+    }
+  } catch (err) {
+    console.error("Database initialization warning:", err);
   }
 
-  const bookmarks = await getBookmarksWithBookstores();
-  const filterOptions = await getFilterOptions();
+  const bookmarks = await getBookmarksWithBookstores().catch(() => []);
+  const filterOptions = await getFilterOptions().catch(() => ({ cities: [], eras: [] }));
 
   const totalBookstores = new Set(bookmarks.map((b) => b.bookstoreId)).size;
 
