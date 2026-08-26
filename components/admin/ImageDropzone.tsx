@@ -2,9 +2,8 @@
 
 import React, { useState, useRef } from "react";
 import Image from "next/image";
-import { Upload, X, Link as LinkIcon, Sparkles } from "lucide-react";
+import { Upload, X, Link as LinkIcon, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { upload } from "@vercel/blob/client";
 import { compressImageIfNeeded } from "@/lib/utils/image-compressor";
 
 export interface ImageDropzoneProps {
@@ -37,58 +36,53 @@ export function ImageDropzone({
     if (!rawFile) return;
     setError("");
     setUploading(true);
-    setUploadProgress("Preparing & optimizing scan...");
+    setUploadProgress("Optimizing scan...");
 
     if (onFileSelected) {
       onFileSelected(rawFile);
     }
 
     try {
-      // 1. Optimize oversized image if needed (preserves high-res quality while avoiding 4.5MB gateway limits)
+      // 1. Optimize oversized image in browser (< 2MB JPEG)
       const file = await compressImageIfNeeded(rawFile);
 
-      setUploadProgress("Uploading scan to archive...");
+      setUploadProgress("Uploading to archive...");
 
-      // 2. Try Direct Client-to-Blob Upload (Vercel Blob)
-      try {
-        const newBlob = await upload(file.name, file, {
-          access: "public",
-          handleUploadUrl: "/api/upload",
-        });
-
-        if (newBlob && newBlob.url) {
-          onChange(newBlob.url, rawFile);
-          return;
-        }
-      } catch (blobErr: any) {
-        console.warn("Direct Vercel Blob upload failed, falling back to server route:", blobErr);
-      }
-
-      // 3. Fallback to standard Multipart FormData (for local dev / Docker)
+      // 2. Upload via standard API route (supports Vercel Blob and local disk)
       const formData = new FormData();
       formData.append("file", file);
+
+      // Abort controller with 30s timeout so it never hangs
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
 
       const res = await fetch("/api/upload", {
         method: "POST",
         body: formData,
+        signal: controller.signal,
       });
 
-      if (!res.ok) {
-        const text = await res.text();
-        let errorMsg = "Upload failed";
-        try {
-          const data = JSON.parse(text);
-          errorMsg = data.error || errorMsg;
-        } catch {
-          errorMsg = `Upload error (${res.status}): ${text.slice(0, 150)}`;
-        }
-        throw new Error(errorMsg);
+      clearTimeout(timeoutId);
+
+      const text = await res.text();
+      let data: any = {};
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error(`Upload error (${res.status}): ${text.slice(0, 120)}`);
       }
 
-      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Upload failed");
+      }
+
       onChange(data.url, rawFile);
     } catch (err: any) {
-      setError(err.message || "Failed to upload image");
+      if (err.name === "AbortError") {
+        setError("Upload timed out. Please check your connection and try again.");
+      } else {
+        setError(err.message || "Failed to upload image");
+      }
     } finally {
       setUploading(false);
       setUploadProgress("");
@@ -192,7 +186,11 @@ export function ImageDropzone({
             }`}
           >
             <div className="w-10 h-10 rounded-full bg-parchment-muted flex items-center justify-center text-ink-muted">
-              <Upload className="w-5 h-5" />
+              {uploading ? (
+                <Loader2 className="w-5 h-5 animate-spin text-archival-oxblood" />
+              ) : (
+                <Upload className="w-5 h-5" />
+              )}
             </div>
             <div className="space-y-1">
               <p className="text-xs font-serif font-semibold text-ink">
