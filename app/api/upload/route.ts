@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
+import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import fs from "fs";
 import path from "path";
-import { put } from "@vercel/blob";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +12,38 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized curator session" }, { status: 401 });
   }
 
+  const contentType = req.headers.get("content-type") || "";
+
+  // 1. Direct Client-to-Blob Upload token generation (Bypasses Vercel 4.5MB limit, supports up to 50MB scans)
+  if (contentType.includes("application/json") && process.env.BLOB_READ_WRITE_TOKEN) {
+    try {
+      const body = (await req.json()) as HandleUploadBody;
+      const jsonResponse = await handleUpload({
+        body,
+        request: req,
+        onBeforeGenerateToken: async (pathname) => {
+          return {
+            allowedContentTypes: [
+              "image/jpeg",
+              "image/png",
+              "image/webp",
+              "image/svg+xml",
+              "image/gif",
+              "image/tiff",
+            ],
+            maximumSizeInBytes: 50 * 1024 * 1024, // 50MB high-res scans
+          };
+        },
+        onUploadCompleted: async () => {},
+      });
+
+      return NextResponse.json(jsonResponse);
+    } catch (err: any) {
+      return NextResponse.json({ error: err.message }, { status: 400 });
+    }
+  }
+
+  // 2. Standard Multipart / Local Development Fallback
   try {
     const formData = await req.formData();
     const file = formData.get("file") as File;
@@ -27,50 +59,31 @@ export async function POST(req: NextRequest) {
       .replace(/[^\w-]/g, "");
     const fileName = `${baseName}-${Date.now()}${ext}`;
 
-    // 1. If running on Vercel with Vercel Blob storage configured
-    if (process.env.BLOB_READ_WRITE_TOKEN) {
-      const blob = await put(`uploads/${fileName}`, file, {
-        access: "public",
-      });
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
 
-      return NextResponse.json({
-        url: blob.url,
-        fileName,
-      });
+    const uploadsDir = path.resolve(process.cwd(), "public/uploads");
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
     }
 
-    // 2. Local filesystem storage (for local dev and Docker container)
-    try {
-      const bytes = await file.arrayBuffer();
-      const buffer = Buffer.from(bytes);
+    const filePath = path.join(uploadsDir, fileName);
+    fs.writeFileSync(filePath, buffer);
 
-      const uploadsDir = path.resolve(process.cwd(), "public/uploads");
-      if (!fs.existsSync(uploadsDir)) {
-        fs.mkdirSync(uploadsDir, { recursive: true });
-      }
-
-      const filePath = path.join(uploadsDir, fileName);
-      fs.writeFileSync(filePath, buffer);
-
-      return NextResponse.json({
-        url: `/uploads/${fileName}`,
-        fileName,
-      });
-    } catch (fsErr: any) {
-      // If filesystem is read-only (e.g. on Vercel without Vercel Blob connected)
-      if (fsErr.code === "EROFS") {
-        return NextResponse.json(
-          {
-            error:
-              "Image upload requires Vercel Blob storage on Vercel. Please enable 'Blob Storage' in your Vercel project's Storage tab.",
-          },
-          { status: 500 }
-        );
-      }
-      throw fsErr;
-    }
+    return NextResponse.json({
+      url: `/uploads/${fileName}`,
+      fileName,
+    });
   } catch (err: any) {
-    console.error("Upload Error:", err);
+    if (err.code === "EROFS") {
+      return NextResponse.json(
+        {
+          error:
+            "Vercel Blob storage required on Vercel. Please ensure 'Blob Storage' is connected to your project.",
+        },
+        { status: 500 }
+      );
+    }
     return NextResponse.json(
       { error: err.message || "Failed to upload file" },
       { status: 500 }

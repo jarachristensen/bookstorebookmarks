@@ -2,8 +2,9 @@
 
 import React, { useState, useRef } from "react";
 import Image from "next/image";
-import { Upload, X, Image as ImageIcon, Sparkles } from "lucide-react";
+import { Upload, X, Link as LinkIcon, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { upload } from "@vercel/blob/client";
 
 export interface ImageDropzoneProps {
   label: string;
@@ -25,19 +26,38 @@ export function ImageDropzone({
   required = false,
 }: ImageDropzoneProps) {
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<string>("");
   const [error, setError] = useState("");
+  const [showUrlInput, setShowUrlInput] = useState(false);
+  const [customUrl, setCustomUrl] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileUpload = async (file: File) => {
     if (!file) return;
     setError("");
     setUploading(true);
+    setUploadProgress("Uploading scan...");
 
     if (onFileSelected) {
       onFileSelected(file);
     }
 
     try {
+      // 1. Try Direct Client-to-Blob Upload (bypasses Vercel 4.5MB limit, supports up to 50MB)
+      try {
+        const newBlob = await upload(file.name, file, {
+          access: "public",
+          handleUploadUrl: "/api/upload",
+        });
+
+        onChange(newBlob.url, file);
+        return;
+      } catch (blobErr: any) {
+        // If client-to-blob upload token fails (e.g. running locally without blob token), fallback to standard upload
+        console.warn("Direct blob upload fallback:", blobErr);
+      }
+
+      // 2. Fallback to standard Multipart FormData (for local dev / Docker)
       const formData = new FormData();
       formData.append("file", file);
 
@@ -64,6 +84,7 @@ export function ImageDropzone({
       setError(err.message || "Failed to upload image");
     } finally {
       setUploading(false);
+      setUploadProgress("");
     }
   };
 
@@ -74,23 +95,60 @@ export function ImageDropzone({
     }
   };
 
+  const handleApplyCustomUrl = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (customUrl.trim()) {
+      onChange(customUrl.trim());
+      setShowUrlInput(false);
+      setCustomUrl("");
+    }
+  };
+
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <label className="block text-xs font-mono font-medium text-ink-light">
           {label} {required && <span className="text-archival-oxblood">*</span>}
         </label>
-        {value && (
-          <button
-            type="button"
-            onClick={() => onChange("")}
-            className="text-[11px] text-archival-oxblood hover:underline font-serif flex items-center gap-1"
-          >
-            <X className="w-3 h-3" />
-            <span>Remove</span>
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {!value && (
+            <button
+              type="button"
+              onClick={() => setShowUrlInput(!showUrlInput)}
+              className="text-[11px] text-archival-oxblood hover:underline font-serif flex items-center gap-1 cursor-pointer"
+            >
+              <LinkIcon className="w-3 h-3" />
+              <span>{showUrlInput ? "Drop file instead" : "Paste URL"}</span>
+            </button>
+          )}
+          {value && (
+            <button
+              type="button"
+              onClick={() => onChange("")}
+              className="text-[11px] text-archival-oxblood hover:underline font-serif flex items-center gap-1 cursor-pointer"
+            >
+              <X className="w-3 h-3" />
+              <span>Remove</span>
+            </button>
+          )}
+        </div>
       </div>
+
+      {showUrlInput && !value && (
+        <form onSubmit={handleApplyCustomUrl} className="flex gap-2">
+          <input
+            type="url"
+            value={customUrl}
+            onChange={(e) => setCustomUrl(e.target.value)}
+            placeholder="https://photos.smugmug.com/... or https://..."
+            className="flex-1 px-3 py-1.5 text-xs bg-white border border-parchment-border rounded-lg text-ink font-serif focus:outline-none"
+            autoFocus
+          />
+          <Button type="submit" variant="secondary" size="sm" className="text-xs font-serif">
+            Apply URL
+          </Button>
+        </form>
+      )}
 
       {value ? (
         <div
@@ -112,29 +170,33 @@ export function ImageDropzone({
               onClick={() => fileInputRef.current?.click()}
               className="text-xs font-serif bg-white/90 text-ink"
             >
-              Replace
+              Replace Scan
             </Button>
           </div>
         </div>
       ) : (
-        <div
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={handleDrop}
-          onClick={() => fileInputRef.current?.click()}
-          className={`border-2 border-dashed border-parchment-border hover:border-archival-amber rounded-xl p-6 text-center cursor-pointer bg-parchment-light hover:bg-parchment-muted/50 transition-colors flex flex-col items-center justify-center gap-2 ${
-            aspectRatio === "bookmark" ? "aspect-[1/2.8] max-w-[200px] mx-auto" : "aspect-[16/10] w-full"
-          }`}
-        >
-          <div className="w-10 h-10 rounded-full bg-parchment-muted flex items-center justify-center text-ink-muted">
-            <Upload className="w-5 h-5" />
+        !showUrlInput && (
+          <div
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={handleDrop}
+            onClick={() => fileInputRef.current?.click()}
+            className={`border-2 border-dashed border-parchment-border hover:border-archival-amber rounded-xl p-6 text-center cursor-pointer bg-parchment-light hover:bg-parchment-muted/50 transition-colors flex flex-col items-center justify-center gap-2 ${
+              aspectRatio === "bookmark" ? "aspect-[1/2.8] max-w-[200px] mx-auto" : "aspect-[16/10] w-full"
+            }`}
+          >
+            <div className="w-10 h-10 rounded-full bg-parchment-muted flex items-center justify-center text-ink-muted">
+              <Upload className="w-5 h-5" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs font-serif font-semibold text-ink">
+                {uploading ? (uploadProgress || "Uploading scan...") : "Click or drop scan here"}
+              </p>
+              <p className="text-[10px] font-mono text-ink-muted">
+                High-res scans up to 50MB (PNG, JPG, WEBP, TIFF)
+              </p>
+            </div>
           </div>
-          <div className="space-y-1">
-            <p className="text-xs font-serif font-semibold text-ink">
-              {uploading ? "Uploading scan..." : "Click or drop scan here"}
-            </p>
-            <p className="text-[10px] font-mono text-ink-muted">PNG, JPG, WEBP, or SVG</p>
-          </div>
-        </div>
+        )
       )}
 
       {error && <p className="text-xs text-rose-700 font-serif">{error}</p>}
