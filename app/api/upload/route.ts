@@ -49,10 +49,25 @@ export async function POST(req: NextRequest) {
 
     // 1. If running on Vercel with Vercel Blob connected
     if (blobToken) {
-      const blob = await put(`uploads/${fileName}`, buffer, {
-        access: "public",
-        token: blobToken,
-      });
+      let blob;
+      try {
+        blob = await put(`uploads/${fileName}`, buffer, {
+          access: "public",
+          token: blobToken,
+        });
+      } catch (blobErr: any) {
+        // If store is configured as private, retry without access: "public"
+        if (
+          blobErr.message?.includes("private store") ||
+          blobErr.message?.includes("public access")
+        ) {
+          blob = await put(`uploads/${fileName}`, buffer, {
+            token: blobToken,
+          } as any);
+        } else {
+          throw blobErr;
+        }
+      }
 
       return NextResponse.json({
         url: blob.url,
