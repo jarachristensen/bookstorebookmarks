@@ -46,11 +46,19 @@ export function ImageDropzone({
         body: formData,
       });
 
-      const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || "Upload failed");
+        const text = await res.text();
+        let errorMsg = "Upload failed";
+        try {
+          const data = JSON.parse(text);
+          errorMsg = data.error || errorMsg;
+        } catch {
+          errorMsg = `Upload error (${res.status}): ${text.slice(0, 150)}`;
+        }
+        throw new Error(errorMsg);
       }
 
+      const data = await res.json();
       onChange(data.url, file);
     } catch (err: any) {
       setError(err.message || "Failed to upload image");
