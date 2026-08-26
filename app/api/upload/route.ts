@@ -7,14 +7,9 @@ import path from "path";
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
-  const isAuth = await getAdminSession();
-  if (!isAuth) {
-    return NextResponse.json({ error: "Unauthorized curator session" }, { status: 401 });
-  }
-
   const contentType = req.headers.get("content-type") || "";
 
-  // 1. Direct Client-to-Blob Upload token generation (Bypasses Vercel 4.5MB limit, supports up to 50MB scans)
+  // 1. Direct Client-to-Blob Upload (Vercel Blob token generation & webhook)
   if (contentType.includes("application/json") && process.env.BLOB_READ_WRITE_TOKEN) {
     try {
       const body = (await req.json()) as HandleUploadBody;
@@ -22,6 +17,12 @@ export async function POST(req: NextRequest) {
         body,
         request: req,
         onBeforeGenerateToken: async (pathname) => {
+          // Verify curator session when browser requests upload token
+          const isAuth = await getAdminSession();
+          if (!isAuth) {
+            throw new Error("Unauthorized curator session");
+          }
+
           return {
             allowedContentTypes: [
               "image/jpeg",
@@ -31,7 +32,7 @@ export async function POST(req: NextRequest) {
               "image/gif",
               "image/tiff",
             ],
-            maximumSizeInBytes: 50 * 1024 * 1024, // 50MB high-res scans
+            maximumSizeInBytes: 50 * 1024 * 1024, // 50MB
           };
         },
         onUploadCompleted: async () => {},
@@ -39,11 +40,17 @@ export async function POST(req: NextRequest) {
 
       return NextResponse.json(jsonResponse);
     } catch (err: any) {
+      console.error("Vercel Blob HandleUpload Error:", err);
       return NextResponse.json({ error: err.message }, { status: 400 });
     }
   }
 
   // 2. Standard Multipart / Local Development Fallback
+  const isAuth = await getAdminSession();
+  if (!isAuth) {
+    return NextResponse.json({ error: "Unauthorized curator session" }, { status: 401 });
+  }
+
   try {
     const formData = await req.formData();
     const file = formData.get("file") as File;

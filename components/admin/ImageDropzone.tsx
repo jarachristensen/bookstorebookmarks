@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Upload, X, Link as LinkIcon, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { upload } from "@vercel/blob/client";
+import { compressImageIfNeeded } from "@/lib/utils/image-compressor";
 
 export interface ImageDropzoneProps {
   label: string;
@@ -32,32 +33,38 @@ export function ImageDropzone({
   const [customUrl, setCustomUrl] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileUpload = async (file: File) => {
-    if (!file) return;
+  const handleFileUpload = async (rawFile: File) => {
+    if (!rawFile) return;
     setError("");
     setUploading(true);
-    setUploadProgress("Uploading scan...");
+    setUploadProgress("Preparing & optimizing scan...");
 
     if (onFileSelected) {
-      onFileSelected(file);
+      onFileSelected(rawFile);
     }
 
     try {
-      // 1. Try Direct Client-to-Blob Upload (bypasses Vercel 4.5MB limit, supports up to 50MB)
+      // 1. Optimize oversized image if needed (preserves high-res quality while avoiding 4.5MB gateway limits)
+      const file = await compressImageIfNeeded(rawFile);
+
+      setUploadProgress("Uploading scan to archive...");
+
+      // 2. Try Direct Client-to-Blob Upload (Vercel Blob)
       try {
         const newBlob = await upload(file.name, file, {
           access: "public",
           handleUploadUrl: "/api/upload",
         });
 
-        onChange(newBlob.url, file);
-        return;
+        if (newBlob && newBlob.url) {
+          onChange(newBlob.url, rawFile);
+          return;
+        }
       } catch (blobErr: any) {
-        // If client-to-blob upload token fails (e.g. running locally without blob token), fallback to standard upload
-        console.warn("Direct blob upload fallback:", blobErr);
+        console.warn("Direct Vercel Blob upload failed, falling back to server route:", blobErr);
       }
 
-      // 2. Fallback to standard Multipart FormData (for local dev / Docker)
+      // 3. Fallback to standard Multipart FormData (for local dev / Docker)
       const formData = new FormData();
       formData.append("file", file);
 
@@ -79,7 +86,7 @@ export function ImageDropzone({
       }
 
       const data = await res.json();
-      onChange(data.url, file);
+      onChange(data.url, rawFile);
     } catch (err: any) {
       setError(err.message || "Failed to upload image");
     } finally {
@@ -192,7 +199,7 @@ export function ImageDropzone({
                 {uploading ? (uploadProgress || "Uploading scan...") : "Click or drop scan here"}
               </p>
               <p className="text-[10px] font-mono text-ink-muted">
-                High-res scans up to 50MB (PNG, JPG, WEBP, TIFF)
+                High-res scans (PNG, JPG, WEBP, TIFF)
               </p>
             </div>
           </div>
