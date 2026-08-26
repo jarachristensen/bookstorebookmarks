@@ -6,16 +6,34 @@ import path from "path";
 
 export const dynamic = "force-dynamic";
 
+/**
+ * Auto-detects Vercel Blob token regardless of store name
+ * (e.g. BLOB_READ_WRITE_TOKEN, BOOKMARK_SCANS_READ_WRITE_TOKEN, etc.)
+ */
+function getBlobToken(): string | undefined {
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    return process.env.BLOB_READ_WRITE_TOKEN;
+  }
+  for (const [key, value] of Object.entries(process.env)) {
+    if (key.endsWith("_READ_WRITE_TOKEN") && value) {
+      return value;
+    }
+  }
+  return undefined;
+}
+
 export async function POST(req: NextRequest) {
+  const blobToken = getBlobToken();
   const contentType = req.headers.get("content-type") || "";
 
   // 1. Direct Client-to-Blob Upload (Vercel Blob token generation & webhook)
-  if (contentType.includes("application/json") && process.env.BLOB_READ_WRITE_TOKEN) {
+  if (contentType.includes("application/json") && blobToken) {
     try {
       const body = (await req.json()) as HandleUploadBody;
       const jsonResponse = await handleUpload({
         body,
         request: req,
+        token: blobToken,
         onBeforeGenerateToken: async (pathname) => {
           // Verify curator session when browser requests upload token
           const isAuth = await getAdminSession();
@@ -24,6 +42,7 @@ export async function POST(req: NextRequest) {
           }
 
           return {
+            tokenPayload: JSON.stringify({ authorized: true }),
             allowedContentTypes: [
               "image/jpeg",
               "image/png",
