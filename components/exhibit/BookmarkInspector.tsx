@@ -78,7 +78,7 @@ export function BookmarkInspector({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 pt-8 items-center">
         {/* 3D Paper Turn Canvas (Left Column) */}
         <div className="lg:col-span-7 flex flex-col items-center justify-center space-y-6">
-          {/* 3D Flip Container with 100% Height */}
+          {/* 3D Flip Container with True Transparent Specimen */}
           <div
             className="w-full flex items-center justify-center p-4 h-[480px] sm:h-[540px]"
             style={{ perspective: 1200 }}
@@ -92,29 +92,29 @@ export function BookmarkInspector({
                 aspectRatio: `${parsedDim.aspectRatio}`,
               }}
               onClick={() => setIsFlipped(!isFlipped)}
-              className="relative cursor-pointer select-none rounded-[6px] shadow-2xl border border-parchment-border/80 bg-[#FAF6EE] group"
+              className="relative cursor-pointer select-none group filter drop-shadow-[0_16px_32px_rgba(0,0,0,0.25)]"
             >
               {/* FRONT SIDE (Recto) */}
               <div
-                className="absolute inset-0 w-full h-full rounded-[6px] overflow-hidden bg-[#FAF6EE] backface-hidden flex items-center justify-center"
+                className="absolute inset-0 w-full h-full backface-hidden flex items-center justify-center"
                 style={{ backfaceVisibility: "hidden" }}
               >
                 <Image
                   src={bookmark.frontImageUrl}
                   alt={`${bookmark.title} - Recto (Front)`}
                   fill
-                  className="object-contain object-center"
+                  className="object-contain object-center filter contrast-[1.02]"
                   sizes="400px"
                   priority
                 />
-                <div className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/60 backdrop-blur-xs text-[10px] font-mono text-white">
+                <div className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/60 backdrop-blur-xs text-[10px] font-mono text-white shadow-sm z-20">
                   RECTO (FRONT)
                 </div>
               </div>
 
               {/* BACK SIDE (Verso) */}
               <div
-                className="absolute inset-0 w-full h-full rounded-[6px] overflow-hidden bg-[#FBF9F5] backface-hidden flex items-center justify-center"
+                className="absolute inset-0 w-full h-full backface-hidden flex items-center justify-center"
                 style={{
                   backfaceVisibility: "hidden",
                   transform: "rotateY(180deg)",
@@ -125,17 +125,17 @@ export function BookmarkInspector({
                     src={bookmark.backImageUrl}
                     alt={`${bookmark.title} - Verso (Back)`}
                     fill
-                    className="object-contain object-center"
+                    className="object-contain object-center filter contrast-[1.02]"
                     sizes="400px"
                   />
                 ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center text-ink-muted bg-[#F5EFE6]">
+                  <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center text-ink-muted bg-[#F5EFE6] rounded-[6px] border border-parchment-border shadow-inner">
                     <Layers className="w-8 h-8 opacity-40 mb-2 text-archival-oxblood" />
                     <p className="font-serif italic text-sm text-ink">Blank Verso (Plain Back)</p>
                     <p className="text-xs text-ink-muted mt-1 font-serif">Original blank paper stock without advertising imprint.</p>
                   </div>
                 )}
-                <div className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/60 backdrop-blur-xs text-[10px] font-mono text-white">
+                <div className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/60 backdrop-blur-xs text-[10px] font-mono text-white shadow-sm z-20">
                   VERSO (BACK)
                 </div>
               </div>

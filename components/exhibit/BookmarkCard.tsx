@@ -35,8 +35,8 @@ export function BookmarkCard({ bookmark, index, onInspect }: BookmarkCardProps) 
       className="relative group cursor-pointer select-none flex flex-col items-center justify-end h-full w-full"
       onClick={() => onInspect(bookmark)}
     >
-      {/* Specimen Bookmark Container - 100% height container */}
-      <div className="w-full h-[380px] sm:h-[420px] flex items-center justify-center">
+      {/* Specimen Bookmark Container - Transparent cutout with realistic drop shadow */}
+      <div className="w-full h-[380px] sm:h-[420px] flex items-center justify-center p-1">
         <button
           type="button"
           aria-label={`Inspect ${bookmark.title}`}
@@ -44,23 +44,20 @@ export function BookmarkCard({ bookmark, index, onInspect }: BookmarkCardProps) 
             height: "100%",
             aspectRatio: `${parsedDim.aspectRatio}`,
           }}
-          className="rounded-[4px] overflow-hidden bg-[#FBF9F5] border border-parchment-border shadow-archival group-hover:shadow-archival-lift group-hover:border-archival-amber transition-all duration-300 relative flex flex-col focus:outline-none focus:ring-2 focus:ring-amber-700/40 shrink-0"
+          className="relative flex items-center justify-center focus:outline-none shrink-0 transition-all duration-300 filter drop-shadow-[0_8px_16px_rgba(0,0,0,0.14)] group-hover:drop-shadow-[0_16px_28px_rgba(0,0,0,0.22)]"
         >
-          {/* Paper texture subtle overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/[0.01] to-black/[0.04] pointer-events-none z-10" />
-
           {/* Featured Ribbon Badge */}
           {bookmark.isFeatured && (
-            <div className="absolute top-1.5 right-1.5 z-20">
-              <span className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[9px] font-mono font-bold bg-amber-500/90 text-stone-900 shadow-sm">
+            <div className="absolute top-2 right-2 z-20">
+              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-500/95 text-stone-900 shadow-md">
                 <Sparkles className="w-2.5 h-2.5" />
                 <span>KEY</span>
               </span>
             </div>
           )}
 
-          {/* Bookmark Graphic Image filling 100% height with preserved aspect ratio */}
-          <div className="relative w-full h-full bg-[#FAF6EE] flex items-center justify-center overflow-hidden">
+          {/* Bookmark Graphic Image with full alpha transparency */}
+          <div className="relative w-full h-full flex items-center justify-center overflow-visible">
             <Image
               src={bookmark.frontImageUrl}
               alt={bookmark.title}

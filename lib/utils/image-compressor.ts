@@ -1,7 +1,7 @@
 /**
  * Client-side image compressor utility.
- * Shrinks oversized raw camera/scanner images (> 4MB) to optimal high-resolution display size
- * in the browser before upload, ensuring lightning-fast uploads without gateway timeouts.
+ * Shrinks oversized raw camera/scanner images (> 3MB) to optimal high-resolution display size
+ * in the browser before upload, while preserving 100% alpha transparency for PNGs with non-square cutouts.
  */
 export async function compressImageIfNeeded(file: File, maxDimension: number = 2400): Promise<File> {
   // If not an image or SVG, return original
@@ -9,7 +9,7 @@ export async function compressImageIfNeeded(file: File, maxDimension: number = 2
     return file;
   }
 
-  // If already under 3MB, no compression needed
+  // If already under 3MB, keep original file without touching pixels
   if (file.size <= 3 * 1024 * 1024) {
     return file;
   }
@@ -45,17 +45,22 @@ export async function compressImageIfNeeded(file: File, maxDimension: number = 2
           return;
         }
 
-        // High quality bicubic resampling
+        // Clear canvas with transparent alpha
+        ctx.clearRect(0, 0, width, height);
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = "high";
         ctx.drawImage(img, 0, 0, width, height);
 
-        // Convert to high-quality JPEG
+        // Preserve alpha transparency for PNG and WebP files
+        const isTransparentFormat = file.type === "image/png" || file.type === "image/webp";
+        const outputMime = isTransparentFormat ? "image/webp" : "image/jpeg";
+        const ext = isTransparentFormat ? ".webp" : ".jpg";
+
         canvas.toBlob(
           (blob) => {
             if (blob && blob.size < file.size) {
-              const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, ".jpg"), {
-                type: "image/jpeg",
+              const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, ext), {
+                type: outputMime,
                 lastModified: Date.now(),
               });
               resolve(compressedFile);
@@ -63,8 +68,8 @@ export async function compressImageIfNeeded(file: File, maxDimension: number = 2
               resolve(file);
             }
           },
-          "image/jpeg",
-          0.90 // 90% quality preserve deckled textures & fine print
+          outputMime,
+          0.92 // 92% quality with full alpha transparency
         );
       };
       img.onerror = () => resolve(file);
