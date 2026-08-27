@@ -1,87 +1,57 @@
-/**
- * Dimension parser and aspect ratio calculator for physical bookmarks.
- * Standard benchmark bookmark size is ~ 2.25" width x 7.5" height (ratio: ~0.3).
- */
 export interface ParsedDimensions {
-  widthInches: number;
-  heightInches: number;
+  width: number; // in inches
+  height: number; // in inches
   aspectRatio: number; // width / height
-  formatted: string;
+  isLandscape: boolean;
+  rawText: string;
 }
 
-export function parseDimensions(dimStr: string | null | undefined): ParsedDimensions {
-  const defaultDimensions: ParsedDimensions = {
-    widthInches: 2.25,
-    heightInches: 7.5,
-    aspectRatio: 2.25 / 7.5, // ~0.30
-    formatted: '2.25" × 7.5"',
+export function parseDimensions(dimStr?: string | null): ParsedDimensions {
+  const fallback: ParsedDimensions = {
+    width: 2.25,
+    height: 7.5,
+    aspectRatio: 2.25 / 7.5,
+    isLandscape: false,
+    rawText: dimStr || '2.25" × 7.5"',
   };
 
-  if (!dimStr || dimStr.trim() === "") {
-    return defaultDimensions;
+  if (!dimStr || typeof dimStr !== "string") {
+    return fallback;
   }
 
-  const clean = dimStr.trim().toLowerCase();
+  // Matches formats like '2.25" × 7.5"', '2.25 x 7.5', '2 1/4 x 7 1/2', '7.0" × 2.0"'
+  const cleaned = dimStr.replace(/["”″]/g, "").trim();
+  const parts = cleaned.split(/[×xX]/).map((p) => p.trim());
 
-  // Match patterns like:
-  // "2.25" x 7.5"", "2.25 × 7.5", "2 x 8", "55mm x 190mm", "5.5cm x 19cm", "55 x 190"
-  const regex = /([\d.]+)\s*(?:mm|cm|in|"|'')?\s*(?:[x×*,\/]|by|-)\s*([\d.]+)\s*(?:mm|cm|in|"|'')?/i;
-  const match = clean.match(regex);
+  if (parts.length === 2) {
+    const parseFractionOrDecimal = (val: string): number => {
+      const trimmed = val.trim();
+      if (trimmed.includes(" ")) {
+        // e.g. "2 1/4"
+        const [whole, frac] = trimmed.split(" ");
+        const [num, den] = frac.split("/").map(Number);
+        return Number(whole) + (den ? num / den : 0);
+      } else if (trimmed.includes("/")) {
+        // e.g. "3/4"
+        const [num, den] = trimmed.split("/").map(Number);
+        return den ? num / den : 0;
+      }
+      return parseFloat(trimmed);
+    };
 
-  if (!match) {
-    return { ...defaultDimensions, formatted: dimStr };
+    const width = parseFractionOrDecimal(parts[0]);
+    const height = parseFractionOrDecimal(parts[1]);
+
+    if (!isNaN(width) && !isNaN(height) && width > 0 && height > 0) {
+      return {
+        width,
+        height,
+        aspectRatio: width / height,
+        isLandscape: width > height,
+        rawText: dimStr,
+      };
+    }
   }
 
-  let w = parseFloat(match[1]);
-  let h = parseFloat(match[2]);
-
-  if (isNaN(w) || isNaN(h) || w <= 0 || h <= 0) {
-    return defaultDimensions;
-  }
-
-  // Detect millimeters (e.g. > 20)
-  if (clean.includes("mm") || (w > 20 && h > 20)) {
-    w = w / 25.4; // convert mm to inches
-    h = h / 25.4;
-  } else if (clean.includes("cm") || (w > 2 && w < 15 && h > 10 && h < 35 && clean.includes("cm"))) {
-    w = w / 2.54; // convert cm to inches
-    h = h / 2.54;
-  }
-
-  // Ensure width is the smaller dimension for tall bookmarks
-  if (w > h && w > 4) {
-    const temp = w;
-    w = h;
-    h = temp;
-  }
-
-  const aspectRatio = w / h;
-
-  return {
-    widthInches: Number(w.toFixed(2)),
-    heightInches: Number(h.toFixed(2)),
-    aspectRatio: Number(aspectRatio.toFixed(3)),
-    formatted: dimStr,
-  };
-}
-
-/**
- * Calculates exact screen display dimensions for a bookmark based on its real physical measurements.
- */
-export function calculateScreenDimensions(
-  dim: ParsedDimensions,
-  baseHeightPx: number = 340
-) {
-  // Height scales with physical height, normalized around 7.5" standard
-  const rawHeight = baseHeightPx * (dim.heightInches / 7.5);
-  const heightPx = Math.round(Math.min(Math.max(rawHeight, 270), 390));
-
-  // Width is strictly determined by true aspect ratio (width = height * ratio)
-  const widthPx = Math.round(heightPx * dim.aspectRatio);
-
-  return {
-    widthPx,
-    heightPx,
-    aspectRatio: dim.aspectRatio,
-  };
+  return fallback;
 }
