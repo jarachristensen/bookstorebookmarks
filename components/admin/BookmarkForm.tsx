@@ -304,8 +304,14 @@ export function BookmarkForm({
           <span>1. Bookmark Specimen &amp; Physical Scans</span>
         </div>
 
-        {/* Dual-Side Image Scanners */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Dual-Side Image Scanners (Stacked when landscape, side-by-side when portrait) */}
+        <div
+          className={
+            parsedDimensions.isLandscape
+              ? "flex flex-col gap-6"
+              : "grid grid-cols-1 md:grid-cols-2 gap-8"
+          }
+        >
           <ImageDropzone
             label="Bookmark Front Scan"
             value={formData.bookmark.frontImageUrl}
@@ -315,7 +321,7 @@ export function BookmarkForm({
                 bookmark: { ...formData.bookmark, frontImageUrl: url },
               })
             }
-            aspectRatio={parsedDimensions.isLandscape ? "photo" : "bookmark"}
+            aspectRatio={parsedDimensions.isLandscape ? "landscape" : "bookmark"}
             required
           />
 
@@ -328,7 +334,7 @@ export function BookmarkForm({
                 bookmark: { ...formData.bookmark, backImageUrl: url },
               })
             }
-            aspectRatio={parsedDimensions.isLandscape ? "photo" : "bookmark"}
+            aspectRatio={parsedDimensions.isLandscape ? "landscape" : "bookmark"}
           />
         </div>
 

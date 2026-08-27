@@ -88,11 +88,14 @@ export function BookmarkInspector({
               transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
               style={{
                 transformStyle: "preserve-3d",
-                height: "100%",
                 aspectRatio: `${parsedDim.aspectRatio}`,
               }}
               onClick={() => setIsFlipped(!isFlipped)}
-              className="relative cursor-pointer select-none group"
+              className={`relative cursor-pointer select-none group ${
+                parsedDim.isLandscape
+                  ? "w-full max-w-[500px] h-auto max-h-[340px]"
+                  : "h-full max-w-[280px] w-auto"
+              }`}
             >
               {/* FRONT SIDE (Recto) */}
               <div
