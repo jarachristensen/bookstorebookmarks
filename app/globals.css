@@ -50,18 +50,19 @@ body {
     inset 0 -2px 4px rgba(0, 0, 0, 0.6);
 }
 
-/* Luminous Gallery-Lit Archival Dark Red Velvet */
+/* Evenly Well-Lit Archival Red Velvet with Raised Rim Overhang Shadows */
 .tray-velvet-lit {
-  background-color: #721622;
+  background-color: #881b28;
   background-image: 
-    radial-gradient(ellipse 80% 70% at 50% 32%, #ad273a 0%, #891a2a 40%, #5d0f1b 75%, #38070e 100%),
-    radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-  background-size: 100% 100%, 8px 8px;
+    linear-gradient(180deg, #962230 0%, #871927 50%, #7d1522 100%),
+    radial-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 100% 100%, 6px 6px;
   box-shadow: 
-    inset 0 16px 36px rgba(0, 0, 0, 0.75),
-    inset 0 -12px 28px rgba(0, 0, 0, 0.6),
-    inset 12px 0 28px rgba(0, 0, 0, 0.6),
-    inset -12px 0 28px rgba(0, 0, 0, 0.6);
+    inset 0 16px 22px -2px rgba(0, 0, 0, 0.75),
+    inset 0 4px 8px rgba(0, 0, 0, 0.8),
+    inset 0 -10px 16px -2px rgba(0, 0, 0, 0.45),
+    inset 14px 0 18px -2px rgba(0, 0, 0, 0.55),
+    inset -14px 0 18px -2px rgba(0, 0, 0, 0.55);
 }
 
 /* Smooth 3D perspective for flip animations */
