@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Search, ChevronLeft, ChevronRight, SlidersHorizontal, RotateCcw } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, Dices, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 export interface TrayControlsProps {
@@ -21,6 +21,7 @@ export interface TrayControlsProps {
   onStatusChange: (val: "all" | "open" | "historic") => void;
   onPrevPage: () => void;
   onNextPage: () => void;
+  onShuffle?: () => void;
 }
 
 export function TrayControls({
@@ -40,6 +41,7 @@ export function TrayControls({
   onStatusChange,
   onPrevPage,
   onNextPage,
+  onShuffle,
 }: TrayControlsProps) {
   // Convert integer to Roman Numeral for curator feel
   const toRoman = (num: number): string => {
@@ -164,7 +166,7 @@ export function TrayControls({
           {hasActiveFilters && (
             <button
               onClick={clearFilters}
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs text-archival-oxblood hover:underline font-serif"
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs text-archival-oxblood hover:underline font-serif cursor-pointer"
             >
               <RotateCcw className="w-3 h-3" />
               <span>Reset</span>
@@ -174,7 +176,7 @@ export function TrayControls({
       </div>
 
       {/* Tray Turning Pagination Strip */}
-      <div className="flex items-center justify-between px-2 py-1">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-2 py-1">
         <div className="flex items-center gap-2">
           <span className="font-serif font-bold text-lg text-ink">
             Tray {toRoman(currentPage)} of {toRoman(Math.max(totalPages, 1))}
@@ -184,35 +186,50 @@ export function TrayControls({
           </span>
         </div>
 
-        {/* Page Nav Buttons */}
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onPrevPage}
-            disabled={currentPage <= 1}
-            aria-label="Previous Tray"
-            className="flex items-center gap-1 text-xs"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            <span className="hidden sm:inline">Previous Tray</span>
-          </Button>
+        {/* Page Nav & Randomize Buttons */}
+        <div className="flex items-center gap-2.5">
+          {onShuffle && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onShuffle}
+              aria-label="Randomize Tray"
+              className="flex items-center gap-1.5 text-xs text-archival-oxblood border-archival-oxblood/30 hover:bg-rose-50"
+            >
+              <Dices className="w-3.5 h-3.5 text-archival-oxblood" />
+              <span>Randomize Tray</span>
+            </Button>
+          )}
 
-          <span className="text-xs font-mono px-2 py-1 rounded bg-parchment-muted border border-parchment-border text-ink-muted">
-            {currentPage} / {Math.max(totalPages, 1)}
-          </span>
+          <div className="flex items-center gap-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onPrevPage}
+              disabled={currentPage <= 1}
+              aria-label="Previous Tray"
+              className="flex items-center gap-1 text-xs"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span className="hidden sm:inline">Prev</span>
+            </Button>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onNextPage}
-            disabled={currentPage >= totalPages}
-            aria-label="Next Tray"
-            className="flex items-center gap-1 text-xs"
-          >
-            <span className="hidden sm:inline">Next Tray</span>
-            <ChevronRight className="w-4 h-4" />
-          </Button>
+            <span className="text-xs font-mono px-2.5 py-1.5 rounded-lg bg-white border border-parchment-border text-ink font-semibold shadow-2xs">
+              {currentPage} / {Math.max(totalPages, 1)}
+            </span>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onNextPage}
+              disabled={currentPage >= totalPages}
+              aria-label="Next Tray"
+              className="flex items-center gap-1 text-xs"
+            >
+              <span className="hidden sm:inline">Next</span>
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>

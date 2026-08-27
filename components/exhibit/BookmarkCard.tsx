@@ -51,8 +51,8 @@ export function BookmarkCard({ packedItem, bookmark: propBookmark, onInspect }: 
       }}
       className="cursor-pointer select-none group focus:outline-none text-left p-0 border-none bg-transparent"
     >
-      {/* Specimen Bookmark Image with True Alpha Transparency & Photorealistic Drop Shadow */}
-      <div className="relative w-full h-full filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.18)] group-hover:drop-shadow-[0_20px_35px_rgba(0,0,0,0.30)] transition-all duration-200">
+      {/* Specimen Bookmark Image with True Alpha Transparency & Velvet Depth Shadow */}
+      <div className="relative w-full h-full filter drop-shadow-[0_12px_24px_rgba(0,0,0,0.55)] group-hover:drop-shadow-[0_22px_36px_rgba(0,0,0,0.85)] transition-all duration-200">
         {/* Featured Key Badge */}
         {bookmark.isFeatured && (
           <div className="absolute top-1.5 right-1.5 z-20 pointer-events-none">
@@ -86,7 +86,7 @@ export function BookmarkCard({ packedItem, bookmark: propBookmark, onInspect }: 
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 4, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className="absolute -bottom-14 left-1/2 -translate-x-1/2 z-50 pointer-events-none min-w-[200px] max-w-[260px] p-2.5 rounded-xl bg-ink/95 backdrop-blur-md text-white shadow-2xl border border-white/10 text-center space-y-0.5"
+            className="absolute -bottom-14 left-1/2 -translate-x-1/2 z-50 pointer-events-none min-w-[200px] max-w-[260px] p-2.5 rounded-xl bg-stone-950/95 backdrop-blur-md text-white shadow-[0_14px_32px_rgba(0,0,0,0.85)] border border-amber-500/30 text-center space-y-0.5"
           >
             <div className="flex items-center justify-center gap-1">
               <h4 className="font-serif text-xs font-bold text-parchment-light truncate">

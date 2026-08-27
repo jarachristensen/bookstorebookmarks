@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { BookmarkWithDetails } from "@/lib/db/queries";
 import { TrayControls } from "./TrayControls";
 import { SpecimenTray } from "./SpecimenTray";
@@ -19,10 +19,28 @@ export interface ExhibitGalleryClientProps {
   filterOptions: FilterOptions;
 }
 
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
 export function ExhibitGalleryClient({
   initialBookmarks,
   filterOptions,
 }: ExhibitGalleryClientProps) {
+  // Randomize bookmark order on initial page refresh
+  const [shuffledBookmarks, setShuffledBookmarks] = useState<BookmarkWithDetails[]>(() =>
+    shuffleArray(initialBookmarks)
+  );
+
+  useEffect(() => {
+    setShuffledBookmarks(shuffleArray(initialBookmarks));
+  }, [initialBookmarks]);
+
   // Filter States
   const [search, setSearch] = useState("");
   const [city, setCity] = useState("all");
@@ -38,9 +56,15 @@ export function ExhibitGalleryClient({
   const [inspectingBookmark, setInspectingBookmark] = useState<BookmarkWithDetails | null>(null);
   const [dossierBookmark, setDossierBookmark] = useState<BookmarkWithDetails | null>(null);
 
-  // Filter Logic
+  // Manual Shuffle / Randomize
+  const handleShuffle = useCallback(() => {
+    setShuffledBookmarks(shuffleArray(initialBookmarks));
+    setCurrentPage(1);
+  }, [initialBookmarks]);
+
+  // Filter Logic (Evaluated against the randomized collection)
   const filteredBookmarks = useMemo(() => {
-    return initialBookmarks.filter((bm) => {
+    return shuffledBookmarks.filter((bm) => {
       const store = bm.bookstore;
 
       // 1. Search query across title, bookstore name, city, state, and notes
@@ -84,7 +108,7 @@ export function ExhibitGalleryClient({
 
       return true;
     });
-  }, [initialBookmarks, search, city, era, status]);
+  }, [shuffledBookmarks, search, city, era, status]);
 
   // Reset pagination when search or filters change
   const handleSearchChange = (val: string) => {
@@ -152,9 +176,10 @@ export function ExhibitGalleryClient({
         onStatusChange={handleStatusChange}
         onPrevPage={handlePrevPage}
         onNextPage={handleNextPage}
+        onShuffle={handleShuffle}
       />
 
-      {/* The 2D Packed True-Scale Specimen Tray */}
+      {/* The 2D Packed Antique Hardwood & Dark Red Velvet Specimen Tray */}
       <SpecimenTray
         bookmarks={filteredBookmarks}
         currentPage={safeCurrentPage}
@@ -162,6 +187,7 @@ export function ExhibitGalleryClient({
         onInspect={(bm) => setInspectingBookmark(bm)}
         onPrevPage={handlePrevPage}
         onNextPage={handleNextPage}
+        onShuffle={handleShuffle}
         hasPrev={safeCurrentPage > 1}
         hasNext={safeCurrentPage < totalDrawers}
         onTotalDrawersCalculated={(total) => setTotalDrawers(total)}

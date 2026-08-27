@@ -23,12 +23,20 @@ body {
   min-height: 100vh;
 }
 
-/* Archival Specimen Tray Styles */
-.tray-linen-texture {
-  background-color: #F4EFE6;
-  background-image: radial-gradient(#D5C8B4 0.75px, transparent 0.75px), radial-gradient(#E8E0D2 0.75px, #F4EFE6 0.75px);
-  background-size: 16px 16px;
-  background-position: 0 0, 8px 8px;
+/* Antique Hardwood Tray & Archival Red Velvet Lining */
+.tray-wood-frame {
+  background-color: #26150c;
+  background-image: 
+    linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, transparent 45%, rgba(0, 0, 0, 0.5) 100%),
+    repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(0, 0, 0, 0.12) 60px, rgba(0, 0, 0, 0.12) 120px);
+}
+
+.tray-velvet-texture {
+  background-color: #3b0910;
+  background-image: 
+    radial-gradient(ellipse at 50% 30%, #58101a 0%, #3a0910 50%, #200407 100%),
+    radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 100% 100%, 10px 10px;
 }
 
 /* Smooth 3D perspective for flip animations */

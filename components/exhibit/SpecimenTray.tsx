@@ -5,7 +5,7 @@ import { BookmarkWithDetails } from "@/lib/db/queries";
 import { packSpecimenTrays, TrayDrawer } from "@/lib/utils/bin-packing";
 import { BookmarkCard } from "./BookmarkCard";
 import { motion, AnimatePresence } from "framer-motion";
-import { Inbox, ChevronLeft, ChevronRight, Layers } from "lucide-react";
+import { Inbox, ChevronLeft, ChevronRight, Layers, Dices, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 export interface SpecimenTrayProps {
@@ -15,6 +15,7 @@ export interface SpecimenTrayProps {
   onInspect: (bookmark: BookmarkWithDetails) => void;
   onPrevPage?: () => void;
   onNextPage?: () => void;
+  onShuffle?: () => void;
   hasPrev?: boolean;
   hasNext?: boolean;
   onTotalDrawersCalculated?: (total: number) => void;
@@ -27,6 +28,7 @@ export function SpecimenTray({
   onInspect,
   onPrevPage,
   onNextPage,
+  onShuffle,
   hasPrev = false,
   hasNext = false,
   onTotalDrawersCalculated,
@@ -119,16 +121,16 @@ export function SpecimenTray({
   return (
     <div
       ref={containerRef}
-      className="relative w-full rounded-2xl p-3 sm:p-6 lg:p-8 bg-[#EAE3D2] border-4 border-[#D8CEB9] shadow-inner shadow-black/10 overflow-hidden"
+      className="relative w-full rounded-2xl p-3 sm:p-5 lg:p-6 tray-wood-frame border-[6px] sm:border-8 border-[#3b2014] shadow-[0_20px_50px_rgba(0,0,0,0.45),inset_0_4px_16px_rgba(0,0,0,0.85)] overflow-hidden"
     >
-      {/* Linen Cloth Inlay Texture */}
-      <div className="absolute inset-2 sm:inset-3 rounded-xl tray-linen-texture border border-[#D5C8B4] shadow-sm pointer-events-none" />
+      {/* Clean Archival Dark Red Velvet Inlay Lining */}
+      <div className="absolute inset-2 sm:inset-3 rounded-xl tray-velvet-texture border border-amber-900/40 shadow-[inset_0_6px_28px_rgba(0,0,0,0.8)] pointer-events-none" />
 
-      {/* Decorative Brass Corner Plates */}
-      <div className="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-amber-800/40 pointer-events-none" />
-      <div className="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-amber-800/40 pointer-events-none" />
-      <div className="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-amber-800/40 pointer-events-none" />
-      <div className="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-amber-800/40 pointer-events-none" />
+      {/* Decorative Antique Brass Corner Plates with Depth */}
+      <div className="absolute top-2 left-2 w-5 h-5 border-t-[3px] border-l-[3px] border-amber-500/70 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] pointer-events-none rounded-tl-xs" />
+      <div className="absolute top-2 right-2 w-5 h-5 border-t-[3px] border-r-[3px] border-amber-500/70 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] pointer-events-none rounded-tr-xs" />
+      <div className="absolute bottom-2 left-2 w-5 h-5 border-b-[3px] border-l-[3px] border-amber-500/70 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] pointer-events-none rounded-bl-xs" />
+      <div className="absolute bottom-2 right-2 w-5 h-5 border-b-[3px] border-r-[3px] border-amber-500/70 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] pointer-events-none rounded-br-xs" />
 
       {/* 2D Packed Canvas Drawer */}
       <div
@@ -144,11 +146,11 @@ export function SpecimenTray({
               exit={{ opacity: 0 }}
               className="py-16 text-center space-y-3"
             >
-              <div className="w-16 h-16 rounded-full bg-parchment-border/40 mx-auto flex items-center justify-center text-ink-muted">
+              <div className="w-16 h-16 rounded-full bg-black/40 border border-white/10 mx-auto flex items-center justify-center text-amber-200/50">
                 <Inbox className="w-8 h-8" />
               </div>
-              <h3 className="font-serif text-lg font-bold text-ink">No Specimen Bookmarks Found</h3>
-              <p className="text-sm text-ink-muted max-w-md mx-auto font-serif italic">
+              <h3 className="font-serif text-lg font-bold text-amber-100">No Specimen Bookmarks Found</h3>
+              <p className="text-sm text-stone-300/70 max-w-md mx-auto font-serif italic">
                 No bookmarks matched the current search or filters. Try resetting your search above.
               </p>
             </motion.div>
@@ -175,23 +177,35 @@ export function SpecimenTray({
         </AnimatePresence>
       </div>
 
-      {/* Tray Footnote & Quick Drawer Switcher */}
-      <div className="relative z-10 mt-3 pt-3 border-t border-[#D5C8B4]/60 flex items-center justify-between text-[11px] font-mono text-ink-muted">
-        <div className="flex items-center gap-1.5">
-          <Layers className="w-3.5 h-3.5 text-archival-oxblood" />
-          <span>TRUE-SCALE SPECIMEN TRAY</span>
+      {/* Tray Footnote Brass Plaque */}
+      <div className="relative z-10 mt-3 pt-3 border-t border-amber-500/20 flex items-center justify-between text-[11px] font-mono text-amber-200/80">
+        <div className="flex items-center gap-2">
+          <Layers className="w-3.5 h-3.5 text-amber-400" />
+          <span className="tracking-wider">ARCHIVAL VELVET SPECIMEN TRAY</span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          {onShuffle && (
+            <button
+              type="button"
+              onClick={onShuffle}
+              className="inline-flex items-center gap-1 text-amber-300 hover:text-amber-100 transition-colors font-serif italic cursor-pointer hover:underline"
+              title="Randomize bookmark order"
+            >
+              <Dices className="w-3.5 h-3.5 text-amber-400" />
+              <span>Randomize Tray</span>
+            </button>
+          )}
+
           {packedDrawers.length > 1 && (
-            <span className="font-serif italic text-ink font-semibold">
+            <span className="font-serif italic text-amber-100 font-semibold">
               Drawer {activeDrawerIndex + 1} of {packedDrawers.length}
             </span>
           )}
-          <span className="hidden sm:inline">· Arrow Keys (← / →) to slide drawers</span>
+          <span className="hidden sm:inline text-stone-400">· (← / →) to slide</span>
         </div>
 
-        <span className="hidden xs:inline">ARCHIVAL PROPORTIONS</span>
+        <span className="hidden xs:inline text-stone-400">TRUE PHYSICAL SCALE</span>
       </div>
     </div>
   );
