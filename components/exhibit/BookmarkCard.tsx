@@ -35,8 +35,8 @@ export function BookmarkCard({ bookmark, index, onInspect }: BookmarkCardProps) 
       className="relative group cursor-pointer select-none flex flex-col items-center justify-end h-full w-full"
       onClick={() => onInspect(bookmark)}
     >
-      {/* Specimen Bookmark Container - Transparent cutout with realistic drop shadow */}
-      <div className="w-full h-[380px] sm:h-[420px] flex items-center justify-center p-1">
+      {/* Specimen Bookmark Container - Responsive height with true aspect ratio */}
+      <div className="w-full h-[300px] xs:h-[340px] sm:h-[400px] lg:h-[420px] flex items-center justify-center p-1">
         <button
           type="button"
           aria-label={`Inspect ${bookmark.title}`}
@@ -62,7 +62,7 @@ export function BookmarkCard({ bookmark, index, onInspect }: BookmarkCardProps) 
               src={bookmark.frontImageUrl}
               alt={bookmark.title}
               fill
-              sizes="(max-width: 768px) 200px, 300px"
+              sizes="(max-width: 640px) 180px, (max-width: 1024px) 240px, 300px"
               className="object-contain object-center filter contrast-[1.02]"
               priority={index < 4}
             />

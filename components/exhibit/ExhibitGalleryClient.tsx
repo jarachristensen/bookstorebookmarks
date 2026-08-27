@@ -1,92 +1,111 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { BookmarkWithDetails } from "@/lib/db/queries";
-import { SpecimenTray } from "./SpecimenTray";
 import { TrayControls } from "./TrayControls";
+import { SpecimenTray } from "./SpecimenTray";
 import { BookmarkInspector } from "./BookmarkInspector";
 import { BookstoreDossier } from "./BookstoreDossier";
-import { Sparkles, BookOpen, Layers, Info } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+
+export interface FilterOptions {
+  cities: string[];
+  eras: { label: string; value: string }[];
+  specialties: string[];
+}
 
 export interface ExhibitGalleryClientProps {
   initialBookmarks: BookmarkWithDetails[];
-  filterOptions: {
-    cities: string[];
-    eras: { label: string; value: string }[];
-    specialties: string[];
-  };
+  filterOptions: FilterOptions;
 }
 
 export function ExhibitGalleryClient({
   initialBookmarks,
   filterOptions,
 }: ExhibitGalleryClientProps) {
-  // Search & Filter State
+  // Filter States
   const [search, setSearch] = useState("");
   const [city, setCity] = useState("all");
   const [era, setEra] = useState("all");
   const [status, setStatus] = useState<"all" | "open" | "historic">("all");
 
-  // Pagination State (Tray Navigation)
+  // Pagination States (8 specimens per tray page for clean display)
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(8);
   const [pageDirection, setPageDirection] = useState(1);
-  const pageSize = 8; // 8 bookmarks per physical tray
 
-  // Interaction Modals State
+  // Modal / Drawer Selection States
   const [inspectingBookmark, setInspectingBookmark] = useState<BookmarkWithDetails | null>(null);
   const [dossierBookmark, setDossierBookmark] = useState<BookmarkWithDetails | null>(null);
 
-  // Filtered bookmark list
+  // Filter Logic
   const filteredBookmarks = useMemo(() => {
     return initialBookmarks.filter((bm) => {
-      // City
-      if (city !== "all" && bm.bookstore?.city.toLowerCase() !== city.toLowerCase()) {
+      const store = bm.bookstore;
+
+      // 1. Search query across title, bookstore name, city, state, and notes
+      if (search.trim()) {
+        const q = search.toLowerCase();
+        const matchTitle = bm.title.toLowerCase().includes(q);
+        const matchStore = store?.name.toLowerCase().includes(q);
+        const matchCity = store?.city.toLowerCase().includes(q);
+        const matchState = store?.stateProvince?.toLowerCase().includes(q);
+        const matchNotes = bm.acquisitionNotes?.toLowerCase().includes(q);
+        const matchTrivia = store?.historicalBlurb?.toLowerCase().includes(q);
+
+        if (!matchTitle && !matchStore && !matchCity && !matchState && !matchNotes && !matchTrivia) {
+          return false;
+        }
+      }
+
+      // 2. City filter
+      if (city !== "all" && store?.city !== city) {
         return false;
       }
 
-      // Status
-      if (status !== "all") {
-        if (status === "open" && !bm.bookstore?.isStillOperating) return false;
-        if (status === "historic" && bm.bookstore?.isStillOperating) return false;
+      // 3. Status filter (open vs historic/closed)
+      if (status === "open" && !store?.isStillOperating) {
+        return false;
+      }
+      if (status === "historic" && store?.isStillOperating) {
+        return false;
       }
 
-      // Era
-      if (era !== "all") {
-        const year = bm.yearProduced || bm.bookstore?.yearOpened || 0;
-        if (era === "pre-1940" && year >= 1940) return false;
-        if (era === "1940-1960" && (year < 1940 || year > 1960)) return false;
-        if (era === "post-1960" && year <= 1960) return false;
-      }
-
-      // Search Query
-      if (search.trim() !== "") {
-        const q = search.toLowerCase().trim();
-        const matchesTitle = bm.title.toLowerCase().includes(q);
-        const matchesAccession = bm.accessionNo.toLowerCase().includes(q);
-        const matchesStore = bm.bookstore?.name.toLowerCase().includes(q);
-        const matchesCity = bm.bookstore?.city.toLowerCase().includes(q);
-        const matchesBlurb = bm.bookstore?.historicalBlurb.toLowerCase().includes(q);
-        const matchesFounders = bm.bookstore?.founders?.toLowerCase().includes(q);
-
-        if (
-          !matchesTitle &&
-          !matchesAccession &&
-          !matchesStore &&
-          !matchesCity &&
-          !matchesBlurb &&
-          !matchesFounders
-        ) {
-          return false;
-        }
+      // 4. Era filter
+      if (era !== "all" && bm.yearProduced) {
+        const yr = bm.yearProduced;
+        if (era === "pre-1970" && yr >= 1970) return false;
+        if (era === "1970s" && (yr < 1970 || yr > 1979)) return false;
+        if (era === "1980s" && (yr < 1980 || yr > 1989)) return false;
+        if (era === "1990s" && (yr < 1990 || yr > 1999)) return false;
+        if (era === "2000s" && (yr < 2000 || yr > 2009)) return false;
+        if (era === "2010s-present" && yr < 2010) return false;
       }
 
       return true;
     });
   }, [initialBookmarks, search, city, era, status]);
 
-  // Pagination slicing
-  const totalPages = Math.ceil(filteredBookmarks.length / pageSize) || 1;
+  // Reset pagination when search or filters change
+  const handleSearchChange = (val: string) => {
+    setSearch(val);
+    setCurrentPage(1);
+  };
+  const handleCityChange = (val: string) => {
+    setCity(val);
+    setCurrentPage(1);
+  };
+  const handleEraChange = (val: string) => {
+    setEra(val);
+    setCurrentPage(1);
+  };
+  const handleStatusChange = (val: "all" | "open" | "historic") => {
+    setStatus(val);
+    setCurrentPage(1);
+  };
+
+  // Pagination Calculations
+  const totalPages = Math.max(1, Math.ceil(filteredBookmarks.length / pageSize));
   const safeCurrentPage = Math.min(currentPage, totalPages);
 
   const paginatedBookmarks = useMemo(() => {
@@ -95,56 +114,34 @@ export function ExhibitGalleryClient({
   }, [filteredBookmarks, safeCurrentPage, pageSize]);
 
   const handlePrevPage = () => {
-    if (currentPage > 1) {
+    if (safeCurrentPage > 1) {
       setPageDirection(-1);
-      setCurrentPage((p) => p - 1);
+      setCurrentPage((prev) => prev - 1);
     }
   };
 
   const handleNextPage = () => {
-    if (currentPage < totalPages) {
+    if (safeCurrentPage < totalPages) {
       setPageDirection(1);
-      setCurrentPage((p) => p + 1);
+      setCurrentPage((prev) => prev + 1);
     }
   };
 
-  const handleSearchChange = (val: string) => {
-    setSearch(val);
-    setCurrentPage(1);
-  };
-
-  const handleCityChange = (val: string) => {
-    setCity(val);
-    setCurrentPage(1);
-  };
-
-  const handleEraChange = (val: string) => {
-    setEra(val);
-    setCurrentPage(1);
-  };
-
-  const handleStatusChange = (val: "all" | "open" | "historic") => {
-    setStatus(val);
-    setCurrentPage(1);
-  };
+  // Lock body scroll when modal or drawer is open
+  useEffect(() => {
+    if (inspectingBookmark || dossierBookmark) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [inspectingBookmark, dossierBookmark]);
 
   return (
-    <div className="space-y-8">
-      {/* Curator Introduction Banner */}
-      <div className="text-center max-w-3xl mx-auto space-y-3 pt-4">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-archival-amber/10 border border-archival-amber/20 text-xs font-mono text-archival-amber font-semibold">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>CURATED SPECIMEN EXHIBITION</span>
-        </div>
-        <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-extrabold text-ink tracking-tight">
-          Historic Bookstore Bookmarks
-        </h1>
-        <p className="font-serif text-sm sm:text-base text-ink-light leading-relaxed italic">
-          Explore authentic bookmarks preserved from legendary independent booksellers across Paris, New York, San Francisco, and Chicago. Click any specimen to lift and flip its 3D paper scans, or read the full bookstore research dossier and historical press clippings.
-        </p>
-      </div>
-
-      {/* Curator Filter & Search Controls */}
+    <div className="space-y-6">
+      {/* Search and Archival Filter Controls */}
       <TrayControls
         currentPage={safeCurrentPage}
         totalPages={totalPages}
@@ -176,15 +173,16 @@ export function ExhibitGalleryClient({
         hasNext={safeCurrentPage < totalPages}
       />
 
-      {/* Modal Inspector View with 3D Flip */}
+      {/* Modal Inspector View with 3D Flip (Mobile & Desktop Responsive) */}
       <AnimatePresence>
         {inspectingBookmark && (
-          <div className="fixed inset-0 z-40 overflow-y-auto bg-stone-950/75 backdrop-blur-md p-4 sm:p-6 lg:p-8 flex items-center justify-center">
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-stone-950/80 backdrop-blur-md p-2 sm:p-6 lg:p-8 flex items-start sm:items-center justify-center min-h-screen">
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="w-full max-w-5xl"
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="w-full max-w-5xl my-auto py-4"
             >
               <BookmarkInspector
                 bookmark={inspectingBookmark}
