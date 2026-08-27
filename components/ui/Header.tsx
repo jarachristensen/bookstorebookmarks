@@ -14,31 +14,19 @@ export function Header({ totalBookmarks = 4, totalBookstores = 4 }: HeaderProps)
   return (
     <header className="sticky top-0 z-30 border-b border-parchment-border bg-parchment/90 backdrop-blur-md transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
-          {/* Logo & Title */}
-          <Link href="/" className="flex items-center gap-3.5 group">
-            <div className="relative h-11 w-auto overflow-hidden rounded border border-parchment-border shadow-xs group-hover:scale-102 transition-transform">
+        <div className="flex items-center justify-between py-2 sm:py-2.5 min-h-[5.5rem]">
+          {/* Hero Enlarged Bookmark Logo acting as Webpage Title */}
+          <Link href="/" className="flex items-center group">
+            <h1 className="sr-only">The Bookstore Bookmark Archive</h1>
+            <div className="relative h-14 sm:h-18 md:h-20 w-auto filter drop-shadow-[0_2px_8px_rgba(0,0,0,0.10)] group-hover:drop-shadow-[0_6px_14px_rgba(0,0,0,0.18)] group-hover:scale-[1.02] transition-all duration-200">
               <Image
                 src="/logo.jpg"
-                alt="The Bookstore Bookmark Archive"
-                width={190}
-                height={52}
-                className="h-11 w-auto object-contain"
+                alt="The Bookstore Bookmark Archive — Keep Your Place in Literary History"
+                width={420}
+                height={120}
+                className="h-14 sm:h-18 md:h-20 w-auto object-contain rounded-xs"
                 priority
               />
-            </div>
-            <div className="hidden sm:block">
-              <div className="flex items-center gap-2">
-                <span className="font-serif text-lg sm:text-xl font-bold tracking-tight text-ink group-hover:text-archival-oxblood transition-colors">
-                  Bookstore Bookmark Archive
-                </span>
-                <span className="hidden md:inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-archival-oxblood/10 text-archival-oxblood border border-archival-oxblood/20">
-                  EST. 2026
-                </span>
-              </div>
-              <p className="text-[11px] text-ink-muted font-serif italic">
-                Keep Your Place in Literary History · Curated Ephemera
-              </p>
             </div>
           </Link>
 
