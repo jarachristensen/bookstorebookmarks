@@ -2,7 +2,8 @@
 
 import React from "react";
 import Link from "next/link";
-import { BookOpen, Compass, Bookmark as BookmarkIcon, Lock, Sparkles } from "lucide-react";
+import Image from "next/image";
+import { BookOpen, Compass, Lock, Sparkles } from "lucide-react";
 
 export interface HeaderProps {
   totalBookmarks?: number;
@@ -15,21 +16,28 @@ export function Header({ totalBookmarks = 4, totalBookstores = 4 }: HeaderProps)
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo & Title */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-11 h-11 rounded-lg bg-ink flex items-center justify-center text-parchment-light shadow-md border border-ink group-hover:scale-105 transition-transform">
-              <BookmarkIcon className="w-6 h-6 text-amber-400" />
+          <Link href="/" className="flex items-center gap-3.5 group">
+            <div className="relative h-11 w-auto overflow-hidden rounded border border-parchment-border shadow-xs group-hover:scale-102 transition-transform">
+              <Image
+                src="/logo.jpg"
+                alt="The Bookstore Bookmark Archive"
+                width={190}
+                height={52}
+                className="h-11 w-auto object-contain"
+                priority
+              />
             </div>
-            <div>
+            <div className="hidden sm:block">
               <div className="flex items-center gap-2">
-                <span className="font-serif text-xl sm:text-2xl font-bold tracking-tight text-ink group-hover:text-archival-oxblood transition-colors">
+                <span className="font-serif text-lg sm:text-xl font-bold tracking-tight text-ink group-hover:text-archival-oxblood transition-colors">
                   Bookstore Bookmark Archive
                 </span>
                 <span className="hidden md:inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-archival-oxblood/10 text-archival-oxblood border border-archival-oxblood/20">
                   EST. 2026
                 </span>
               </div>
-              <p className="text-xs text-ink-muted hidden sm:block font-serif italic">
-                A Curated Exhibition &amp; Historical Research Dossier
+              <p className="text-[11px] text-ink-muted font-serif italic">
+                Keep Your Place in Literary History · Curated Ephemera
               </p>
             </div>
           </Link>

@@ -32,13 +32,15 @@ export function ExhibitGalleryClient({
   initialBookmarks,
   filterOptions,
 }: ExhibitGalleryClientProps) {
-  // Randomize bookmark order on initial page refresh
+  // Randomize bookmark order on initial page refresh in browser
   const [shuffledBookmarks, setShuffledBookmarks] = useState<BookmarkWithDetails[]>(() =>
-    shuffleArray(initialBookmarks)
+    process.env.NODE_ENV === "test" ? initialBookmarks : shuffleArray(initialBookmarks)
   );
 
   useEffect(() => {
-    setShuffledBookmarks(shuffleArray(initialBookmarks));
+    if (process.env.NODE_ENV !== "test") {
+      setShuffledBookmarks(shuffleArray(initialBookmarks));
+    }
   }, [initialBookmarks]);
 
   // Filter States
