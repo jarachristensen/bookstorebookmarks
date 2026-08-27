@@ -226,11 +226,12 @@ export function BookmarkInspector({
               <Button
                 variant="oxblood"
                 size="md"
+                aria-label="Read Full Bookstore Dossier"
                 onClick={onOpenDossier}
                 className="w-full flex items-center justify-center gap-2 font-serif text-xs sm:text-sm py-2.5 sm:py-3"
               >
                 <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 shrink-0" />
-                <span className="truncate">Read Bookstore Dossier &amp; Clippings →</span>
+                <span className="truncate">Read Full Bookstore Dossier &amp; Clippings →</span>
               </Button>
             </div>
           )}

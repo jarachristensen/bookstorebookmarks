@@ -29,9 +29,9 @@ export function ExhibitGalleryClient({
   const [era, setEra] = useState("all");
   const [status, setStatus] = useState<"all" | "open" | "historic">("all");
 
-  // Pagination States (8 specimens per tray page for clean display)
+  // Pagination & Drawer States
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(8);
+  const [totalDrawers, setTotalDrawers] = useState(1);
   const [pageDirection, setPageDirection] = useState(1);
 
   // Modal / Drawer Selection States
@@ -104,14 +104,7 @@ export function ExhibitGalleryClient({
     setCurrentPage(1);
   };
 
-  // Pagination Calculations
-  const totalPages = Math.max(1, Math.ceil(filteredBookmarks.length / pageSize));
-  const safeCurrentPage = Math.min(currentPage, totalPages);
-
-  const paginatedBookmarks = useMemo(() => {
-    const start = (safeCurrentPage - 1) * pageSize;
-    return filteredBookmarks.slice(start, start + pageSize);
-  }, [filteredBookmarks, safeCurrentPage, pageSize]);
+  const safeCurrentPage = Math.min(Math.max(1, currentPage), Math.max(1, totalDrawers));
 
   const handlePrevPage = () => {
     if (safeCurrentPage > 1) {
@@ -121,7 +114,7 @@ export function ExhibitGalleryClient({
   };
 
   const handleNextPage = () => {
-    if (safeCurrentPage < totalPages) {
+    if (safeCurrentPage < totalDrawers) {
       setPageDirection(1);
       setCurrentPage((prev) => prev + 1);
     }
@@ -144,9 +137,9 @@ export function ExhibitGalleryClient({
       {/* Search and Archival Filter Controls */}
       <TrayControls
         currentPage={safeCurrentPage}
-        totalPages={totalPages}
+        totalPages={totalDrawers}
         totalItems={filteredBookmarks.length}
-        pageSize={pageSize}
+        pageSize={8}
         search={search}
         onSearchChange={handleSearchChange}
         city={city}
@@ -161,16 +154,17 @@ export function ExhibitGalleryClient({
         onNextPage={handleNextPage}
       />
 
-      {/* The Interactive Specimen Tray */}
+      {/* The 2D Packed True-Scale Specimen Tray */}
       <SpecimenTray
-        bookmarks={paginatedBookmarks}
+        bookmarks={filteredBookmarks}
         currentPage={safeCurrentPage}
         direction={pageDirection}
         onInspect={(bm) => setInspectingBookmark(bm)}
         onPrevPage={handlePrevPage}
         onNextPage={handleNextPage}
         hasPrev={safeCurrentPage > 1}
-        hasNext={safeCurrentPage < totalPages}
+        hasNext={safeCurrentPage < totalDrawers}
+        onTotalDrawersCalculated={(total) => setTotalDrawers(total)}
       />
 
       {/* Modal Inspector View with 3D Flip (Mobile & Desktop Responsive) */}
