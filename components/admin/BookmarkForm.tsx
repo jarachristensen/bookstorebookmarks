@@ -315,7 +315,7 @@ export function BookmarkForm({
                 bookmark: { ...formData.bookmark, frontImageUrl: url },
               })
             }
-            aspectRatio="bookmark"
+            aspectRatio={parsedDimensions.isLandscape ? "photo" : "bookmark"}
             required
           />
 
@@ -328,7 +328,7 @@ export function BookmarkForm({
                 bookmark: { ...formData.bookmark, backImageUrl: url },
               })
             }
-            aspectRatio="bookmark"
+            aspectRatio={parsedDimensions.isLandscape ? "photo" : "bookmark"}
           />
         </div>
 
@@ -371,14 +371,44 @@ export function BookmarkForm({
             />
           </div>
 
-          {/* Dynamic Measurements Field with scale preview */}
+          {/* Dynamic Measurements Field with scale preview and landscape toggle */}
           <div>
-            <label className="block text-xs font-mono text-ink-light mb-1">
-              PHYSICAL MEASUREMENTS (WIDTH × HEIGHT)
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-mono text-ink-light">
+                MEASUREMENTS (W × H)
+              </label>
+              <label className="inline-flex items-center gap-1.5 text-xs font-serif text-archival-oxblood cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={parsedDimensions.isLandscape}
+                  onChange={(e) => {
+                    const isChecked = e.target.checked;
+                    if (isChecked && parsedDimensions.width < parsedDimensions.height) {
+                      setFormData((prev) => ({
+                        ...prev,
+                        bookmark: {
+                          ...prev.bookmark,
+                          dimensions: `${parsedDimensions.height}" × ${parsedDimensions.width}"`,
+                        },
+                      }));
+                    } else if (!isChecked && parsedDimensions.width > parsedDimensions.height) {
+                      setFormData((prev) => ({
+                        ...prev,
+                        bookmark: {
+                          ...prev.bookmark,
+                          dimensions: `${parsedDimensions.height}" × ${parsedDimensions.width}"`,
+                        },
+                      }));
+                    }
+                  }}
+                  className="w-3.5 h-3.5 rounded text-archival-oxblood border-parchment-border"
+                />
+                <span>Landscape</span>
+              </label>
+            </div>
             <input
               type="text"
-              placeholder={'e.g. 2.25" × 7.75" or 55mm × 190mm'}
+              placeholder={'e.g. 2.25" × 7.5" or 7.0" × 2.25"'}
               value={formData.bookmark.dimensions}
               onChange={(e) =>
                 setFormData({
@@ -389,7 +419,7 @@ export function BookmarkForm({
               className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-mono"
             />
             <p className="text-[11px] font-mono text-ink-muted mt-1">
-              Parsed ratio: {parsedDimensions.aspectRatio} ({parsedDimensions.widthInches}" W × {parsedDimensions.heightInches}" H)
+              Parsed: {parsedDimensions.width}" W × {parsedDimensions.height}" H ({parsedDimensions.isLandscape ? "Landscape Specimen" : "Portrait Specimen"})
             </p>
           </div>
 
