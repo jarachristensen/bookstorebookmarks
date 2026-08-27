@@ -51,8 +51,8 @@ export function BookmarkCard({ packedItem, bookmark: propBookmark, onInspect }: 
       }}
       className="cursor-pointer select-none group focus:outline-none text-left p-0 border-none bg-transparent"
     >
-      {/* Specimen Bookmark Image with True Alpha Transparency & Velvet Depth Shadow */}
-      <div className="relative w-full h-full filter drop-shadow-[0_12px_24px_rgba(0,0,0,0.55)] group-hover:drop-shadow-[0_22px_36px_rgba(0,0,0,0.85)] transition-all duration-200">
+      {/* Specimen Bookmark Image with No Shadow at rest, Lifting with Shadow on Hover */}
+      <div className="relative w-full h-full filter drop-shadow-none group-hover:drop-shadow-[0_24px_38px_rgba(0,0,0,0.85)] transition-all duration-200">
         {/* Featured Key Badge */}
         {bookmark.isFeatured && (
           <div className="absolute top-1.5 right-1.5 z-20 pointer-events-none">
