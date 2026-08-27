@@ -23,20 +23,45 @@ body {
   min-height: 100vh;
 }
 
-/* Antique Hardwood Tray & Archival Red Velvet Lining */
-.tray-wood-frame {
-  background-color: #26150c;
-  background-image: 
-    linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, transparent 45%, rgba(0, 0, 0, 0.5) 100%),
-    repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(0, 0, 0, 0.12) 60px, rgba(0, 0, 0, 0.12) 120px);
+/* Authentic Antique Wooden Tray with Rich Walnut Bevels */
+.tray-antique-wood-outer {
+  background: linear-gradient(145deg, #874821 0%, #683516 35%, #4a230e 70%, #301407 100%);
+  box-shadow: 
+    0 32px 64px -16px rgba(0, 0, 0, 0.5),
+    0 16px 32px -8px rgba(0, 0, 0, 0.35),
+    inset 0 2px 3px rgba(255, 230, 195, 0.45),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.7);
 }
 
-.tray-velvet-texture {
-  background-color: #3b0910;
+.tray-antique-wood-rim {
+  background: linear-gradient(180deg, #965328 0%, #703918 40%, #46200c 100%);
+  box-shadow: 
+    inset 0 2px 4px rgba(255, 240, 215, 0.4),
+    inset 0 -2px 5px rgba(0, 0, 0, 0.6),
+    0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+/* Skeuomorphic Carved Wooden Handles */
+.tray-wood-handle {
+  background: linear-gradient(180deg, #9b582b 0%, #733c1a 50%, #47210c 100%);
+  box-shadow: 
+    0 8px 18px rgba(0, 0, 0, 0.45),
+    inset 0 2px 3px rgba(255, 235, 205, 0.5),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.6);
+}
+
+/* Luminous Gallery-Lit Archival Dark Red Velvet */
+.tray-velvet-lit {
+  background-color: #721622;
   background-image: 
-    radial-gradient(ellipse at 50% 30%, #58101a 0%, #3a0910 50%, #200407 100%),
+    radial-gradient(ellipse 80% 70% at 50% 32%, #ad273a 0%, #891a2a 40%, #5d0f1b 75%, #38070e 100%),
     radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-  background-size: 100% 100%, 10px 10px;
+  background-size: 100% 100%, 8px 8px;
+  box-shadow: 
+    inset 0 16px 36px rgba(0, 0, 0, 0.75),
+    inset 0 -12px 28px rgba(0, 0, 0, 0.6),
+    inset 12px 0 28px rgba(0, 0, 0, 0.6),
+    inset -12px 0 28px rgba(0, 0, 0, 0.6);
 }
 
 /* Smooth 3D perspective for flip animations */
