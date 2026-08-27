@@ -82,7 +82,11 @@ export function packSpecimenTrays<T extends { dimensions?: string | null; id?: s
 
       for (let s = 0; s < skyline.length; s++) {
         const seg = skyline[s];
-        if (seg.width >= wPx && seg.y + hPx <= trayHeight - buffer) {
+        if (
+          seg.width >= wPx &&
+          seg.x + wPx <= trayWidth - buffer &&
+          seg.y + hPx <= trayHeight - buffer
+        ) {
           // Score: combines Y position with width waste penalty
           // Stacking in an already established column (seg.y > buffer) is rewarded if width matches closely
           const widthWaste = seg.width - wPx;

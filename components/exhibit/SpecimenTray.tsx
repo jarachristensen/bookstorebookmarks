@@ -32,17 +32,17 @@ export function SpecimenTray({
   hasNext = false,
   onTotalDrawersCalculated,
 }: SpecimenTrayProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [containerWidth, setContainerWidth] = useState<number>(1080);
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const [canvasWidth, setCanvasWidth] = useState<number>(1040);
   const [trayHeight, setTrayHeight] = useState<number>(540);
 
-  // Measure container dimensions dynamically
+  // Measure exact inner canvas dimensions dynamically
   useEffect(() => {
     const updateDimensions = () => {
-      if (containerRef.current) {
-        const measured = containerRef.current.clientWidth;
-        const width = measured > 50 ? measured : 1080;
-        setContainerWidth(width);
+      if (canvasRef.current) {
+        const measured = canvasRef.current.clientWidth;
+        const width = measured > 50 ? measured : 1040;
+        setCanvasWidth(width);
 
         // Adjust tray height responsively based on screen width
         if (width < 640) {
@@ -73,8 +73,8 @@ export function SpecimenTray({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [hasPrev, hasNext, onPrevPage, onNextPage]);
 
-  // Pack bookmarks into true-scale 2D trays
-  const effectiveWidth = containerWidth > 50 ? containerWidth : 1080;
+  // Pack bookmarks into true-scale 2D trays based on inner canvas width
+  const effectiveWidth = canvasWidth > 50 ? canvasWidth : 1040;
   const effectiveHeight = trayHeight > 50 ? trayHeight : 540;
 
   const packedDrawers = useMemo(() => {
@@ -82,7 +82,7 @@ export function SpecimenTray({
     return packSpecimenTrays(bookmarks, {
       trayWidth: effectiveWidth,
       trayHeight: effectiveHeight,
-      buffer: effectiveWidth < 640 ? 12 : 20,
+      buffer: effectiveWidth < 640 ? 16 : 24,
     });
   }, [bookmarks, effectiveWidth, effectiveHeight]);
 
@@ -120,10 +120,7 @@ export function SpecimenTray({
   return (
     <div className="relative w-full max-w-[1240px] mx-auto py-2 sm:py-4 px-1 sm:px-6">
       {/* Outer Skeuomorphic Hardwood Serving Tray Container */}
-      <div
-        ref={containerRef}
-        className="relative w-full rounded-2xl tray-antique-wood-outer p-3 sm:p-5 lg:p-7 border-[10px] sm:border-[16px] border-[#5a2e15] shadow-2xl"
-      >
+      <div className="relative w-full rounded-2xl tray-antique-wood-outer p-3 sm:p-5 lg:p-7 border-[10px] sm:border-[16px] border-[#5a2e15] shadow-2xl">
         {/* Left Carved Wooden Handle (Matches reference photo) */}
         <div className="hidden sm:block absolute -left-5 top-1/2 -translate-y-1/2 w-5 h-24 rounded-l-xl tray-wood-handle border-l-2 border-y-2 border-[#3d1d0c] pointer-events-none z-0" />
 
@@ -142,8 +139,9 @@ export function SpecimenTray({
         <div className="absolute bottom-2 left-2 w-4 h-4 border-b border-l border-amber-300/30 pointer-events-none" />
         <div className="absolute bottom-2 right-2 w-4 h-4 border-b border-r border-amber-300/30 pointer-events-none" />
 
-        {/* 2D Packed Canvas Drawer */}
+        {/* 2D Packed Canvas Drawer (Measured directly for exact pixel boundaries) */}
         <div
+          ref={canvasRef}
           style={{ height: `${effectiveHeight}px` }}
           className="relative z-10 w-full flex items-center justify-center overflow-hidden"
         >
