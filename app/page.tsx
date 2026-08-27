@@ -6,6 +6,7 @@ import { Header } from "@/components/ui/Header";
 import { ExhibitGalleryClient } from "@/components/exhibit/ExhibitGalleryClient";
 import { db } from "@/db";
 import { bookmarks as bookmarksTable } from "@/db/schema";
+import { BookOpen, Compass } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -40,12 +41,28 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#FBF9F5]">
-      <Header
-        totalBookmarks={bookmarks.length}
-        totalBookstores={totalBookstores}
-      />
+      <Header />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Curatorial Archive Stats Strip (Centered below Header) */}
+        <div className="flex items-center justify-center mb-6">
+          <div className="flex items-center gap-4 sm:gap-6 px-4 sm:px-6 py-2 rounded-full bg-white/85 backdrop-blur-md border border-parchment-border text-xs sm:text-sm font-mono text-ink-muted shadow-2xs">
+            <div className="flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-archival-oxblood" />
+              <span>
+                <strong className="text-ink font-semibold">{totalBookstores}</strong> Historic Bookstores
+              </span>
+            </div>
+            <span className="text-parchment-border">|</span>
+            <div className="flex items-center gap-2">
+              <Compass className="w-4 h-4 text-archival-spruce" />
+              <span>
+                <strong className="text-ink font-semibold">{bookmarks.length}</strong> Cataloged Bookmarks
+              </span>
+            </div>
+          </div>
+        </div>
+
         <ExhibitGalleryClient
           initialBookmarks={bookmarks}
           filterOptions={filterOptions}
