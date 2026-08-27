@@ -20,6 +20,7 @@ import {
   CheckCircle,
   PlusCircle,
   Link as LinkIcon,
+  ArrowLeftRight,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -377,55 +378,101 @@ export function BookmarkForm({
             />
           </div>
 
-          {/* Dynamic Measurements Field with scale preview and landscape toggle */}
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="block text-xs font-mono text-ink-light">
-                MEASUREMENTS (W × H)
-              </label>
-              <label className="inline-flex items-center gap-1.5 text-xs font-serif text-archival-oxblood cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={parsedDimensions.isLandscape}
-                  onChange={(e) => {
-                    const isChecked = e.target.checked;
-                    if (isChecked && parsedDimensions.width < parsedDimensions.height) {
-                      setFormData((prev) => ({
-                        ...prev,
-                        bookmark: {
-                          ...prev.bookmark,
-                          dimensions: `${parsedDimensions.height}" × ${parsedDimensions.width}"`,
-                        },
-                      }));
-                    } else if (!isChecked && parsedDimensions.width > parsedDimensions.height) {
-                      setFormData((prev) => ({
-                        ...prev,
-                        bookmark: {
-                          ...prev.bookmark,
-                          dimensions: `${parsedDimensions.height}" × ${parsedDimensions.width}"`,
-                        },
-                      }));
-                    }
-                  }}
-                  className="w-3.5 h-3.5 rounded text-archival-oxblood border-parchment-border"
-                />
-                <span>Landscape</span>
-              </label>
+          {/* Dynamic Measurements Field with Segmented Orientation Buttons & 1-Click Swap */}
+          <div className="space-y-2">
+            <label className="block text-xs font-mono text-ink-light">
+              SPECIMEN ORIENTATION &amp; PHYSICAL MEASUREMENTS (W × H)
+            </label>
+
+            {/* Segmented Orientation Selector */}
+            <div className="grid grid-cols-2 gap-2 p-1 bg-parchment-muted rounded-lg border border-parchment-border">
+              <button
+                type="button"
+                onClick={() => {
+                  const maxDim = Math.max(parsedDimensions.width, parsedDimensions.height);
+                  const minDim = Math.min(parsedDimensions.width, parsedDimensions.height);
+                  // Force portrait (width < height)
+                  setFormData((prev) => ({
+                    ...prev,
+                    bookmark: {
+                      ...prev.bookmark,
+                      dimensions: `${minDim}" × ${maxDim}"`,
+                    },
+                  }));
+                }}
+                className={`py-1.5 px-2.5 rounded-md text-xs font-serif flex items-center justify-center gap-1.5 transition-all ${
+                  !parsedDimensions.isLandscape
+                    ? "bg-white text-ink font-bold shadow-xs border border-parchment-border/50"
+                    : "text-ink-muted hover:text-ink"
+                }`}
+              >
+                <span className="text-sm leading-none">▯</span>
+                <span>Portrait (Vertical)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const maxDim = Math.max(parsedDimensions.width, parsedDimensions.height);
+                  const minDim = Math.min(parsedDimensions.width, parsedDimensions.height);
+                  // Force landscape (width > height)
+                  setFormData((prev) => ({
+                    ...prev,
+                    bookmark: {
+                      ...prev.bookmark,
+                      dimensions: `${maxDim}" × ${minDim}"`,
+                    },
+                  }));
+                }}
+                className={`py-1.5 px-2.5 rounded-md text-xs font-serif flex items-center justify-center gap-1.5 transition-all ${
+                  parsedDimensions.isLandscape
+                    ? "bg-white text-archival-oxblood font-bold shadow-xs border border-parchment-border/50"
+                    : "text-ink-muted hover:text-ink"
+                }`}
+              >
+                <span className="text-sm leading-none">▭</span>
+                <span>Landscape (Horizontal)</span>
+              </button>
             </div>
-            <input
-              type="text"
-              placeholder={'e.g. 2.25" × 7.5" or 7.0" × 2.25"'}
-              value={formData.bookmark.dimensions}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  bookmark: { ...formData.bookmark, dimensions: e.target.value },
-                })
-              }
-              className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-mono"
-            />
-            <p className="text-[11px] font-mono text-ink-muted mt-1">
-              Parsed: {parsedDimensions.width}" W × {parsedDimensions.height}" H ({parsedDimensions.isLandscape ? "Landscape Specimen" : "Portrait Specimen"})
+
+            {/* Input field + Swap Button */}
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  placeholder={'e.g. 2.25" × 7.5" or 7.0" × 2.25"'}
+                  value={formData.bookmark.dimensions}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      bookmark: { ...formData.bookmark, dimensions: e.target.value },
+                    })
+                  }
+                  className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-mono"
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    bookmark: {
+                      ...prev.bookmark,
+                      dimensions: `${parsedDimensions.height}" × ${parsedDimensions.width}"`,
+                    },
+                  }));
+                }}
+                title="Swap Width and Height"
+                className="px-3 py-2 text-xs font-serif bg-white border border-parchment-border rounded-lg text-ink-muted hover:text-ink hover:border-archival-amber transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer shrink-0"
+              >
+                <ArrowLeftRight className="w-3.5 h-3.5 text-archival-oxblood" />
+                <span>Swap W ⇄ H</span>
+              </button>
+            </div>
+
+            <p className="text-[11px] font-mono text-ink-muted">
+              Width: <span className="font-bold text-ink">{parsedDimensions.width}"</span> × Height: <span className="font-bold text-ink">{parsedDimensions.height}"</span> ({parsedDimensions.isLandscape ? "Landscape Mode" : "Portrait Mode"})
             </p>
           </div>
 
