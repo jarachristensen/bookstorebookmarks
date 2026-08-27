@@ -76,15 +76,14 @@ export function TrayControls({
     <div className="space-y-4">
       {/* Search & Filter Bar */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-3.5 rounded-xl bg-white/80 backdrop-blur-md border border-parchment-border shadow-sm">
-        {/* Search Input */}
+        {/* Search Input without magnifying glass icon */}
         <div className="relative w-full md:w-80">
-          <Search className="w-4 h-4 text-ink-muted absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder="Search bookmark, bookstore, city..."
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full pl-9.5 pr-4 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink placeholder:text-ink-muted/60 focus:outline-none focus:ring-2 focus:ring-amber-700/30 focus:border-amber-800 transition-all"
+            className="w-full px-3.5 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink placeholder:text-ink-muted/60 focus:outline-none focus:ring-2 focus:ring-amber-700/30 focus:border-amber-800 transition-all font-serif"
           />
           {search && (
             <button

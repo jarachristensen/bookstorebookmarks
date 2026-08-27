@@ -26,9 +26,8 @@ describe("UI Design System Components", () => {
     expect(clicked).toBe(true);
   });
 
-  it("should render Header with title and navigation", () => {
+  it("should render Header with title", () => {
     render(<Header />);
     expect(screen.getByText(/Bookstore Bookmark Archive/i)).toBeDefined();
-    expect(screen.getByText(/Curator's Cabinet/i)).toBeDefined();
   });
 });

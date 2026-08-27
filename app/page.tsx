@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { initDb } from "@/db";
 import { seedDatabase } from "@/db/seed";
 import { getBookmarksWithBookstores, getFilterOptions } from "@/lib/db/queries";
@@ -6,7 +7,7 @@ import { Header } from "@/components/ui/Header";
 import { ExhibitGalleryClient } from "@/components/exhibit/ExhibitGalleryClient";
 import { db } from "@/db";
 import { bookmarks as bookmarksTable } from "@/db/schema";
-import { BookOpen, Compass } from "lucide-react";
+import { BookOpen, Compass, Lock } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -43,24 +44,34 @@ export default async function HomePage() {
     <div className="min-h-screen flex flex-col bg-[#FBF9F5]">
       <Header />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Curatorial Archive Stats Strip (Centered below Header) */}
-        <div className="flex items-center justify-center mb-6">
-          <div className="flex items-center gap-4 sm:gap-6 px-4 sm:px-6 py-2 rounded-full bg-white/85 backdrop-blur-md border border-parchment-border text-xs sm:text-sm font-mono text-ink-muted shadow-2xs">
-            <div className="flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-archival-oxblood" />
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5">
+        {/* Curatorial Archive Stats & Curator Cabinet Action Strip */}
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+          {/* Stats Boxes (Matching Curator's Cabinet styling) */}
+          <div className="flex flex-wrap items-center gap-2.5">
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs sm:text-sm rounded-md bg-white border border-parchment-border text-ink-light shadow-2xs font-medium">
+              <BookOpen className="w-3.5 h-3.5 text-archival-oxblood" />
               <span>
                 <strong className="text-ink font-semibold">{totalBookstores}</strong> Historic Bookstores
               </span>
             </div>
-            <span className="text-parchment-border">|</span>
-            <div className="flex items-center gap-2">
-              <Compass className="w-4 h-4 text-archival-spruce" />
+
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs sm:text-sm rounded-md bg-white border border-parchment-border text-ink-light shadow-2xs font-medium">
+              <Compass className="w-3.5 h-3.5 text-archival-spruce" />
               <span>
                 <strong className="text-ink font-semibold">{bookmarks.length}</strong> Cataloged Bookmarks
               </span>
             </div>
           </div>
+
+          {/* Curator's Cabinet Button */}
+          <Link
+            href="/admin"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs sm:text-sm rounded-md bg-white border border-parchment-border text-ink-light hover:text-ink hover:border-ink shadow-2xs hover:shadow-xs transition-all font-medium"
+          >
+            <Lock className="w-3.5 h-3.5 text-ink-muted" />
+            <span>Curator's Cabinet</span>
+          </Link>
         </div>
 
         <ExhibitGalleryClient
