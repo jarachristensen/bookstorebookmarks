@@ -12,6 +12,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  let worker: any = null;
+
   try {
     const body = await req.json();
     const { imageUrl } = body;
@@ -29,19 +31,11 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Explicit worker path to avoid Next.js webpack worker bundling issues
-    const workerPath = path.join(
-      process.cwd(),
-      "node_modules/tesseract.js/src/worker-script/node/index.js"
-    );
-
-    const worker = await createWorker("eng", 1, {
-      workerPath,
-      logger: () => {},
-    });
+    worker = await createWorker("eng");
 
     const ret = await worker.recognize(imageSource);
     await worker.terminate();
+    worker = null;
 
     // Clean up recognized text
     const cleanedText = (ret.data.text || "")
@@ -55,6 +49,11 @@ export async function POST(req: NextRequest) {
       confidence: ret.data.confidence,
     });
   } catch (err: any) {
+    if (worker) {
+      try {
+        await worker.terminate();
+      } catch (_) {}
+    }
     console.error("OCR Route Error:", err);
     return NextResponse.json(
       { error: err.message || "Failed to extract text via OCR" },

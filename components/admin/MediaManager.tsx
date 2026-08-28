@@ -23,6 +23,7 @@ export interface MediaManagerProps {
 
 export function MediaManager({ mediaList, onChange }: MediaManagerProps) {
   const [ocrLoadingIndex, setOcrLoadingIndex] = useState<number | null>(null);
+  const [ocrStatusText, setOcrStatusText] = useState<string>("");
   const [ocrError, setOcrError] = useState<string>("");
 
   const addMedia = () => {
@@ -85,28 +86,78 @@ export function MediaManager({ mediaList, onChange }: MediaManagerProps) {
 
     setOcrError("");
     setOcrLoadingIndex(index);
+    setOcrStatusText("Preparing OCR engine...");
+
+    // 30-second timeout guard to ensure OCR never spins indefinitely
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(
+        () =>
+          reject(
+            new Error(
+              "OCR processing timed out. You can enter or paste the transcription text manually below."
+            )
+          ),
+        30000
+      )
+    );
 
     try {
-      const res = await fetch("/api/ocr", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageUrl: item.imageUrl }),
-      });
+      const ocrTask = (async () => {
+        // 1. Attempt client-side browser WebAssembly OCR first
+        try {
+          setOcrStatusText("Loading Tesseract...");
+          const Tesseract = await import("tesseract.js");
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "OCR extraction failed");
-      }
+          setOcrStatusText("Recognizing scan...");
+          const result = await Tesseract.recognize(item.imageUrl, "eng", {
+            logger: (m) => {
+              if (m.status === "recognizing text" && typeof m.progress === "number") {
+                setOcrStatusText(`Scanning: ${Math.round(m.progress * 100)}%`);
+              } else if (m.status) {
+                setOcrStatusText(`${m.status.replace(/_/g, " ")}...`);
+              }
+            },
+          });
 
-      if (data.text) {
-        updateMedia(index, { transcriptionText: data.text });
+          const extracted = (result.data.text || "")
+            .replace(/\r\n/g, "\n")
+            .replace(/[ \t]+/g, " ")
+            .replace(/\n{3,}/g, "\n\n")
+            .trim();
+
+          return extracted;
+        } catch (clientErr) {
+          console.warn("Client-side OCR failed, falling back to server route:", clientErr);
+          
+          // 2. Fallback to API route if client-side WASM encounters issues
+          setOcrStatusText("Processing on server...");
+          const res = await fetch("/api/ocr", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ imageUrl: item.imageUrl }),
+          });
+
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.error || "OCR extraction failed");
+          }
+          return data.text as string;
+        }
+      })();
+
+      const text = await Promise.race([ocrTask, timeoutPromise]);
+
+      if (text && text.trim().length > 0) {
+        updateMedia(index, { transcriptionText: text.trim() });
       } else {
-        setOcrError("No legible text recognized in this scan.");
+        setOcrError("No legible text recognized in this scan. You can enter the transcription manually below.");
       }
     } catch (err: any) {
-      setOcrError(err.message || "Failed to extract text via OCR.");
+      console.error("OCR Extraction Error:", err);
+      setOcrError(err.message || "Failed to extract text via OCR. You can type the transcription manually below.");
     } finally {
       setOcrLoadingIndex(null);
+      setOcrStatusText("");
     }
   };
 
@@ -142,71 +193,67 @@ export function MediaManager({ mediaList, onChange }: MediaManagerProps) {
       )}
 
       {mediaList.length === 0 ? (
-        <div className="p-6 rounded-xl border border-dashed border-parchment-border text-center bg-parchment-light space-y-2">
-          <p className="text-xs text-ink-muted font-serif italic">
-            No historical clippings added yet. Add newspaper scans or photos to enrich your bookstore research.
+        <div className="p-8 border-2 border-dashed border-parchment-border rounded-xl text-center space-y-2 bg-parchment/30">
+          <ImageIcon className="w-8 h-8 text-ink-muted/50 mx-auto" />
+          <p className="font-serif text-sm text-ink-light">
+            No archival media or press clippings attached yet.
           </p>
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            onClick={addMedia}
-            className="text-xs font-serif"
-          >
-            + Add First Clipping / Photo
-          </Button>
+          <p className="text-xs text-ink-muted font-serif italic">
+            Add newspaper articles, historic shop photos, or ephemera to build the dossier.
+          </p>
         </div>
       ) : (
         <div className="space-y-4">
           {mediaList.map((item, index) => (
             <div
-              key={item.id || index}
-              className="p-4 rounded-xl bg-parchment-light border border-parchment-border shadow-xs space-y-4"
+              key={item.id || `media-${index}`}
+              className="p-4 rounded-xl border border-parchment-border bg-parchment/40 space-y-4 shadow-xs"
             >
-              <div className="flex items-center justify-between pb-2 border-b border-parchment-border">
+              <div className="flex items-center justify-between border-b border-parchment-border pb-2">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-mono font-bold text-archival-oxblood">
-                    ITEM #{index + 1}
+                    #{index + 1}
                   </span>
                   <select
                     value={item.mediaType}
                     onChange={(e) => updateMedia(index, { mediaType: e.target.value })}
-                    className="px-2 py-1 text-xs bg-white border border-parchment-border rounded text-ink focus:outline-none font-serif"
+                    className="text-xs font-mono bg-white border border-parchment-border rounded px-2 py-1 text-ink"
                   >
-                    <option value="newspaper">Newspaper Article</option>
-                    <option value="photo">Archival Photo</option>
-                    <option value="postcard">Vintage Postcard</option>
-                    <option value="ephemera">Receipt / Ephemera</option>
+                    <option value="newspaper">Newspaper Clipping</option>
+                    <option value="photo">Historic Photo</option>
+                    <option value="ephemera">Print Ephemera</option>
                   </select>
                 </div>
 
                 <button
                   type="button"
                   onClick={() => removeMedia(index)}
-                  className="p-1 rounded text-rose-700 hover:bg-rose-100 transition-colors cursor-pointer"
-                  title="Remove this item"
+                  className="text-ink-muted hover:text-rose-700 transition-colors p-1"
+                  title="Remove Item"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
-                {/* Image Dropzone */}
-                <div className="md:col-span-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Image Upload Column */}
+                <div className="space-y-2">
+                  <label className="block text-[11px] font-mono text-ink-light">
+                    CLIPPING / PHOTO SCAN
+                  </label>
                   <ImageDropzone
-                    label="Media Scan / Photo"
+                    label="Drop Clipping"
                     value={item.imageUrl}
                     onChange={(url, file) => handleImageUploaded(index, url, file)}
                     aspectRatio="photo"
-                    required
                   />
                 </div>
 
-                {/* Form fields */}
-                <div className="md:col-span-8 space-y-3">
+                {/* Metadata Column */}
+                <div className="md:col-span-2 space-y-3">
                   <div>
                     <label className="block text-[11px] font-mono text-ink-light mb-1">
-                      CAPTION / HEADLINE *
+                      CAPTION / TITLE *
                     </label>
                     <input
                       type="text"
@@ -255,12 +302,12 @@ export function MediaManager({ mediaList, onChange }: MediaManagerProps) {
                           type="button"
                           disabled={ocrLoadingIndex === index}
                           onClick={() => handleRunOcr(index)}
-                          className="inline-flex items-center gap-1 text-[11px] font-mono text-archival-oxblood hover:underline disabled:opacity-50 cursor-pointer font-bold"
+                          className="inline-flex items-center gap-1 text-[11px] font-mono text-archival-oxblood hover:underline disabled:opacity-60 cursor-pointer font-bold"
                         >
                           {ocrLoadingIndex === index ? (
                             <>
                               <Loader2 className="w-3 h-3 animate-spin" />
-                              <span>Running OCR...</span>
+                              <span>{ocrStatusText || "Running OCR..."}</span>
                             </>
                           ) : (
                             <>
