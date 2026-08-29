@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import Image from "next/image";
-import { Upload, X, Link as LinkIcon, Loader2, RotateCw, AlertCircle, RefreshCw } from "lucide-react";
+import { Upload, X, Link as LinkIcon, Loader2, RotateCw, AlertCircle, Scissors } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { compressImageIfNeeded } from "@/lib/utils/image-compressor";
 
@@ -138,7 +137,6 @@ export function ImageDropzone({
       });
 
       const canvas = document.createElement("canvas");
-      // Swapping width & height for 90-degree turn
       canvas.width = img.height;
       canvas.height = img.width;
 
@@ -174,6 +172,171 @@ export function ImageDropzone({
     } catch (err: any) {
       console.error("Rotate error:", err);
       setError(err.message || "Failed to rotate image");
+      setUploading(false);
+      setUploadProgress("");
+    }
+  };
+
+  /**
+   * Automatically detects and trims white/blank scanner borders from all 4 edges.
+   */
+  const handleAutoTrim = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!displayUrl || uploading) return;
+
+    setError("");
+    setUploading(true);
+    setUploadProgress("Auto-trimming scanner edges...");
+
+    try {
+      const img = new window.Image();
+      img.crossOrigin = "anonymous";
+      img.src = displayUrl;
+
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error("Failed to load image for auto-trimming"));
+      });
+
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      if (!ctx) throw new Error("Could not initialize 2D canvas");
+
+      ctx.drawImage(img, 0, 0);
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const { data, width, height } = imgData;
+
+      // Helper: check if a pixel is white/blank scanner background
+      const isScannerWhiteOrBlank = (r: number, g: number, b: number, a: number) => {
+        if (a < 20) return true; // transparent
+        const brightness = (r + g + b) / 3;
+        const colorDiff = Math.max(Math.abs(r - g), Math.abs(g - b), Math.abs(r - b));
+        return brightness > 238 && colorDiff < 18;
+      };
+
+      // 1. Scan Top edge
+      let top = 0;
+      for (let y = 0; y < Math.floor(height * 0.25); y++) {
+        let whitePixels = 0;
+        for (let x = 0; x < width; x++) {
+          const idx = (y * width + x) * 4;
+          if (isScannerWhiteOrBlank(data[idx], data[idx + 1], data[idx + 2], data[idx + 3])) {
+            whitePixels++;
+          }
+        }
+        if (whitePixels / width > 0.88) {
+          top = y + 1;
+        } else {
+          break;
+        }
+      }
+
+      // 2. Scan Bottom edge
+      let bottom = height;
+      for (let y = height - 1; y >= Math.floor(height * 0.75); y--) {
+        let whitePixels = 0;
+        for (let x = 0; x < width; x++) {
+          const idx = (y * width + x) * 4;
+          if (isScannerWhiteOrBlank(data[idx], data[idx + 1], data[idx + 2], data[idx + 3])) {
+            whitePixels++;
+          }
+        }
+        if (whitePixels / width > 0.88) {
+          bottom = y;
+        } else {
+          break;
+        }
+      }
+
+      // 3. Scan Left edge
+      let left = 0;
+      for (let x = 0; x < Math.floor(width * 0.25); x++) {
+        let whitePixels = 0;
+        for (let y = 0; y < height; y++) {
+          const idx = (y * width + x) * 4;
+          if (isScannerWhiteOrBlank(data[idx], data[idx + 1], data[idx + 2], data[idx + 3])) {
+            whitePixels++;
+          }
+        }
+        if (whitePixels / height > 0.88) {
+          left = x + 1;
+        } else {
+          break;
+        }
+      }
+
+      // 4. Scan Right edge
+      let right = width;
+      for (let x = width - 1; x >= Math.floor(width * 0.75); x--) {
+        let whitePixels = 0;
+        for (let y = 0; y < height; y++) {
+          const idx = (y * width + x) * 4;
+          if (isScannerWhiteOrBlank(data[idx], data[idx + 1], data[idx + 2], data[idx + 3])) {
+            whitePixels++;
+          }
+        }
+        if (whitePixels / height > 0.88) {
+          right = x;
+        } else {
+          break;
+        }
+      }
+
+      // Add a 1-2px safety shave if borders detected, or 2px minimum trim
+      if (top > 0 || bottom < height || left > 0 || right < width) {
+        top = Math.min(top + 1, height - 10);
+        bottom = Math.max(bottom - 1, top + 10);
+        left = Math.min(left + 1, width - 10);
+        right = Math.max(right - 1, left + 10);
+      } else {
+        // Shave 2px all around
+        top = Math.min(2, Math.floor(height * 0.05));
+        bottom = Math.max(height - 2, top + 10);
+        left = Math.min(2, Math.floor(width * 0.05));
+        right = Math.max(width - 2, left + 10);
+      }
+
+      const cropWidth = right - left;
+      const cropHeight = bottom - top;
+
+      if (cropWidth < 50 || cropHeight < 50) {
+        throw new Error("Cropped area is too small to auto-trim.");
+      }
+
+      const cropCanvas = document.createElement("canvas");
+      cropCanvas.width = cropWidth;
+      cropCanvas.height = cropHeight;
+
+      const cropCtx = cropCanvas.getContext("2d");
+      if (!cropCtx) throw new Error("Could not initialize crop canvas");
+
+      cropCtx.imageSmoothingEnabled = true;
+      cropCtx.imageSmoothingQuality = "high";
+      cropCtx.drawImage(canvas, left, top, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
+
+      const trimmedBlob = await new Promise<Blob>((resolve, reject) => {
+        cropCanvas.toBlob(
+          (blob) => {
+            if (blob) resolve(blob);
+            else reject(new Error("Failed to convert trimmed canvas to blob"));
+          },
+          "image/webp",
+          0.94
+        );
+      });
+
+      const trimmedFile = new File([trimmedBlob], `trimmed-${Date.now()}.webp`, {
+        type: "image/webp",
+        lastModified: Date.now(),
+      });
+
+      await handleFileUpload(trimmedFile);
+    } catch (err: any) {
+      console.error("Auto-trim error:", err);
+      setError(err.message || "Failed to auto-trim scanner borders");
       setUploading(false);
       setUploadProgress("");
     }
@@ -219,18 +382,31 @@ export function ImageDropzone({
         <label className="block text-xs font-mono font-medium text-ink-light">
           {label} {required && <span className="text-archival-oxblood">*</span>}
         </label>
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           {displayUrl && (
-            <button
-              type="button"
-              onClick={handleRotate90}
-              disabled={uploading}
-              className="text-[11px] text-archival-oxblood hover:underline font-serif flex items-center gap-1 cursor-pointer bg-white/80 px-2 py-0.5 rounded border border-parchment-border hover:bg-white transition-colors"
-              title="Rotate scan 90° Clockwise"
-            >
-              <RotateCw className="w-3 h-3 text-archival-amber" />
-              <span>Rotate 90°</span>
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={handleAutoTrim}
+                disabled={uploading}
+                className="text-[11px] text-archival-oxblood hover:underline font-serif flex items-center gap-1 cursor-pointer bg-white/80 px-2 py-0.5 rounded border border-parchment-border hover:bg-white transition-colors"
+                title="Auto-detect and crop white scanner margins"
+              >
+                <Scissors className="w-3 h-3 text-archival-oxblood" />
+                <span>Auto-Trim</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleRotate90}
+                disabled={uploading}
+                className="text-[11px] text-archival-oxblood hover:underline font-serif flex items-center gap-1 cursor-pointer bg-white/80 px-2 py-0.5 rounded border border-parchment-border hover:bg-white transition-colors"
+                title="Rotate scan 90° Clockwise"
+              >
+                <RotateCw className="w-3 h-3 text-archival-amber" />
+                <span>Rotate 90°</span>
+              </button>
+            </>
           )}
 
           {!displayUrl && (
@@ -306,7 +482,6 @@ export function ImageDropzone({
             </div>
           ) : (
             <div className="relative w-full h-full p-2 flex items-center justify-center z-10">
-              {/* Using standard unoptimized img with key for guaranteed instant cache-busting & remount */}
               <img
                 key={displayUrl}
                 src={displayUrl}
@@ -330,9 +505,20 @@ export function ImageDropzone({
             </div>
           )}
 
-          {/* Hover overlay for Replace & Rotate actions */}
+          {/* Hover overlay for Replace, Rotate & Auto-Trim actions */}
           {!uploading && (
-            <div className="absolute inset-0 z-20 bg-black/45 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-2">
+            <div className="absolute inset-0 z-20 bg-black/50 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-2 flex-wrap">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleAutoTrim}
+                className="text-xs font-serif bg-white/95 text-ink flex items-center gap-1.5 shadow-sm hover:bg-white"
+                title="Auto-detect and crop white scanner margins"
+              >
+                <Scissors className="w-3.5 h-3.5 text-archival-oxblood" />
+                <span>Auto-Trim</span>
+              </Button>
               <Button
                 type="button"
                 variant="outline"
@@ -340,7 +526,7 @@ export function ImageDropzone({
                 onClick={handleRotate90}
                 className="text-xs font-serif bg-white/95 text-ink flex items-center gap-1.5 shadow-sm hover:bg-white"
               >
-                <RotateCw className="w-3 h-3 text-archival-amber" />
+                <RotateCw className="w-3.5 h-3.5 text-archival-amber" />
                 <span>Rotate 90°</span>
               </Button>
               <Button
@@ -399,7 +585,6 @@ export function ImageDropzone({
         onChange={(e) => {
           if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
-            // Reset input value so selecting the same file again triggers onChange
             e.target.value = "";
             handleFileUpload(file);
           }
