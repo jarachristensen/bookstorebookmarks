@@ -63,14 +63,21 @@ export function BookmarkCard({ packedItem, bookmark: propBookmark, onInspect }: 
           </div>
         )}
 
-        <Image
-          src={bookmark.frontImageUrl}
-          alt={bookmark.title}
-          fill
-          sizes="(max-width: 640px) 200px, 350px"
-          className="object-contain object-center filter contrast-[1.02]"
-          priority={false}
-        />
+        {bookmark.frontImageUrl ? (
+          <Image
+            src={bookmark.frontImageUrl}
+            alt={bookmark.title}
+            fill
+            unoptimized
+            sizes="(max-width: 640px) 200px, 350px"
+            className="object-contain object-center filter contrast-[1.02]"
+            priority={false}
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center p-2 text-center text-xs font-serif text-ink-muted bg-parchment/60 rounded">
+            {bookmark.title}
+          </div>
+        )}
       </div>
 
       {/* Screen Reader & Accessible Spans */}

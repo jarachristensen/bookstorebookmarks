@@ -10,6 +10,7 @@ export interface ImageDropzoneProps {
   value: string;
   onChange: (url: string, file?: File) => void;
   onFileSelected?: (file: File) => void;
+  onUploadingChange?: (uploading: boolean) => void;
   aspectRatio?: "bookmark" | "photo" | "landscape";
   placeholder?: string;
   required?: boolean;
@@ -20,6 +21,7 @@ export function ImageDropzone({
   value,
   onChange,
   onFileSelected,
+  onUploadingChange,
   aspectRatio = "bookmark",
   placeholder,
   required = false,
@@ -50,12 +52,19 @@ export function ImageDropzone({
     setImageLoadError(false);
   }, [displayUrl]);
 
+  const updateUploading = (isUp: boolean, text: string = "") => {
+    setUploading(isUp);
+    setUploadProgress(text);
+    if (onUploadingChange) {
+      onUploadingChange(isUp);
+    }
+  };
+
   const handleFileUpload = async (rawFile: File) => {
     if (!rawFile) return;
     setError("");
     setImageLoadError(false);
-    setUploading(true);
-    setUploadProgress("Preparing preview...");
+    updateUploading(true, "Preparing preview...");
 
     // 1. Instant client-side blob preview so the user sees the new image immediately!
     const objectUrl = URL.createObjectURL(rawFile);
@@ -67,10 +76,10 @@ export function ImageDropzone({
 
     try {
       // 2. Optimize oversized image in browser (< 3MB)
-      setUploadProgress("Optimizing scan...");
+      updateUploading(true, "Optimizing scan...");
       const file = await compressImageIfNeeded(rawFile);
 
-      setUploadProgress("Uploading to archive...");
+      updateUploading(true, "Uploading to archive...");
 
       // 3. Upload via standard API route (supports Vercel Blob and local disk)
       const formData = new FormData();
@@ -110,8 +119,34 @@ export function ImageDropzone({
         setError(err.message || "Failed to upload image");
       }
     } finally {
-      setUploading(false);
-      setUploadProgress("");
+      updateUploading(false, "");
+    }
+  };
+
+  /**
+   * Helper: fetches an image as a clean Blob to avoid CORS canvas-tainting issues
+   */
+  const getImageBitmapSafe = async (url: string): Promise<ImageBitmap> => {
+    if (url.startsWith("blob:") || url.startsWith("data:")) {
+      const res = await fetch(url);
+      const b = await res.blob();
+      return createImageBitmap(b);
+    }
+
+    try {
+      const res = await fetch(url, { mode: "cors" });
+      const b = await res.blob();
+      return createImageBitmap(b);
+    } catch {
+      // Fallback via Image element
+      const img = new window.Image();
+      img.crossOrigin = "anonymous";
+      img.src = url;
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error("Failed to load image"));
+      });
+      return createImageBitmap(img);
     }
   };
 
@@ -123,22 +158,15 @@ export function ImageDropzone({
     if (!displayUrl || uploading) return;
 
     setError("");
-    setUploading(true);
-    setUploadProgress("Rotating scan 90°...");
+    updateUploading(true, "Rotating scan 90°...");
 
     try {
-      const img = new window.Image();
-      img.crossOrigin = "anonymous";
-      img.src = displayUrl;
-
-      await new Promise<void>((resolve, reject) => {
-        img.onload = () => resolve();
-        img.onerror = () => reject(new Error("Failed to load image for rotation"));
-      });
+      const imgBitmap = await getImageBitmapSafe(displayUrl);
 
       const canvas = document.createElement("canvas");
-      canvas.width = img.height;
-      canvas.height = img.width;
+      // Swapping width & height for 90-degree turn
+      canvas.width = imgBitmap.height;
+      canvas.height = imgBitmap.width;
 
       const ctx = canvas.getContext("2d");
       if (!ctx) throw new Error("Could not initialize 2D canvas");
@@ -150,7 +178,7 @@ export function ImageDropzone({
       // Rotate 90 deg clockwise around center
       ctx.translate(canvas.width / 2, canvas.height / 2);
       ctx.rotate((90 * Math.PI) / 180);
-      ctx.drawImage(img, -img.width / 2, -img.height / 2);
+      ctx.drawImage(imgBitmap, -imgBitmap.width / 2, -imgBitmap.height / 2);
 
       const rotatedBlob = await new Promise<Blob>((resolve, reject) => {
         canvas.toBlob(
@@ -172,8 +200,7 @@ export function ImageDropzone({
     } catch (err: any) {
       console.error("Rotate error:", err);
       setError(err.message || "Failed to rotate image");
-      setUploading(false);
-      setUploadProgress("");
+      updateUploading(false, "");
     }
   };
 
@@ -185,41 +212,33 @@ export function ImageDropzone({
     if (!displayUrl || uploading) return;
 
     setError("");
-    setUploading(true);
-    setUploadProgress("Auto-trimming scanner edges...");
+    updateUploading(true, "Auto-trimming scanner edges...");
 
     try {
-      const img = new window.Image();
-      img.crossOrigin = "anonymous";
-      img.src = displayUrl;
-
-      await new Promise<void>((resolve, reject) => {
-        img.onload = () => resolve();
-        img.onerror = () => reject(new Error("Failed to load image for auto-trimming"));
-      });
+      const imgBitmap = await getImageBitmapSafe(displayUrl);
 
       const canvas = document.createElement("canvas");
-      canvas.width = img.width;
-      canvas.height = img.height;
+      canvas.width = imgBitmap.width;
+      canvas.height = imgBitmap.height;
 
       const ctx = canvas.getContext("2d", { willReadFrequently: true });
       if (!ctx) throw new Error("Could not initialize 2D canvas");
 
-      ctx.drawImage(img, 0, 0);
+      ctx.drawImage(imgBitmap, 0, 0);
       const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const { data, width, height } = imgData;
 
       // Helper: check if a pixel is white/blank scanner background
       const isScannerWhiteOrBlank = (r: number, g: number, b: number, a: number) => {
-        if (a < 20) return true; // transparent
+        if (a < 25) return true; // transparent
         const brightness = (r + g + b) / 3;
         const colorDiff = Math.max(Math.abs(r - g), Math.abs(g - b), Math.abs(r - b));
-        return brightness > 238 && colorDiff < 18;
+        return brightness > 235 && colorDiff < 20;
       };
 
       // 1. Scan Top edge
       let top = 0;
-      for (let y = 0; y < Math.floor(height * 0.25); y++) {
+      for (let y = 0; y < Math.floor(height * 0.20); y++) {
         let whitePixels = 0;
         for (let x = 0; x < width; x++) {
           const idx = (y * width + x) * 4;
@@ -227,7 +246,7 @@ export function ImageDropzone({
             whitePixels++;
           }
         }
-        if (whitePixels / width > 0.88) {
+        if (whitePixels / width > 0.85) {
           top = y + 1;
         } else {
           break;
@@ -236,7 +255,7 @@ export function ImageDropzone({
 
       // 2. Scan Bottom edge
       let bottom = height;
-      for (let y = height - 1; y >= Math.floor(height * 0.75); y--) {
+      for (let y = height - 1; y >= Math.floor(height * 0.80); y--) {
         let whitePixels = 0;
         for (let x = 0; x < width; x++) {
           const idx = (y * width + x) * 4;
@@ -244,7 +263,7 @@ export function ImageDropzone({
             whitePixels++;
           }
         }
-        if (whitePixels / width > 0.88) {
+        if (whitePixels / width > 0.85) {
           bottom = y;
         } else {
           break;
@@ -253,7 +272,7 @@ export function ImageDropzone({
 
       // 3. Scan Left edge
       let left = 0;
-      for (let x = 0; x < Math.floor(width * 0.25); x++) {
+      for (let x = 0; x < Math.floor(width * 0.20); x++) {
         let whitePixels = 0;
         for (let y = 0; y < height; y++) {
           const idx = (y * width + x) * 4;
@@ -261,7 +280,7 @@ export function ImageDropzone({
             whitePixels++;
           }
         }
-        if (whitePixels / height > 0.88) {
+        if (whitePixels / height > 0.85) {
           left = x + 1;
         } else {
           break;
@@ -270,7 +289,7 @@ export function ImageDropzone({
 
       // 4. Scan Right edge
       let right = width;
-      for (let x = width - 1; x >= Math.floor(width * 0.75); x--) {
+      for (let x = width - 1; x >= Math.floor(width * 0.80); x--) {
         let whitePixels = 0;
         for (let y = 0; y < height; y++) {
           const idx = (y * width + x) * 4;
@@ -278,21 +297,21 @@ export function ImageDropzone({
             whitePixels++;
           }
         }
-        if (whitePixels / height > 0.88) {
+        if (whitePixels / height > 0.85) {
           right = x;
         } else {
           break;
         }
       }
 
-      // Add a 1-2px safety shave if borders detected, or 2px minimum trim
+      // 1px micro-shave on detected borders to eliminate edge antialiasing artifacts
       if (top > 0 || bottom < height || left > 0 || right < width) {
         top = Math.min(top + 1, height - 10);
         bottom = Math.max(bottom - 1, top + 10);
         left = Math.min(left + 1, width - 10);
         right = Math.max(right - 1, left + 10);
       } else {
-        // Shave 2px all around
+        // Fallback: trim 2px all around
         top = Math.min(2, Math.floor(height * 0.05));
         bottom = Math.max(height - 2, top + 10);
         left = Math.min(2, Math.floor(width * 0.05));
@@ -302,7 +321,7 @@ export function ImageDropzone({
       const cropWidth = right - left;
       const cropHeight = bottom - top;
 
-      if (cropWidth < 50 || cropHeight < 50) {
+      if (cropWidth < 30 || cropHeight < 30) {
         throw new Error("Cropped area is too small to auto-trim.");
       }
 
@@ -337,8 +356,7 @@ export function ImageDropzone({
     } catch (err: any) {
       console.error("Auto-trim error:", err);
       setError(err.message || "Failed to auto-trim scanner borders");
-      setUploading(false);
-      setUploadProgress("");
+      updateUploading(false, "");
     }
   };
 

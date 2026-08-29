@@ -111,6 +111,7 @@ export function BookmarkInspector({
                     src={bookmark.frontImageUrl}
                     alt={`${bookmark.title} - Recto (Front)`}
                     fill
+                    unoptimized
                     className="object-contain object-center filter contrast-[1.02]"
                     sizes="(max-width: 640px) 240px, 400px"
                     priority
@@ -137,6 +138,7 @@ export function BookmarkInspector({
                       src={bookmark.backImageUrl}
                       alt={`${bookmark.title} - Verso (Back)`}
                       fill
+                      unoptimized
                       className="object-contain object-center filter contrast-[1.02]"
                       sizes="(max-width: 640px) 240px, 400px"
                     />

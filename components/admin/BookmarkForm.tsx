@@ -74,6 +74,8 @@ export function BookmarkForm({
 }: BookmarkFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [isUploadingFront, setIsUploadingFront] = useState(false);
+  const [isUploadingBack, setIsUploadingBack] = useState(false);
   const [error, setError] = useState("");
   const [blurbTab, setBlurbTab] = useState<"edit" | "preview">("edit");
 
@@ -276,12 +278,14 @@ export function BookmarkForm({
             type="submit"
             variant="oxblood"
             size="md"
-            disabled={loading}
+            disabled={loading || isUploadingFront || isUploadingBack}
             className="font-serif flex items-center gap-2"
           >
             <Save className="w-4 h-4 text-amber-300" />
             <span>
-              {loading
+              {isUploadingFront || isUploadingBack
+                ? "Processing Scan..."
+                : loading
                 ? "Cataloging..."
                 : isEditing
                 ? "Update Archive Record"
@@ -322,6 +326,7 @@ export function BookmarkForm({
                 bookmark: { ...formData.bookmark, frontImageUrl: url },
               })
             }
+            onUploadingChange={setIsUploadingFront}
             aspectRatio={parsedDimensions.isLandscape ? "landscape" : "bookmark"}
             required
           />
@@ -335,6 +340,7 @@ export function BookmarkForm({
                 bookmark: { ...formData.bookmark, backImageUrl: url },
               })
             }
+            onUploadingChange={setIsUploadingBack}
             aspectRatio={parsedDimensions.isLandscape ? "landscape" : "bookmark"}
           />
         </div>
