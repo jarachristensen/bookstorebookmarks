@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { Upload, X, Link as LinkIcon, Loader2, RotateCw } from "lucide-react";
+import { Upload, X, Link as LinkIcon, Loader2, RotateCw, AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { compressImageIfNeeded } from "@/lib/utils/image-compressor";
 
@@ -25,36 +25,61 @@ export function ImageDropzone({
   placeholder,
   required = false,
 }: ImageDropzoneProps) {
+  const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<string>("");
   const [error, setError] = useState("");
+  const [imageLoadError, setImageLoadError] = useState(false);
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [customUrl, setCustomUrl] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Active image URL prioritizing instant local preview while uploading, then saved URL
+  const displayUrl = localPreviewUrl || value;
+
+  // Clean up object URLs to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (localPreviewUrl && localPreviewUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(localPreviewUrl);
+      }
+    };
+  }, [localPreviewUrl]);
+
+  // Reset image load error when displayUrl changes
+  useEffect(() => {
+    setImageLoadError(false);
+  }, [displayUrl]);
+
   const handleFileUpload = async (rawFile: File) => {
     if (!rawFile) return;
     setError("");
+    setImageLoadError(false);
     setUploading(true);
-    setUploadProgress("Optimizing scan...");
+    setUploadProgress("Preparing preview...");
+
+    // 1. Instant client-side blob preview so the user sees the new image immediately!
+    const objectUrl = URL.createObjectURL(rawFile);
+    setLocalPreviewUrl(objectUrl);
 
     if (onFileSelected) {
       onFileSelected(rawFile);
     }
 
     try {
-      // 1. Optimize oversized image in browser (< 2MB)
+      // 2. Optimize oversized image in browser (< 3MB)
+      setUploadProgress("Optimizing scan...");
       const file = await compressImageIfNeeded(rawFile);
 
       setUploadProgress("Uploading to archive...");
 
-      // 2. Upload via standard API route (supports Vercel Blob and local disk)
+      // 3. Upload via standard API route (supports Vercel Blob and local disk)
       const formData = new FormData();
       formData.append("file", file);
 
-      // Abort controller with 30s timeout so it never hangs
+      // Abort controller with 35s timeout so it never hangs
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
+      const timeoutId = setTimeout(() => controller.abort(), 35000);
 
       const res = await fetch("/api/upload", {
         method: "POST",
@@ -76,8 +101,10 @@ export function ImageDropzone({
         throw new Error(data.error || "Upload failed");
       }
 
+      // 4. Update parent state with permanent uploaded URL
       onChange(data.url, rawFile);
     } catch (err: any) {
+      console.error("Image Upload Failed:", err);
       if (err.name === "AbortError") {
         setError("Upload timed out. Please check your connection and try again.");
       } else {
@@ -94,7 +121,7 @@ export function ImageDropzone({
    */
   const handleRotate90 = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!value || uploading) return;
+    if (!displayUrl || uploading) return;
 
     setError("");
     setUploading(true);
@@ -103,7 +130,7 @@ export function ImageDropzone({
     try {
       const img = new window.Image();
       img.crossOrigin = "anonymous";
-      img.src = value;
+      img.src = displayUrl;
 
       await new Promise<void>((resolve, reject) => {
         img.onload = () => resolve();
@@ -145,6 +172,7 @@ export function ImageDropzone({
 
       await handleFileUpload(rotatedFile);
     } catch (err: any) {
+      console.error("Rotate error:", err);
       setError(err.message || "Failed to rotate image");
       setUploading(false);
       setUploadProgress("");
@@ -161,10 +189,18 @@ export function ImageDropzone({
   const handleApplyCustomUrl = (e: React.FormEvent) => {
     e.preventDefault();
     if (customUrl.trim()) {
+      setLocalPreviewUrl(null);
       onChange(customUrl.trim());
       setShowUrlInput(false);
       setCustomUrl("");
     }
+  };
+
+  const handleRemove = () => {
+    setLocalPreviewUrl(null);
+    onChange("");
+    setError("");
+    setImageLoadError(false);
   };
 
   const getAspectClasses = () => {
@@ -184,12 +220,12 @@ export function ImageDropzone({
           {label} {required && <span className="text-archival-oxblood">*</span>}
         </label>
         <div className="flex items-center gap-2.5">
-          {value && (
+          {displayUrl && (
             <button
               type="button"
               onClick={handleRotate90}
               disabled={uploading}
-              className="text-[11px] text-archival-oxblood hover:underline font-serif flex items-center gap-1 cursor-pointer bg-white/70 px-2 py-0.5 rounded border border-parchment-border hover:bg-white transition-colors"
+              className="text-[11px] text-archival-oxblood hover:underline font-serif flex items-center gap-1 cursor-pointer bg-white/80 px-2 py-0.5 rounded border border-parchment-border hover:bg-white transition-colors"
               title="Rotate scan 90° Clockwise"
             >
               <RotateCw className="w-3 h-3 text-archival-amber" />
@@ -197,7 +233,7 @@ export function ImageDropzone({
             </button>
           )}
 
-          {!value && (
+          {!displayUrl && (
             <button
               type="button"
               onClick={() => setShowUrlInput(!showUrlInput)}
@@ -208,10 +244,10 @@ export function ImageDropzone({
             </button>
           )}
 
-          {value && (
+          {displayUrl && (
             <button
               type="button"
-              onClick={() => onChange("")}
+              onClick={handleRemove}
               className="text-[11px] text-archival-oxblood hover:underline font-serif flex items-center gap-1 cursor-pointer"
             >
               <X className="w-3 h-3" />
@@ -221,7 +257,7 @@ export function ImageDropzone({
         </div>
       </div>
 
-      {showUrlInput && !value && (
+      {showUrlInput && !displayUrl && (
         <form onSubmit={handleApplyCustomUrl} className="flex gap-2">
           <input
             type="url"
@@ -237,38 +273,87 @@ export function ImageDropzone({
         </form>
       )}
 
-      {value ? (
+      {displayUrl ? (
         <div
-          className={`relative rounded-xl overflow-hidden border-2 border-parchment-border bg-stone-900 shadow-sm ${getAspectClasses()}`}
+          className={`relative rounded-xl overflow-hidden border-2 border-parchment-border bg-stone-100 dark:bg-stone-900/40 shadow-xs flex items-center justify-center ${getAspectClasses()}`}
         >
-          <Image
-            src={value}
-            alt={label}
-            fill
-            className="object-contain p-2"
+          {/* Subtle archival paper checkerboard background for transparent scans */}
+          <div
+            className="absolute inset-0 opacity-40 pointer-events-none"
+            style={{
+              backgroundImage:
+                "linear-gradient(45deg, #e5e0d8 25%, transparent 25%), linear-gradient(-45deg, #e5e0d8 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e5e0d8 75%), linear-gradient(-45deg, transparent 75%, #e5e0d8 75%)",
+              backgroundSize: "16px 16px",
+              backgroundPosition: "0 0, 0 8px, 8px -8px, -8px 0px",
+            }}
           />
-          <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleRotate90}
-              disabled={uploading}
-              className="text-xs font-serif bg-white/90 text-ink flex items-center gap-1.5"
-            >
-              <RotateCw className="w-3 h-3 text-archival-amber" />
-              <span>Rotate 90°</span>
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => fileInputRef.current?.click()}
-              className="text-xs font-serif bg-white/90 text-ink"
-            >
-              Replace Scan
-            </Button>
-          </div>
+
+          {imageLoadError ? (
+            <div className="relative z-10 p-4 text-center space-y-2">
+              <AlertCircle className="w-6 h-6 text-rose-600 mx-auto" />
+              <p className="text-xs font-serif text-rose-800 font-medium">
+                Unable to load image preview
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                className="text-[11px] font-serif bg-white text-ink"
+              >
+                Choose New Scan
+              </Button>
+            </div>
+          ) : (
+            <div className="relative w-full h-full p-2 flex items-center justify-center z-10">
+              {/* Using standard unoptimized img with key for guaranteed instant cache-busting & remount */}
+              <img
+                key={displayUrl}
+                src={displayUrl}
+                alt={label}
+                className="max-w-full max-h-full object-contain filter drop-shadow-[0_2px_8px_rgba(0,0,0,0.15)] transition-all duration-200"
+                onError={() => {
+                  console.warn("Failed to render preview for:", displayUrl);
+                  setImageLoadError(true);
+                }}
+              />
+            </div>
+          )}
+
+          {/* Uploading overlay */}
+          {uploading && (
+            <div className="absolute inset-0 z-20 bg-black/60 backdrop-blur-xs flex flex-col items-center justify-center gap-2 text-white p-3 text-center">
+              <Loader2 className="w-6 h-6 animate-spin text-amber-300" />
+              <p className="text-xs font-serif font-semibold text-amber-100">
+                {uploadProgress || "Updating scan..."}
+              </p>
+            </div>
+          )}
+
+          {/* Hover overlay for Replace & Rotate actions */}
+          {!uploading && (
+            <div className="absolute inset-0 z-20 bg-black/45 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleRotate90}
+                className="text-xs font-serif bg-white/95 text-ink flex items-center gap-1.5 shadow-sm hover:bg-white"
+              >
+                <RotateCw className="w-3 h-3 text-archival-amber" />
+                <span>Rotate 90°</span>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                className="text-xs font-serif bg-white/95 text-ink shadow-sm hover:bg-white"
+              >
+                Replace Scan
+              </Button>
+            </div>
+          )}
         </div>
       ) : (
         !showUrlInput && (
@@ -296,7 +381,9 @@ export function ImageDropzone({
                 {uploading ? (uploadProgress || "Uploading scan...") : "Click or drop scan here"}
               </p>
               <p className="text-[10px] font-mono text-ink-muted">
-                {aspectRatio === "landscape" ? "Horizontal landscape scan" : "High-res scans (PNG, JPG, WEBP, TIFF)"}
+                {aspectRatio === "landscape"
+                  ? "Horizontal landscape scan"
+                  : "High-res scans (PNG, JPG, WEBP, TIFF)"}
               </p>
             </div>
           </div>
@@ -311,7 +398,10 @@ export function ImageDropzone({
         accept="image/*"
         onChange={(e) => {
           if (e.target.files && e.target.files[0]) {
-            handleFileUpload(e.target.files[0]);
+            const file = e.target.files[0];
+            // Reset input value so selecting the same file again triggers onChange
+            e.target.value = "";
+            handleFileUpload(file);
           }
         }}
         className="hidden"
