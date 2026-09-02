@@ -14,6 +14,17 @@ export interface BookstoreLocation {
   notes?: string;
 }
 
+export interface CustomTimelineEvent {
+  id: string;
+  year: number;
+  label: string; // e.g. "Grand Opening", "Awarded Best Bookstore in SF", "Relocated"
+  description: string;
+  mediaId?: string; // ID of linked archival media
+  mediaUrl?: string; // Direct image URL if custom
+  mediaCaption?: string;
+  type?: "opening" | "relocation" | "closure" | "press" | "milestone";
+}
+
 export const bookstores = sqliteTable("bookstores", {
   id: text("id").primaryKey(), // slug like 'gotham-book-mart'
   name: text("name").notNull(),
@@ -22,6 +33,7 @@ export const bookstores = sqliteTable("bookstores", {
   country: text("country").notNull(),
   streetAddress: text("street_address"),
   locations: text("locations"), // JSON stringified BookstoreLocation[]
+  timelineEvents: text("timeline_events"), // JSON stringified CustomTimelineEvent[]
   yearOpened: integer("year_opened").notNull(),
   yearClosed: integer("year_closed"),
   isStillOperating: integer("is_still_operating", { mode: "boolean" }).notNull().default(false),

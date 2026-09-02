@@ -78,6 +78,7 @@ export async function initDb() {
       country TEXT NOT NULL,
       street_address TEXT,
       locations TEXT,
+      timeline_events TEXT,
       year_opened INTEGER NOT NULL,
       year_closed INTEGER,
       is_still_operating INTEGER NOT NULL DEFAULT 0,
@@ -91,9 +92,12 @@ export async function initDb() {
     );
   `);
 
-  // Migrate bookstores table if locations column does not exist
+  // Migrate bookstores table if locations or timeline_events columns do not exist
   try {
     await client.execute(`ALTER TABLE bookstores ADD COLUMN locations TEXT;`);
+  } catch (_) {}
+  try {
+    await client.execute(`ALTER TABLE bookstores ADD COLUMN timeline_events TEXT;`);
   } catch (_) {}
 
   await client.execute(`

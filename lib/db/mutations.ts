@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { bookmarks, bookstores, archivalMedia, BookstoreLocation } from "@/db/schema";
+import { bookmarks, bookstores, archivalMedia, BookstoreLocation, CustomTimelineEvent } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 export interface FullBookmarkInput {
@@ -28,6 +28,7 @@ export interface FullBookmarkInput {
     country: string;
     streetAddress?: string | null;
     locations?: BookstoreLocation[] | null;
+    timelineEvents?: CustomTimelineEvent[] | null;
     yearOpened: number;
     yearClosed?: number | null;
     isStillOperating?: boolean;
@@ -60,6 +61,7 @@ export interface BookstoreDossierInput {
     country: string;
     streetAddress?: string | null;
     locations?: BookstoreLocation[] | null;
+    timelineEvents?: CustomTimelineEvent[] | null;
     yearOpened: number;
     yearClosed?: number | null;
     isStillOperating?: boolean;
@@ -119,9 +121,12 @@ export async function saveBookmarkAndBookstore(data: FullBookmarkInput): Promise
     stateProvince: data.bookstore.stateProvince ?? existingStore?.stateProvince ?? null,
     country: data.bookstore.country || existingStore?.country || "United States",
     streetAddress: data.bookstore.streetAddress ?? existingStore?.streetAddress ?? null,
-    locations: data.bookstore.locations
-      ? JSON.stringify(data.bookstore.locations)
+    locations: data.bookstore.locations !== undefined
+      ? (data.bookstore.locations ? JSON.stringify(data.bookstore.locations) : null)
       : existingStore?.locations ?? null,
+    timelineEvents: data.bookstore.timelineEvents !== undefined
+      ? (data.bookstore.timelineEvents ? JSON.stringify(data.bookstore.timelineEvents) : null)
+      : (existingStore?.timelineEvents ?? null),
     yearOpened: Number(data.bookstore.yearOpened) || existingStore?.yearOpened || 1900,
     yearClosed: data.bookstore.yearClosed !== undefined
       ? (data.bookstore.yearClosed ? Number(data.bookstore.yearClosed) : null)
@@ -228,9 +233,12 @@ export async function saveBookstoreDossier(data: BookstoreDossierInput): Promise
     stateProvince: data.bookstore.stateProvince ?? existingStore?.stateProvince ?? null,
     country: data.bookstore.country || existingStore?.country || "United States",
     streetAddress: data.bookstore.streetAddress ?? existingStore?.streetAddress ?? null,
-    locations: data.bookstore.locations
-      ? JSON.stringify(data.bookstore.locations)
+    locations: data.bookstore.locations !== undefined
+      ? (data.bookstore.locations ? JSON.stringify(data.bookstore.locations) : null)
       : existingStore?.locations ?? null,
+    timelineEvents: data.bookstore.timelineEvents !== undefined
+      ? (data.bookstore.timelineEvents ? JSON.stringify(data.bookstore.timelineEvents) : null)
+      : (existingStore?.timelineEvents ?? null),
     yearOpened: Number(data.bookstore.yearOpened) || existingStore?.yearOpened || 1900,
     yearClosed: data.bookstore.yearClosed !== undefined
       ? (data.bookstore.yearClosed ? Number(data.bookstore.yearClosed) : null)
