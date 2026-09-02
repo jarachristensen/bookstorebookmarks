@@ -146,7 +146,7 @@ export function TrayControls({
                   : "text-ink-muted hover:text-ink"
               }`}
             >
-              Open
+              Operating
             </button>
             <button
               type="button"

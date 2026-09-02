@@ -110,7 +110,7 @@ export function BookstoreDetailView({ bookstore }: BookstoreDetailViewProps) {
 
             {bookstore.isStillOperating ? (
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#0f766e] text-white shadow-xs tracking-wider">
-                STILL OPEN
+                STILL OPERATING
               </span>
             ) : (
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-stone-800 text-stone-200 border border-stone-700 shadow-xs tracking-wider">

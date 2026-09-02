@@ -337,7 +337,7 @@ export function BookstoreDetailEditor({
 
           <div>
             <label className="block text-xs font-mono text-ink-light mb-1">
-              YEAR CLOSED (LEAVE BLANK IF OPEN)
+              YEAR CLOSED (LEAVE BLANK IF OPERATING)
             </label>
             <input
               type="number"

@@ -313,7 +313,7 @@ export function AdminTableClient({
                           </Link>
                           {s.isStillOperating ? (
                             <span className="inline-flex px-1.5 py-0.2 rounded text-[9px] font-mono bg-emerald-100 text-emerald-800 font-bold">
-                              OPEN
+                              OPERATING
                             </span>
                           ) : (
                             <span className="inline-flex px-1.5 py-0.2 rounded text-[9px] font-mono bg-stone-100 text-stone-700">

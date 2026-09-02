@@ -773,7 +773,7 @@ export function BookmarkForm({
 
           <div>
             <label className="block text-xs font-mono text-ink-light mb-1">
-              YEAR CLOSED (OR LEAVE BLANK IF OPEN)
+              YEAR CLOSED (OR LEAVE BLANK IF OPERATING)
             </label>
             <input
               type="number"
