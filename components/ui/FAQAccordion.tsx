@@ -11,67 +11,42 @@ export interface FAQItem {
 
 const DEFAULT_FAQS: FAQItem[] = [
   {
-    question: "What is the Bookstore Bookmark Archive?",
+    question: "Who is behind the bookstore bookmark archive?",
     answer: (
       <p>
-        The Bookstore Bookmark Archive is an independent digital preservation project dedicated to scanning, cataloging, and researching bookstore bookmarks and the cultural history of the independent bookshops that created and distributed them.
+        My name is Jara. If it's not already obvious, I love ephemera, books, city histories and collecting things. Bookstore bookmarks neatly covers all of the above.
       </p>
     ),
   },
   {
-    question: "How can I donate bookmarks to the archive?",
+    question: "What kind of bookmarks do you want?",
     answer: (
       <p>
-        We gladly accept physical bookmark donations! Every donated specimen is high-resolution photographed, cataloged with physical dimensions, and researched. We also add a permanent note attributing you for the donation. Please visit our{" "}
-        <Link href="/contact" className="text-archival-oxblood font-semibold hover:underline">
-          Contact page
-        </Link>{" "}
-        to request our curatorial mailing address.
+        Any bookstore bookmark. New or old, modern or outdated. Eventually I will be adding a separate library for...well...libraries! So any library bookmarks are also welcome. Online bookstore bookmarks are welcome, as are author/publisher bookmarks.
       </p>
     ),
   },
   {
-    question: "How do you research and construct bookstore timelines?",
+    question: "Can I just send you photographs of my bookmarks?",
     answer: (
       <p>
-        We cross-examine primary historical sources including newspaper archives, grand opening announcements, vintage storefront advertisements, city directories, and first-hand accounts from former booksellers and patrons to reconstruct accurate dates, relocations, and lore.
+        Currently I am only cataloging items I have in my physical possession. Part of this project is organizing and protecting the bookmarks to ensure they are around for many decades to come.
       </p>
     ),
   },
   {
-    question: "Why are bookmarks displayed to true physical scale?",
+    question: "I have some, but they are in terrible condition, do you still want them?",
     answer: (
       <p>
-        Unlike uniform thumbnail galleries, our Archival Specimen Tray renders bookmarks proportional to their exact physical inch measurements (e.g., 2.25″ × 7.5″) on a velvet collector's tray so you can experience the true physical format, proportions, and tactile feel of each piece.
+        Anything you have a question about, you can send me a picture on instagram or through email. Don't be afraid to ask! I don't mind damaged bookmarks, especially if I don't have it in my collection.
       </p>
     ),
   },
   {
-    question: "How are bookmarks scanned and digitized?",
+    question: "Will you buy the bookmarks from me? or pay for shipping?",
     answer: (
       <p>
-        Specimens are captured with archival precision, preserving delicate paper textures, deckled edges, letterpress ink impressions, and reverse-side stamps.
-      </p>
-    ),
-  },
-  {
-    question: "Can I submit a correction, personal story, or historic shop photo?",
-    answer: (
-      <p>
-        Yes! If you worked at one of these legendary bookstores, remember visiting, or have historic photographs or corrections to share, we would love to hear from you. Reach out via our{" "}
-        <Link href="/contact" className="text-archival-oxblood font-semibold hover:underline">
-          Contact page
-        </Link>{" "}
-        or on Instagram at{" "}
-        <a
-          href="https://www.instagram.com/bookstorebookmarks"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-archival-oxblood font-semibold hover:underline font-mono"
-        >
-          @bookstorebookmarks
-        </a>
-        .
+        This is entirely possible, just send me an email letting me know how many you have/what you are asking. I would be happy to put forth some money to expand this collection.
       </p>
     ),
   },
