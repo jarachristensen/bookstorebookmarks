@@ -16,10 +16,6 @@ export default function ContactPage() {
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
         {/* Hero Section */}
         <section className="text-center space-y-3 pb-6 border-b border-parchment-border">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100/70 border border-amber-300 text-amber-900 text-xs font-mono font-bold tracking-wide uppercase">
-            <Mail className="w-3.5 h-3.5 text-archival-oxblood" />
-            <span>Curatorial Inquiries &amp; Contributions</span>
-          </div>
           <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-ink tracking-tight">
             Contribute to the Archive
           </h1>
@@ -39,7 +35,7 @@ export default function ContactPage() {
                 Donate a Bookstore Bookmark
               </h2>
               <p className="font-serif text-xs sm:text-sm text-ink-light leading-relaxed">
-                If you have vintage bookstore bookmarks tucked inside old books, in shoe boxes, or inherited from family, you can mail them to the archive. Every donated specimen is scanned at 1200 DPI archival resolution, cataloged with physical dimensions, and permanently attributed to your contribution.
+                If you have some bookstore bookmarks you'd like to donate, you can mail them to the us at the archive. Every donated specimen is photographed, cataloged and researched. We will also add a note attributing you for the donation of the bookmark.
               </p>
             </div>
 
@@ -48,7 +44,7 @@ export default function ContactPage() {
                 Mailing &amp; Donation Process:
               </p>
               <p className="font-serif text-xs text-ink-light">
-                Reach out to us via email or Instagram DM to request the curatorial mailing address and packaging tips for safe transit.
+                Reach out to us via email to request the curatorial mailing address.
               </p>
             </div>
           </div>
@@ -63,7 +59,7 @@ export default function ContactPage() {
                 Share Stories &amp; Corrections
               </h2>
               <p className="font-serif text-xs sm:text-sm text-ink-light leading-relaxed">
-                Did you work at one of these legendary bookstores? Do you know the exact year a store relocated to a new address, or have a photograph of the original storefront? We love hearing personal memories and receiving factual corrections.
+                Did you work at one of these legendary bookstores? Do you remember visiting? Do you have a photograph you'd like to share? We love hearing personal memories and receiving factual corrections. If we add your story, quote, or photograph to our archive, you will be attributed for your contribution
               </p>
             </div>
 

@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { Header } from "@/components/ui/Header";
-import { BookOpen, Sparkles, Heart, Compass, Mail, ArrowRight, Instagram } from "lucide-react";
+import { BookOpen, ArrowRight, Instagram } from "lucide-react";
 
 export const metadata = {
   title: "About the Archive | The Bookstore Bookmark Archive",
@@ -15,16 +15,12 @@ export default function AboutPage() {
 
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
         {/* Hero Section */}
-        <section className="text-center space-y-4 pb-6 border-b border-parchment-border">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100/70 border border-amber-300 text-amber-900 text-xs font-mono font-bold tracking-wide uppercase">
-            <Sparkles className="w-3.5 h-3.5 text-archival-oxblood" />
-            <span>Curatorial Statement &amp; Mission</span>
-          </div>
+        <section className="text-center space-y-3 pb-6 border-b border-parchment-border">
           <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-ink tracking-tight">
             Keeping Our Place in Literary History
           </h1>
           <p className="font-serif text-base sm:text-lg text-ink-light max-w-2xl mx-auto italic leading-relaxed">
-            A digital sanctuary dedicated to the artistry, history, and radical spirit of independent bookstore bookmarks.
+            A digital sanctuary dedicated to the often overlooked artistry and history of bookstore bookmarks, and the bookstores that created them.
           </p>
         </section>
 
@@ -36,33 +32,27 @@ export default function AboutPage() {
           </h2>
 
           <p>
-            When you bought a paperback from a secondhand bookshop in Greenwich Village in 1948, or picked up a poetry chapbook along the Seine in 1965, the bookseller slipped a small slip of cardstock between the pages. It was free, utilitarian, and easily discarded.
+            A universal experience. You hand the clerk your money, but before the bookseller hands over your stack of books, they quietly slip a small piece of cardstock between the pages. The bookstore bookmark. It's free, utilitarian, and easily forgotten and discarded.
           </p>
 
           <p>
-            Yet these humble slips of paper—printed on letterpress cream cardstock, adorned with woodcut illustrations, stamped with opening hours and poetic slogans—became tangible relics of literary communities. They marked not only our place in a novel, but a specific moment in time and geography.
+            Yet these humble slips of paper—printed on cardstock, or even just printer paper, adorned with illustrations, stamped with opening hours and poetic slogans—became tangible relics of literary communities. They marked not only our place in a novel, but a specific moment in time and geography.
+          </p>
+
+          <p>
+            A bookmark is the quietest ambassador of a bookstore. Decades after the OPEN has dimmed and the lease has expired, the bookmark remains. Often inside a forgotten volume.
           </p>
 
           <div className="p-4 rounded-xl bg-parchment/60 border-l-4 border-archival-oxblood my-6 font-serif italic text-ink">
-            “A bookmark is the quietest ambassador of a bookstore. Decades after the neon sign has dimmed and the lease has expired, the bookmark remains inside a forgotten volume on a library shelf.”
+            “A bit like viewing gravestones, they underscore the often-fleeting nature of success” — Larry Hoefling, Owner of the (now closed) McHuston's Bookstore in Broken Arrow, OK.
           </div>
 
-          <h3 className="font-serif text-xl font-bold text-ink pt-4">Our Archival Mission</h3>
-          <p>
-            <strong>The Bookstore Bookmark Archive</strong> was established to catalog, scan, and preserve these physical specimens at true archival fidelity. We document:
-          </p>
-
-          <ul className="space-y-2 list-disc pl-5 font-serif text-sm">
-            <li>
-              <strong>Physical Specimen Analysis:</strong> Precise measurements, paper stock composition, letterpress impressions, and condition grades.
-            </li>
-            <li>
-              <strong>Bookstore Heritage Dossiers:</strong> Founding dates, addresses, relocation journeys, and notable patron lore.
-            </li>
-            <li>
-              <strong>Primary Press Clippings:</strong> Faded newsprint articles, grand opening announcements, and historic shop photographs.
-            </li>
-          </ul>
+          <div className="pt-4 border-t border-parchment-border/70 space-y-3">
+            <h3 className="font-serif text-xl font-bold text-ink">Our Archival Mission:</h3>
+            <p>
+              The Bookstore Bookmark Archive was established to preserve, catalog, and research these ephemeral pieces of history and learn about the bookstores that distributed them.
+            </p>
+          </div>
 
           <div className="pt-6 border-t border-parchment-border flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">

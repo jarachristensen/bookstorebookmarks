@@ -24,7 +24,7 @@ export function Header() {
     { href: "/", label: "Archive Tray", icon: Bookmark },
     { href: "/bookstores", label: "Bookstores", icon: Building2 },
     { href: "/about", label: "About Archive", icon: Info },
-    { href: "/contact", label: "Contact & Stories", icon: Mail },
+    { href: "/contact", label: "Contact", icon: Mail },
   ];
 
   return (
