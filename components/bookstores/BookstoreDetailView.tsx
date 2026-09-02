@@ -255,7 +255,7 @@ export function BookstoreDetailView({ bookstore }: BookstoreDetailViewProps) {
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="font-serif text-sm font-mono font-bold uppercase tracking-wider text-archival-oxblood">
-            Bookstore Timeline &amp; Relocations
+            Timeline
           </h2>
           <span className="text-xs font-serif text-ink-muted italic hidden sm:inline">
             Click any milestone with a clipping or photo to inspect it
@@ -275,7 +275,7 @@ export function BookstoreDetailView({ bookstore }: BookstoreDetailViewProps) {
           <section className="p-6 sm:p-8 rounded-2xl bg-white border border-parchment-border shadow-xs space-y-4">
             <h2 className="font-serif text-xl font-bold text-ink flex items-center gap-2 border-b border-parchment-border pb-3">
               <FileText className="w-5 h-5 text-archival-oxblood" />
-              <span>Bookstore Heritage &amp; History</span>
+              <span>Bookstore History</span>
             </h2>
 
             <div
