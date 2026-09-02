@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { BookstoreWithDetails, BookmarkWithDetails } from "@/lib/db/queries";
+import { ArchivalMedia } from "@/db/schema";
 import { BookmarkInspector } from "@/components/exhibit/BookmarkInspector";
 import { ClippingLightbox } from "@/components/exhibit/ClippingLightbox";
 import { BookstoreHorizontalTimeline } from "@/components/bookstores/BookstoreHorizontalTimeline";
@@ -17,7 +18,6 @@ import {
   ChevronLeft,
   ChevronRight,
   BookOpen,
-  ArrowUpRight,
 } from "lucide-react";
 import { marked } from "marked";
 
@@ -46,7 +46,7 @@ function getCleanCaption(caption?: string | null): string | null {
 
 export function BookstoreDetailView({ bookstore }: BookstoreDetailViewProps) {
   const [selectedBookmark, setSelectedBookmark] = useState<BookmarkWithDetails | null>(null);
-  const [selectedMediaIndex, setSelectedMediaIndex] = useState<number | null>(null);
+  const [selectedLightboxMedia, setSelectedLightboxMedia] = useState<ArchivalMedia | null>(null);
   const [mediaFilter, setMediaFilter] = useState<"all" | "newspaper" | "photo">("all");
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
 
@@ -149,14 +149,18 @@ export function BookstoreDetailView({ bookstore }: BookstoreDetailViewProps) {
         <div className="lg:col-span-7 flex flex-col items-center">
           <div className="relative w-full rounded-2xl bg-stone-900 border border-parchment-border overflow-hidden shadow-xs flex items-center justify-center p-2 sm:p-3">
             {currentPhoto ? (
-              <div className="relative w-full h-[320px] sm:h-[400px] flex items-center justify-center">
+              <div
+                onClick={() => setSelectedLightboxMedia(currentPhoto)}
+                className="relative w-full h-[320px] sm:h-[400px] flex items-center justify-center cursor-pointer group"
+                title="Click to view full photo in high resolution"
+              >
                 <Image
                   src={currentPhoto.imageUrl}
                   alt={getCleanCaption(currentPhoto.caption) || `${bookstore.name} Storefront`}
                   fill
                   unoptimized
                   priority
-                  className="object-contain object-center"
+                  className="object-contain object-center group-hover:scale-[1.01] transition-transform duration-200"
                 />
 
                 {/* Carousel navigation if multiple photos */}
@@ -164,7 +168,10 @@ export function BookstoreDetailView({ bookstore }: BookstoreDetailViewProps) {
                   <>
                     <button
                       type="button"
-                      onClick={prevPhoto}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        prevPhoto();
+                      }}
                       aria-label="Previous photo"
                       className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 hover:bg-black/80 text-white border border-white/20 transition-all cursor-pointer shadow-md"
                     >
@@ -172,7 +179,10 @@ export function BookstoreDetailView({ bookstore }: BookstoreDetailViewProps) {
                     </button>
                     <button
                       type="button"
-                      onClick={nextPhoto}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        nextPhoto();
+                      }}
                       aria-label="Next photo"
                       className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 hover:bg-black/80 text-white border border-white/20 transition-all cursor-pointer shadow-md"
                     >
@@ -241,18 +251,21 @@ export function BookstoreDetailView({ bookstore }: BookstoreDetailViewProps) {
         </div>
       </div>
 
-      {/* 4. Middle Section: Horizontal Heritage & Relocation Timeline */}
+      {/* 4. Middle Section: Horizontal Heritage & Relocation Timeline (Interactive & Clickable to Lightbox) */}
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="font-serif text-sm font-mono font-bold uppercase tracking-wider text-archival-oxblood">
             Bookstore Timeline &amp; Relocations
           </h2>
           <span className="text-xs font-serif text-ink-muted italic hidden sm:inline">
-            Scroll horizontally to explore milestones across operating eras
+            Click any milestone with a clipping or photo to inspect it
           </span>
         </div>
 
-        <BookstoreHorizontalTimeline bookstore={bookstore} />
+        <BookstoreHorizontalTimeline
+          bookstore={bookstore}
+          onSelectMedia={(media) => setSelectedLightboxMedia(media)}
+        />
       </section>
 
       {/* 5. Lower Section: Historical Narrative & Archival Press Gallery */}
@@ -308,13 +321,12 @@ export function BookstoreDetailView({ bookstore }: BookstoreDetailViewProps) {
 
               <div className="space-y-3">
                 {filteredMedia.slice(0, 4).map((media, idx) => {
-                  const originalIndex = bookstore.archivalMedia.findIndex((m) => m.id === media.id);
                   const displayCaption = getCleanCaption(media.caption) || "Archival Press Clipping";
 
                   return (
                     <div
                       key={media.id || `media-${idx}`}
-                      onClick={() => setSelectedMediaIndex(originalIndex >= 0 ? originalIndex : idx)}
+                      onClick={() => setSelectedLightboxMedia(media)}
                       className="group cursor-pointer flex items-center gap-3 p-2.5 rounded-xl border border-parchment-border bg-parchment/30 hover:bg-parchment-light transition-all shadow-2xs"
                     >
                       <div className="relative w-16 h-16 rounded bg-stone-100 overflow-hidden shrink-0 border border-parchment-border">
@@ -354,11 +366,11 @@ export function BookstoreDetailView({ bookstore }: BookstoreDetailViewProps) {
         />
       )}
 
-      {/* Press Clipping Lightbox */}
-      {selectedMediaIndex !== null && bookstore.archivalMedia[selectedMediaIndex] && (
+      {/* Press Clipping / Photo Lightbox Popup */}
+      {selectedLightboxMedia && (
         <ClippingLightbox
-          media={bookstore.archivalMedia[selectedMediaIndex]}
-          onClose={() => setSelectedMediaIndex(null)}
+          media={selectedLightboxMedia}
+          onClose={() => setSelectedLightboxMedia(null)}
         />
       )}
     </div>
