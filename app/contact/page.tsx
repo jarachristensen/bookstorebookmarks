@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { Header } from "@/components/ui/Header";
+import { FAQAccordion } from "@/components/ui/FAQAccordion";
 import { Mail, Send, Heart, MapPin, Instagram, Sparkles, AlertCircle, BookOpen } from "lucide-react";
 
 export const metadata = {
@@ -13,7 +14,7 @@ export default function ContactPage() {
     <div className="min-h-screen flex flex-col bg-[#FBF9F5]">
       <Header />
 
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
         {/* Hero Section */}
         <section className="text-center space-y-3 pb-6 border-b border-parchment-border">
           <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-ink tracking-tight">
@@ -113,6 +114,9 @@ export default function ContactPage() {
             </a>
           </div>
         </section>
+
+        {/* Interactive FAQ Section */}
+        <FAQAccordion />
       </main>
 
       <footer className="border-t border-parchment-border py-8 bg-[#F4EFE6] text-center text-xs font-serif text-ink-muted">
