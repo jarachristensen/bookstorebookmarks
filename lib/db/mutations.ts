@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { bookmarks, bookstores, archivalMedia } from "@/db/schema";
+import { bookmarks, bookstores, archivalMedia, BookstoreLocation } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 export interface FullBookmarkInput {
@@ -27,6 +27,7 @@ export interface FullBookmarkInput {
     stateProvince?: string | null;
     country: string;
     streetAddress?: string | null;
+    locations?: BookstoreLocation[] | null;
     yearOpened: number;
     yearClosed?: number | null;
     isStillOperating?: boolean;
@@ -44,6 +45,40 @@ export interface FullBookmarkInput {
     sourcePublication?: string | null;
     publicationDate?: string | null;
     transcriptionText?: string | null;
+    isStorefront?: boolean;
+    mediaTag?: string | null;
+    displayOrder?: number;
+  }>;
+}
+
+export interface BookstoreDossierInput {
+  bookstore: {
+    id: string;
+    name: string;
+    city: string;
+    stateProvince?: string | null;
+    country: string;
+    streetAddress?: string | null;
+    locations?: BookstoreLocation[] | null;
+    yearOpened: number;
+    yearClosed?: number | null;
+    isStillOperating?: boolean;
+    founders?: string | null;
+    specialties?: string[];
+    historicalBlurb: string;
+    notablePatronsTrivia?: string[];
+    websiteUrl?: string | null;
+  };
+  archivalMedia?: Array<{
+    id?: string;
+    mediaType: string;
+    imageUrl: string;
+    caption: string;
+    sourcePublication?: string | null;
+    publicationDate?: string | null;
+    transcriptionText?: string | null;
+    isStorefront?: boolean;
+    mediaTag?: string | null;
     displayOrder?: number;
   }>;
 }
@@ -84,6 +119,9 @@ export async function saveBookmarkAndBookstore(data: FullBookmarkInput): Promise
     stateProvince: data.bookstore.stateProvince ?? existingStore?.stateProvince ?? null,
     country: data.bookstore.country || existingStore?.country || "United States",
     streetAddress: data.bookstore.streetAddress ?? existingStore?.streetAddress ?? null,
+    locations: data.bookstore.locations
+      ? JSON.stringify(data.bookstore.locations)
+      : existingStore?.locations ?? null,
     yearOpened: Number(data.bookstore.yearOpened) || existingStore?.yearOpened || 1900,
     yearClosed: data.bookstore.yearClosed !== undefined
       ? (data.bookstore.yearClosed ? Number(data.bookstore.yearClosed) : null)
@@ -156,6 +194,8 @@ export async function saveBookmarkAndBookstore(data: FullBookmarkInput): Promise
         sourcePublication: item.sourcePublication || null,
         publicationDate: item.publicationDate || null,
         transcriptionText: item.transcriptionText || null,
+        isStorefront: Boolean(item.isStorefront),
+        mediaTag: item.mediaTag || null,
         displayOrder: item.displayOrder !== undefined ? item.displayOrder : idx,
         createdAt: now,
       };
@@ -168,6 +208,82 @@ export async function saveBookmarkAndBookstore(data: FullBookmarkInput): Promise
   }
 
   return bookmarkId;
+}
+
+/**
+ * Upsert bookstore dossier and its archival media directly.
+ */
+export async function saveBookstoreDossier(data: BookstoreDossierInput): Promise<string> {
+  const now = new Date().toISOString();
+  const bookstoreId = data.bookstore.id || generateSlug(data.bookstore.name);
+
+  const existingStore = await db.query.bookstores.findFirst({
+    where: eq(bookstores.id, bookstoreId),
+  });
+
+  const bookstoreValues = {
+    id: bookstoreId,
+    name: data.bookstore.name || existingStore?.name || "Independent Bookstore",
+    city: data.bookstore.city || existingStore?.city || "Unknown City",
+    stateProvince: data.bookstore.stateProvince ?? existingStore?.stateProvince ?? null,
+    country: data.bookstore.country || existingStore?.country || "United States",
+    streetAddress: data.bookstore.streetAddress ?? existingStore?.streetAddress ?? null,
+    locations: data.bookstore.locations
+      ? JSON.stringify(data.bookstore.locations)
+      : existingStore?.locations ?? null,
+    yearOpened: Number(data.bookstore.yearOpened) || existingStore?.yearOpened || 1900,
+    yearClosed: data.bookstore.yearClosed !== undefined
+      ? (data.bookstore.yearClosed ? Number(data.bookstore.yearClosed) : null)
+      : (existingStore?.yearClosed ?? null),
+    isStillOperating: data.bookstore.isStillOperating !== undefined
+      ? Boolean(data.bookstore.isStillOperating)
+      : (existingStore?.isStillOperating ?? false),
+    founders: data.bookstore.founders ?? existingStore?.founders ?? null,
+    specialties: JSON.stringify(data.bookstore.specialties || []),
+    historicalBlurb: data.bookstore.historicalBlurb || existingStore?.historicalBlurb || "",
+    notablePatronsTrivia: JSON.stringify(data.bookstore.notablePatronsTrivia || []),
+    websiteUrl: data.bookstore.websiteUrl ?? existingStore?.websiteUrl ?? null,
+    createdAt: existingStore?.createdAt || now,
+    updatedAt: now,
+  };
+
+  await db.insert(bookstores).values(bookstoreValues).onConflictDoUpdate({
+    target: bookstores.id,
+    set: {
+      ...bookstoreValues,
+      createdAt: undefined,
+      updatedAt: now,
+    },
+  });
+
+  // Upsert archival media
+  if (data.archivalMedia && data.archivalMedia.length > 0) {
+    for (const [idx, item] of data.archivalMedia.entries()) {
+      if (!item.imageUrl) continue;
+      const mediaId = item.id || `media-${bookstoreId}-${Date.now()}-${idx}`;
+      const mediaValues = {
+        id: mediaId,
+        bookstoreId: bookstoreId,
+        mediaType: item.mediaType || "photo",
+        imageUrl: item.imageUrl,
+        caption: item.caption || "Archival Press Clipping",
+        sourcePublication: item.sourcePublication || null,
+        publicationDate: item.publicationDate || null,
+        transcriptionText: item.transcriptionText || null,
+        isStorefront: Boolean(item.isStorefront),
+        mediaTag: item.mediaTag || null,
+        displayOrder: item.displayOrder !== undefined ? item.displayOrder : idx,
+        createdAt: now,
+      };
+
+      await db.insert(archivalMedia).values(mediaValues).onConflictDoUpdate({
+        target: archivalMedia.id,
+        set: mediaValues,
+      });
+    }
+  }
+
+  return bookstoreId;
 }
 
 /**

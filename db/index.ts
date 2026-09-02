@@ -65,7 +65,8 @@ export const client = createClient({
 export const db = drizzle(client, { schema });
 
 /**
- * Helper to initialize the database tables if they do not exist yet.
+ * Helper to initialize the database tables if they do not exist yet,
+ * and apply non-destructive schema migrations.
  */
 export async function initDb() {
   await client.execute(`
@@ -76,6 +77,7 @@ export async function initDb() {
       state_province TEXT,
       country TEXT NOT NULL,
       street_address TEXT,
+      locations TEXT,
       year_opened INTEGER NOT NULL,
       year_closed INTEGER,
       is_still_operating INTEGER NOT NULL DEFAULT 0,
@@ -88,6 +90,11 @@ export async function initDb() {
       updated_at TEXT NOT NULL
     );
   `);
+
+  // Migrate bookstores table if locations column does not exist
+  try {
+    await client.execute(`ALTER TABLE bookstores ADD COLUMN locations TEXT;`);
+  } catch (_) {}
 
   await client.execute(`
     CREATE TABLE IF NOT EXISTS bookmarks (
@@ -121,8 +128,18 @@ export async function initDb() {
       source_publication TEXT,
       publication_date TEXT,
       transcription_text TEXT,
+      is_storefront INTEGER NOT NULL DEFAULT 0,
+      media_tag TEXT,
       display_order INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL
     );
   `);
+
+  // Migrate archival_media table if is_storefront or media_tag columns do not exist
+  try {
+    await client.execute(`ALTER TABLE archival_media ADD COLUMN is_storefront INTEGER NOT NULL DEFAULT 0;`);
+  } catch (_) {}
+  try {
+    await client.execute(`ALTER TABLE archival_media ADD COLUMN media_tag TEXT;`);
+  } catch (_) {}
 }

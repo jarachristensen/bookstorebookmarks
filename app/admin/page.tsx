@@ -1,9 +1,8 @@
 import React from "react";
 import { getAdminSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { getBookmarksWithBookstores } from "@/lib/db/queries";
+import { getBookmarksWithBookstores, getAllBookstores } from "@/lib/db/queries";
 import Link from "next/link";
-import Image from "next/image";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import {
@@ -17,6 +16,7 @@ import {
   Edit,
   Trash2,
   Lock,
+  Building2,
 } from "lucide-react";
 import { AdminTableClient } from "./AdminTableClient";
 
@@ -28,8 +28,12 @@ export default async function AdminDashboardPage() {
     redirect("/admin/login");
   }
 
-  const bookmarks = await getBookmarksWithBookstores();
-  const totalBookstores = new Set(bookmarks.map((b) => b.bookstoreId)).size;
+  const [bookmarks, bookstores] = await Promise.all([
+    getBookmarksWithBookstores(),
+    getAllBookstores(),
+  ]);
+
+  const totalBookstores = bookstores.length;
   const totalClippings = bookmarks.reduce(
     (acc, b) => acc + (b.bookstore?.archivalMedia.length || 0),
     0
@@ -119,29 +123,36 @@ export default async function AdminDashboardPage() {
           <div>
             <h2 className="font-serif text-lg font-bold text-ink">Archive Collection Index</h2>
             <p className="text-xs text-ink-muted font-serif italic">
-              Manage your collection of bookmarks and historical research dossiers.
+              Manage your collection of bookmarks, historic bookstore dossiers, and multi-location timelines.
             </p>
           </div>
 
-          <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
             <a href="/api/export" download>
-              <Button variant="outline" size="sm" className="text-xs font-serif flex items-center gap-1.5">
+              <Button variant="outline" size="sm" className="text-xs font-serif flex items-center gap-1.5 bg-white">
                 <Download className="w-3.5 h-3.5" />
-                <span>Export Archive (JSON)</span>
+                <span>Export (JSON)</span>
               </Button>
             </a>
 
-            <Link href="/admin/new" className="w-full sm:w-auto">
-              <Button variant="oxblood" size="sm" className="w-full sm:w-auto text-xs font-serif flex items-center justify-center gap-1.5">
+            <Link href="/admin/bookstores/new">
+              <Button variant="outline" size="sm" className="text-xs font-serif flex items-center gap-1.5 bg-white">
+                <Building2 className="w-3.5 h-3.5 text-archival-spruce" />
+                <span>Add Bookstore</span>
+              </Button>
+            </Link>
+
+            <Link href="/admin/new">
+              <Button variant="oxblood" size="sm" className="text-xs font-serif flex items-center gap-1.5">
                 <Plus className="w-3.5 h-3.5" />
-                <span>Add New Bookmark</span>
+                <span>Add Bookmark</span>
               </Button>
             </Link>
           </div>
         </div>
 
         {/* Client Table Component */}
-        <AdminTableClient initialBookmarks={bookmarks} />
+        <AdminTableClient initialBookmarks={bookmarks} initialBookstores={bookstores} />
       </main>
     </div>
   );

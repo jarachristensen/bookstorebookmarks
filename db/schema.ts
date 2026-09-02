@@ -1,6 +1,19 @@
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import { relations } from "drizzle-orm";
 
+export interface BookstoreLocation {
+  id: string;
+  label: string; // "1st Location", "2nd Location", "3rd Location", "New Location / Branch", "Current Location", etc.
+  streetAddress: string;
+  city: string;
+  stateProvince?: string;
+  country?: string;
+  yearsActive?: string; // e.g. "1950–1955"
+  isMovedFrom?: boolean; // toggled true if bookstore moved from here to next address
+  isCurrent?: boolean;
+  notes?: string;
+}
+
 export const bookstores = sqliteTable("bookstores", {
   id: text("id").primaryKey(), // slug like 'gotham-book-mart'
   name: text("name").notNull(),
@@ -8,6 +21,7 @@ export const bookstores = sqliteTable("bookstores", {
   stateProvince: text("state_province"),
   country: text("country").notNull(),
   streetAddress: text("street_address"),
+  locations: text("locations"), // JSON stringified BookstoreLocation[]
   yearOpened: integer("year_opened").notNull(),
   yearClosed: integer("year_closed"),
   isStillOperating: integer("is_still_operating", { mode: "boolean" }).notNull().default(false),
@@ -53,6 +67,8 @@ export const archivalMedia = sqliteTable("archival_media", {
   sourcePublication: text("source_publication"),
   publicationDate: text("publication_date"),
   transcriptionText: text("transcription_text"),
+  isStorefront: integer("is_storefront", { mode: "boolean" }).notNull().default(false),
+  mediaTag: text("media_tag"), // 'storefront' | 'interior' | 'exterior' | 'press' | 'ephemera'
   displayOrder: integer("display_order").notNull().default(0),
   createdAt: text("created_at").notNull(),
 });

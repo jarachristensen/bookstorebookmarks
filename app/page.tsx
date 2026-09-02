@@ -7,7 +7,7 @@ import { Header } from "@/components/ui/Header";
 import { ExhibitGalleryClient } from "@/components/exhibit/ExhibitGalleryClient";
 import { db } from "@/db";
 import { bookmarks as bookmarksTable } from "@/db/schema";
-import { BookOpen, Compass, Lock } from "lucide-react";
+import { BookOpen, Compass, Lock, Instagram, ArrowRight } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -49,12 +49,16 @@ export default async function HomePage() {
         <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
           {/* Stats Boxes (Matching Curator's Cabinet styling) */}
           <div className="flex flex-wrap items-center gap-2.5">
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs sm:text-sm rounded-md bg-white border border-parchment-border text-ink-light shadow-2xs font-medium">
+            <Link
+              href="/bookstores"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs sm:text-sm rounded-md bg-white border border-parchment-border text-ink-light hover:text-archival-oxblood hover:border-archival-oxblood shadow-2xs font-medium transition-all group"
+              title="Browse all historic bookstores"
+            >
               <BookOpen className="w-3.5 h-3.5 text-archival-oxblood" />
               <span>
-                <strong className="text-ink font-semibold">{totalBookstores}</strong> Historic Bookstores
+                <strong className="text-ink font-semibold group-hover:text-archival-oxblood">{totalBookstores}</strong> Historic Bookstores ↗
               </span>
-            </div>
+            </Link>
 
             <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs sm:text-sm rounded-md bg-white border border-parchment-border text-ink-light shadow-2xs font-medium">
               <Compass className="w-3.5 h-3.5 text-archival-spruce" />
@@ -81,7 +85,31 @@ export default async function HomePage() {
       </main>
 
       <footer className="border-t border-parchment-border py-8 bg-[#F4EFE6] text-center text-xs font-serif text-ink-muted">
-        <div className="max-w-7xl mx-auto px-4 space-y-2">
+        <div className="max-w-7xl mx-auto px-4 space-y-3">
+          <div className="flex items-center justify-center gap-4 text-xs font-serif text-ink-light">
+            <Link href="/bookstores" className="hover:text-archival-oxblood hover:underline">
+              Bookstores
+            </Link>
+            <span>·</span>
+            <Link href="/about" className="hover:text-archival-oxblood hover:underline">
+              About Archive
+            </Link>
+            <span>·</span>
+            <Link href="/contact" className="hover:text-archival-oxblood hover:underline">
+              Donate &amp; Submissions
+            </Link>
+            <span>·</span>
+            <a
+              href="https://www.instagram.com/bookstorebookmarks"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 hover:text-rose-700 hover:underline"
+            >
+              <Instagram className="w-3.5 h-3.5 text-pink-600" />
+              <span>@bookstorebookmarks</span>
+            </a>
+          </div>
+
           <p className="font-semibold text-ink">
             Bookstore Bookmark Archive &amp; Historical Research Dossier
           </p>

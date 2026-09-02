@@ -1,10 +1,22 @@
 "use client";
 
-import React, { useState } from "react";
-import { Plus, Trash2, Newspaper, Image as ImageIcon, FileText, Sparkles, Loader2 } from "lucide-react";
+import React, { useState, useRef } from "react";
+import {
+  Plus,
+  Trash2,
+  Newspaper,
+  Image as ImageIcon,
+  FileText,
+  Sparkles,
+  Loader2,
+  UploadCloud,
+  Star,
+  CheckCircle2,
+} from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { ImageDropzone } from "./ImageDropzone";
 import { parseClippingFilename } from "@/lib/utils/clipping-parser";
+import { compressImageIfNeeded } from "@/lib/utils/image-compressor";
 
 export interface MediaItem {
   id?: string;
@@ -14,6 +26,8 @@ export interface MediaItem {
   sourcePublication?: string;
   publicationDate?: string;
   transcriptionText?: string;
+  isStorefront?: boolean;
+  mediaTag?: string;
 }
 
 export interface MediaManagerProps {
@@ -25,6 +39,9 @@ export function MediaManager({ mediaList, onChange }: MediaManagerProps) {
   const [ocrLoadingIndex, setOcrLoadingIndex] = useState<number | null>(null);
   const [ocrStatusText, setOcrStatusText] = useState<string>("");
   const [ocrError, setOcrError] = useState<string>("");
+  const [bulkUploading, setBulkUploading] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState<string>("");
+  const bulkFileInputRef = useRef<HTMLInputElement>(null);
 
   const addMedia = () => {
     onChange([
@@ -37,6 +54,7 @@ export function MediaManager({ mediaList, onChange }: MediaManagerProps) {
         sourcePublication: "",
         publicationDate: "",
         transcriptionText: "",
+        isStorefront: false,
       },
     ]);
   };
@@ -48,6 +66,14 @@ export function MediaManager({ mediaList, onChange }: MediaManagerProps) {
   const updateMedia = (index: number, updated: Partial<MediaItem>) => {
     const next = [...mediaList];
     next[index] = { ...next[index], ...updated };
+    onChange(next);
+  };
+
+  const setStorefrontHero = (selectedIndex: number) => {
+    const next = mediaList.map((item, idx) => ({
+      ...item,
+      isStorefront: idx === selectedIndex ? !item.isStorefront : false,
+    }));
     onChange(next);
   };
 
@@ -75,6 +101,69 @@ export function MediaManager({ mediaList, onChange }: MediaManagerProps) {
     }
 
     updateMedia(index, updates);
+  };
+
+  /**
+   * Bulk upload multiple scans at once, auto-parsing titles & dates from filenames
+   */
+  const handleBulkUploadFiles = async (files: FileList | File[]) => {
+    const fileArray = Array.from(files).filter((f) => f.type.startsWith("image/"));
+    if (fileArray.length === 0) return;
+
+    setBulkUploading(true);
+    setOcrError("");
+
+    const newItems: MediaItem[] = [];
+
+    for (let i = 0; i < fileArray.length; i++) {
+      const file = fileArray[i];
+      setBulkProgress(`Uploading ${i + 1} of ${fileArray.length}: ${file.name}...`);
+
+      try {
+        const optimizedFile = await compressImageIfNeeded(file);
+        const formData = new FormData();
+        formData.append("file", optimizedFile);
+
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!res.ok) {
+          console.error("Bulk upload failed for file:", file.name);
+          continue;
+        }
+
+        const data = await res.json();
+        const parsed = parseClippingFilename(file.name);
+
+        const isLikelyPhoto =
+          file.name.toLowerCase().includes("storefront") ||
+          file.name.toLowerCase().includes("exterior") ||
+          file.name.toLowerCase().includes("interior") ||
+          file.name.toLowerCase().includes("photo");
+
+        newItems.push({
+          id: `media-${Date.now()}-${i}`,
+          mediaType: isLikelyPhoto ? "photo" : "newspaper",
+          imageUrl: data.url,
+          caption: parsed.caption || "Archival Press Clipping",
+          sourcePublication: parsed.sourcePublication || "",
+          publicationDate: parsed.publicationDate || "",
+          transcriptionText: "",
+          isStorefront: file.name.toLowerCase().includes("storefront"),
+        });
+      } catch (err) {
+        console.error("Failed uploading bulk file:", file.name, err);
+      }
+    }
+
+    if (newItems.length > 0) {
+      onChange([...mediaList, ...newItems]);
+    }
+
+    setBulkUploading(false);
+    setBulkProgress("");
   };
 
   const handleRunOcr = async (index: number) => {
@@ -128,7 +217,7 @@ export function MediaManager({ mediaList, onChange }: MediaManagerProps) {
           return extracted;
         } catch (clientErr) {
           console.warn("Client-side OCR failed, falling back to server route:", clientErr);
-          
+
           // 2. Fallback to API route if client-side WASM encounters issues
           setOcrStatusText("Processing on server...");
           const res = await fetch("/api/ocr", {
@@ -163,27 +252,87 @@ export function MediaManager({ mediaList, onChange }: MediaManagerProps) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h3 className="font-serif text-base font-bold text-ink flex items-center gap-2">
             <Newspaper className="w-4 h-4 text-archival-oxblood" />
             <span>Archival Photos &amp; Newspaper Clippings</span>
           </h3>
           <p className="text-xs text-ink-muted font-serif italic">
-            Upload scans (e.g. <code className="text-archival-oxblood font-mono">San_Francisco_Chronicle_2026_05_29_B8.jpg</code>) for automatic publication and date detection.
+            Upload scans for automatic publication and date detection, or bulk drop multiple clippings at once.
           </p>
         </div>
 
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={addMedia}
-          className="text-xs font-serif flex items-center gap-1"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          <span>Add Media Item</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => bulkFileInputRef.current?.click()}
+            disabled={bulkUploading}
+            className="text-xs font-serif flex items-center gap-1.5 bg-amber-50/60 border-amber-300/80 hover:bg-amber-100/70 text-ink"
+          >
+            {bulkUploading ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-archival-oxblood" />
+            ) : (
+              <UploadCloud className="w-3.5 h-3.5 text-archival-oxblood" />
+            )}
+            <span>Bulk Upload Scans</span>
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={addMedia}
+            className="text-xs font-serif flex items-center gap-1"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Add Single Item</span>
+          </Button>
+        </div>
+      </div>
+
+      {/* Hidden Multi-file input */}
+      <input
+        ref={bulkFileInputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        onChange={(e) => {
+          if (e.target.files && e.target.files.length > 0) {
+            handleBulkUploadFiles(e.target.files);
+            e.target.value = "";
+          }
+        }}
+        className="hidden"
+      />
+
+      {/* Bulk Dropzone Hero Strip */}
+      <div
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={(e) => {
+          e.preventDefault();
+          if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            handleBulkUploadFiles(e.dataTransfer.files);
+          }
+        }}
+        onClick={() => bulkFileInputRef.current?.click()}
+        className="border-2 border-dashed border-archival-oxblood/30 hover:border-archival-oxblood rounded-xl p-4 text-center cursor-pointer bg-amber-50/30 hover:bg-amber-50/60 transition-all flex items-center justify-center gap-3"
+      >
+        {bulkUploading ? (
+          <div className="flex items-center gap-2 text-archival-oxblood text-xs font-serif font-semibold">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span>{bulkProgress}</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 text-xs font-serif text-ink-light">
+            <UploadCloud className="w-4 h-4 text-archival-oxblood" />
+            <span>
+              <strong className="text-ink font-semibold">Drag &amp; drop multiple scans here</strong> to bulk upload newspaper clippings &amp; photos at once.
+            </span>
+          </div>
+        )}
       </div>
 
       {ocrError && (
@@ -207,10 +356,14 @@ export function MediaManager({ mediaList, onChange }: MediaManagerProps) {
           {mediaList.map((item, index) => (
             <div
               key={item.id || `media-${index}`}
-              className="p-4 rounded-xl border border-parchment-border bg-parchment/40 space-y-4 shadow-xs"
+              className={`p-4 rounded-xl border transition-all ${
+                item.isStorefront
+                  ? "border-amber-400 bg-amber-50/40 shadow-xs"
+                  : "border-parchment-border bg-parchment/40 shadow-2xs"
+              } space-y-4`}
             >
               <div className="flex items-center justify-between border-b border-parchment-border pb-2">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2.5">
                   <span className="text-xs font-mono font-bold text-archival-oxblood">
                     #{index + 1}
                   </span>
@@ -223,6 +376,25 @@ export function MediaManager({ mediaList, onChange }: MediaManagerProps) {
                     <option value="photo">Historic Photo</option>
                     <option value="ephemera">Print Ephemera</option>
                   </select>
+
+                  {/* Storefront Hero Tag */}
+                  <button
+                    type="button"
+                    onClick={() => setStorefrontHero(index)}
+                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-serif transition-colors cursor-pointer border ${
+                      item.isStorefront
+                        ? "bg-amber-500 text-stone-900 border-amber-600 font-bold shadow-2xs"
+                        : "bg-white text-ink-muted border-parchment-border hover:text-ink hover:border-amber-400"
+                    }`}
+                    title="Feature this photo as the Storefront Hero image at the top of the Bookstore page"
+                  >
+                    <Star
+                      className={`w-3 h-3 ${
+                        item.isStorefront ? "fill-stone-900 text-stone-900" : "text-amber-500"
+                      }`}
+                    />
+                    <span>{item.isStorefront ? "Storefront Hero" : "Tag as Storefront"}</span>
+                  </button>
                 </div>
 
                 <button
@@ -242,7 +414,7 @@ export function MediaManager({ mediaList, onChange }: MediaManagerProps) {
                     CLIPPING / PHOTO SCAN
                   </label>
                   <ImageDropzone
-                    label="Drop Clipping"
+                    label="Scan"
                     value={item.imageUrl}
                     onChange={(url, file) => handleImageUploaded(index, url, file)}
                     aspectRatio="photo"
