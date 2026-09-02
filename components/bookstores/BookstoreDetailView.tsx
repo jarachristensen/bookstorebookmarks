@@ -1,30 +1,29 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 import { BookstoreWithDetails, BookmarkWithDetails } from "@/lib/db/queries";
-import { BookstoreLocation } from "@/db/schema";
+import { BookstoreLocation, ArchivalMedia } from "@/db/schema";
 import { BookmarkInspector } from "@/components/exhibit/BookmarkInspector";
 import { ClippingLightbox } from "@/components/exhibit/ClippingLightbox";
+import { Button } from "@/components/ui/Button";
 import {
-  Building2,
   MapPin,
   Calendar,
-  Bookmark as BookmarkIcon,
-  Newspaper,
-  Image as ImageIcon,
-  ArrowLeft,
-  ArrowRight,
+  Building2,
   ExternalLink,
-  Users,
-  Sparkles,
-  Store,
-  Layers,
-  FileText,
-  Clock,
-  CheckCircle2,
+  ArrowLeft,
   Navigation,
+  Sparkles,
+  Newspaper,
+  BookOpen,
+  ArrowRight,
+  Store,
+  ChevronLeft,
+  ChevronRight,
+  FileText,
+  Bookmark as BookmarkIcon,
 } from "lucide-react";
 import { marked } from "marked";
 
@@ -32,23 +31,43 @@ export interface BookstoreDetailViewProps {
   bookstore: BookstoreWithDetails;
 }
 
+/**
+ * Filter out raw filenames or generic auto-generated strings from display captions.
+ */
+function getCleanCaption(caption?: string | null): string | null {
+  if (!caption) return null;
+  const trimmed = caption.trim();
+  if (
+    /\.(png|jpe?g|webp|gif|svg)$/i.test(trimmed) ||
+    trimmed.startsWith("media-") ||
+    trimmed.toLowerCase().startsWith("untitled") ||
+    trimmed === "Archival Press Clipping" ||
+    trimmed === "Historic Photo" ||
+    trimmed === "Storefront Photo"
+  ) {
+    return null;
+  }
+  return trimmed;
+}
+
 export function BookstoreDetailView({ bookstore }: BookstoreDetailViewProps) {
   const [selectedBookmark, setSelectedBookmark] = useState<BookmarkWithDetails | null>(null);
   const [selectedMediaIndex, setSelectedMediaIndex] = useState<number | null>(null);
-  const [mediaFilter, setMediaFilter] = useState<"all" | "newspaper" | "photo" | "ephemera">("all");
+  const [mediaFilter, setMediaFilter] = useState<"all" | "newspaper" | "photo">("all");
+  const [activePhotoIdx, setActivePhotoIdx] = useState(0);
 
-  // Parse locations array or fallback to single street address
+  // Parse structured locations
   let parsedLocations: BookstoreLocation[] = [];
-  if (bookstore.locations) {
-    try {
+  try {
+    if (bookstore.locations) {
       parsedLocations = JSON.parse(bookstore.locations);
-    } catch {}
-  }
+    }
+  } catch {}
 
   if (parsedLocations.length === 0 && bookstore.streetAddress) {
     parsedLocations = [
       {
-        id: "loc-default",
+        id: "loc-1",
         label: "Primary Location",
         streetAddress: bookstore.streetAddress,
         city: bookstore.city,
@@ -72,20 +91,32 @@ export function BookstoreDetailView({ bookstore }: BookstoreDetailViewProps) {
     if (bookstore.notablePatronsTrivia) trivia = JSON.parse(bookstore.notablePatronsTrivia);
   } catch {}
 
-  // Find Storefront Hero Photo
-  const storefrontMedia =
-    bookstore.archivalMedia.find((m) => m.isStorefront) ||
-    bookstore.archivalMedia.find((m) => m.mediaType === "photo") ||
-    null;
+  // Find all storefront / photo items for carousel
+  const storefrontPhotos = bookstore.archivalMedia.filter(
+    (m) => m.isStorefront || m.mediaType === "photo"
+  );
+  const currentPhoto = storefrontPhotos[activePhotoIdx] || storefrontPhotos[0] || null;
 
-  // Filtered media items
+  // Filtered media items for press gallery
   const filteredMedia = bookstore.archivalMedia.filter((m) => {
     if (mediaFilter === "all") return true;
     return m.mediaType === mediaFilter;
   });
 
+  const nextPhoto = () => {
+    if (storefrontPhotos.length > 1) {
+      setActivePhotoIdx((prev) => (prev + 1) % storefrontPhotos.length);
+    }
+  };
+
+  const prevPhoto = () => {
+    if (storefrontPhotos.length > 1) {
+      setActivePhotoIdx((prev) => (prev - 1 + storefrontPhotos.length) % storefrontPhotos.length);
+    }
+  };
+
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       {/* Top Breadcrumb Navigation */}
       <div className="flex items-center justify-between">
         <Link
@@ -109,72 +140,116 @@ export function BookstoreDetailView({ bookstore }: BookstoreDetailViewProps) {
         )}
       </div>
 
-      {/* Hero Storefront Banner */}
-      <section className="relative rounded-3xl overflow-hidden bg-stone-900 border border-parchment-border shadow-md text-white">
-        {storefrontMedia ? (
-          <div className="relative w-full aspect-[21/9] min-h-[260px] max-h-[440px] bg-stone-950">
-            <Image
-              src={storefrontMedia.imageUrl}
-              alt={`${bookstore.name} Storefront`}
-              fill
-              unoptimized
-              priority
-              className="object-cover object-center filter brightness-90 contrast-[1.05]"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/20" />
-
-            {/* Storefront Badge */}
-            <div className="absolute top-4 left-4 sm:top-6 sm:left-6 flex items-center gap-2">
-              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-500/95 text-stone-950 text-xs font-mono font-bold shadow-md">
-                <Store className="w-3.5 h-3.5" />
-                <span>HISTORIC STOREFRONT</span>
-              </span>
-            </div>
-
-            {/* Caption on Hero Banner */}
-            <div className="absolute bottom-4 left-4 right-4 sm:bottom-8 sm:left-8 sm:right-8 space-y-2">
-              <h1 className="font-serif text-2xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight drop-shadow-md">
-                {bookstore.name}
-              </h1>
-              <p className="text-xs sm:text-sm font-serif text-stone-200 flex flex-wrap items-center gap-x-4 gap-y-1">
-                <span className="flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5 text-amber-400" />
-                  <span>
-                    {bookstore.city}
-                    {bookstore.stateProvince ? `, ${bookstore.stateProvince}` : ""},{" "}
-                    {bookstore.country}
-                  </span>
-                </span>
-                <span className="flex items-center gap-1">
-                  <Calendar className="w-3.5 h-3.5 text-amber-400" />
-                  <span>
-                    {bookstore.yearOpened}–{bookstore.isStillOperating ? "Present" : bookstore.yearClosed || "Closed"}
-                  </span>
-                </span>
-                {storefrontMedia.caption && (
-                  <span className="italic text-stone-300 hidden md:inline">
-                    · {storefrontMedia.caption}
-                  </span>
-                )}
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="p-8 sm:p-12 text-center space-y-3 bg-gradient-to-b from-stone-900 to-stone-950">
-            <h1 className="font-serif text-3xl sm:text-5xl font-bold text-amber-100">
+      {/* Storefront Hero Showcase (Full Image, Uncropped, with Optional Carousel) */}
+      <section className="rounded-2xl overflow-hidden bg-[#1c1917] border border-parchment-border shadow-sm text-white">
+        {/* Header strip on showcase */}
+        <div className="px-5 py-3.5 border-b border-white/10 bg-black/30 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <h1 className="font-serif text-xl sm:text-2xl font-bold text-amber-100 tracking-tight">
               {bookstore.name}
             </h1>
-            <p className="font-serif text-sm text-stone-300 flex items-center justify-center gap-2">
-              <MapPin className="w-4 h-4 text-amber-400" />
+            {bookstore.isStillOperating ? (
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-600 text-white shadow-xs">
+                STILL OPEN
+              </span>
+            ) : (
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-stone-800 text-stone-300 border border-stone-700 shadow-xs">
+                {bookstore.yearClosed ? `CLOSED (${bookstore.yearClosed})` : "CLOSED"}
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-3 text-xs font-serif text-stone-300">
+            <span className="flex items-center gap-1">
+              <MapPin className="w-3.5 h-3.5 text-amber-400" />
               <span>
                 {bookstore.city}
-                {bookstore.stateProvince ? `, ${bookstore.stateProvince}` : ""}, {bookstore.country}
+                {bookstore.stateProvince ? `, ${bookstore.stateProvince}` : ""}
               </span>
-              <span>·</span>
-              <Calendar className="w-4 h-4 text-amber-400" />
+            </span>
+            <span>·</span>
+            <span className="flex items-center gap-1">
+              <Calendar className="w-3.5 h-3.5 text-amber-400" />
               <span>
                 {bookstore.yearOpened}–{bookstore.isStillOperating ? "Present" : bookstore.yearClosed || "Closed"}
               </span>
+            </span>
+          </div>
+        </div>
+
+        {/* Storefront Photo Display Area */}
+        {currentPhoto ? (
+          <div className="relative w-full bg-[#141211] p-3 sm:p-4 flex flex-col items-center justify-center">
+            <div className="relative w-full h-[260px] sm:h-[320px] md:h-[360px] max-w-4xl mx-auto flex items-center justify-center">
+              <Image
+                src={currentPhoto.imageUrl}
+                alt={getCleanCaption(currentPhoto.caption) || `${bookstore.name} Storefront`}
+                fill
+                unoptimized
+                priority
+                className="object-contain object-center drop-shadow-md"
+              />
+
+              {/* Carousel Navigation Arrows if multiple photos */}
+              {storefrontPhotos.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={prevPhoto}
+                    aria-label="Previous storefront photograph"
+                    className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 hover:bg-black/85 text-white border border-white/20 transition-all cursor-pointer shadow-md"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={nextPhoto}
+                    aria-label="Next storefront photograph"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 hover:bg-black/85 text-white border border-white/20 transition-all cursor-pointer shadow-md"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </>
+              )}
+            </div>
+
+            {/* Photo Caption Strip (Only if human curatorial caption, NOT raw file name) */}
+            <div className="w-full max-w-4xl mt-2 pt-2 border-t border-white/10 flex items-center justify-between text-xs text-stone-300 font-serif">
+              <div>
+                {getCleanCaption(currentPhoto.caption) ? (
+                  <span className="italic">{getCleanCaption(currentPhoto.caption)}</span>
+                ) : (
+                  <span className="text-stone-400">Historic Storefront &amp; Shop Exterior</span>
+                )}
+              </div>
+
+              {storefrontPhotos.length > 1 && (
+                <div className="flex items-center gap-2 font-mono text-[11px] text-stone-400">
+                  <span>
+                    {activePhotoIdx + 1} / {storefrontPhotos.length}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    {storefrontPhotos.map((_, dotIdx) => (
+                      <button
+                        key={dotIdx}
+                        type="button"
+                        onClick={() => setActivePhotoIdx(dotIdx)}
+                        aria-label={`Go to slide ${dotIdx + 1}`}
+                        className={`w-1.5 h-1.5 rounded-full transition-all ${
+                          dotIdx === activePhotoIdx ? "bg-amber-400 w-3" : "bg-stone-600"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="p-8 text-center space-y-2 bg-stone-900">
+            <p className="font-serif text-sm text-stone-400 italic">
+              No storefront photograph cataloged for this bookstore yet.
             </p>
           </div>
         )}
@@ -182,7 +257,7 @@ export function BookstoreDetailView({ bookstore }: BookstoreDetailViewProps) {
 
       {/* Main Content Layout: 2 Columns */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column (2 Cols): History, Relocation Timeline & Media */}
+        {/* Left Column (2 Cols): History, Relocation Timeline & Press Gallery */}
         <div className="lg:col-span-2 space-y-8">
           {/* 1. Multi-Location & Relocation Timeline */}
           {parsedLocations.length > 0 && (
@@ -197,7 +272,7 @@ export function BookstoreDetailView({ bookstore }: BookstoreDetailViewProps) {
                 </span>
               </div>
 
-              {/* Aesthetic Vertical/Horizontal Relocation Flow */}
+              {/* Aesthetic Relocation Flow */}
               <div className="space-y-4">
                 {parsedLocations.map((loc, idx) => (
                   <div
@@ -317,6 +392,8 @@ export function BookstoreDetailView({ bookstore }: BookstoreDetailViewProps) {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {filteredMedia.map((media, idx) => {
                   const originalIndex = bookstore.archivalMedia.findIndex((m) => m.id === media.id);
+                  const displayCaption = getCleanCaption(media.caption) || (media.mediaType === "newspaper" ? "Press Clipping" : "Archival Photo");
+
                   return (
                     <div
                       key={media.id || `media-${idx}`}
@@ -326,7 +403,7 @@ export function BookstoreDetailView({ bookstore }: BookstoreDetailViewProps) {
                       <div className="relative w-full aspect-[16/10] bg-stone-100 overflow-hidden border-b border-parchment-border">
                         <Image
                           src={media.imageUrl}
-                          alt={media.caption}
+                          alt={displayCaption}
                           fill
                           unoptimized
                           className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -338,7 +415,7 @@ export function BookstoreDetailView({ bookstore }: BookstoreDetailViewProps) {
 
                       <div className="p-3 space-y-1">
                         <h4 className="font-serif text-xs font-bold text-ink group-hover:text-archival-oxblood transition-colors line-clamp-1">
-                          {media.caption}
+                          {displayCaption}
                         </h4>
                         {media.sourcePublication && (
                           <p className="font-serif text-[11px] text-ink-muted italic">
@@ -381,64 +458,73 @@ export function BookstoreDetailView({ bookstore }: BookstoreDetailViewProps) {
             ) : (
               <div className="grid grid-cols-2 gap-3">
                 {bookstore.bookmarks.map((bm) => (
-                  <div
+                  <button
                     key={bm.id}
-                    onClick={() =>
-                      setSelectedBookmark({
-                        ...bm,
-                        bookstore: {
-                          ...bookstore,
-                          archivalMedia: bookstore.archivalMedia,
-                        },
-                      })
-                    }
-                    className="group cursor-pointer rounded-xl border border-parchment-border bg-parchment-light hover:border-archival-amber p-2 flex flex-col items-center justify-between text-center transition-all shadow-2xs hover:shadow-xs"
+                    type="button"
+                    onClick={() => setSelectedBookmark({ ...bm, bookstore })}
+                    className="group text-left p-2 rounded-xl border border-parchment-border bg-parchment/40 hover:bg-white hover:border-amber-700/50 transition-all shadow-2xs hover:shadow-xs flex flex-col items-center text-center cursor-pointer"
                   >
-                    <div className="relative w-full aspect-[1/2.8] max-w-[100px] mb-2">
+                    <div className="relative w-full h-36 rounded bg-stone-100 overflow-hidden border border-parchment-border mb-2">
                       <Image
                         src={bm.frontImageUrl}
                         alt={bm.title}
                         fill
                         unoptimized
-                        className="object-contain filter drop-shadow-sm group-hover:scale-105 transition-transform"
+                        className="object-contain p-1 group-hover:scale-105 transition-transform"
                       />
                     </div>
-                    <p className="font-serif text-[11px] font-bold text-ink line-clamp-2">
+                    <h4 className="font-serif text-xs font-bold text-ink group-hover:text-archival-oxblood transition-colors line-clamp-1 w-full">
                       {bm.title}
-                    </p>
-                    {bm.yearProduced && (
-                      <p className="font-mono text-[10px] text-ink-muted">c. {bm.yearProduced}</p>
-                    )}
-                  </div>
+                    </h4>
+                    <span className="font-mono text-[10px] text-ink-muted">
+                      {bm.dimensions}
+                    </span>
+                  </button>
                 ))}
               </div>
             )}
           </section>
 
-          {/* Curatorial Details Card */}
+          {/* Archival Metadata Sidebar */}
           <section className="p-6 rounded-2xl bg-white border border-parchment-border shadow-xs space-y-4 text-xs font-serif">
-            <h3 className="font-serif text-sm font-bold text-ink border-b border-parchment-border pb-2 flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-archival-oxblood" />
-              <span>Curatorial Metadata</span>
+            <h3 className="font-mono uppercase font-bold text-archival-oxblood text-xs tracking-wider border-b border-parchment-border pb-2">
+              Bookstore Facts &amp; Heritage
             </h3>
 
             {bookstore.founders && (
-              <div className="space-y-0.5">
-                <span className="font-mono text-[10px] text-ink-muted block uppercase">Founders / Proprietors</span>
-                <p className="font-semibold text-ink">{bookstore.founders}</p>
+              <div>
+                <span className="font-mono text-ink-muted text-[11px] block uppercase">
+                  Founders &amp; Proprietors
+                </span>
+                <span className="text-ink font-medium">{bookstore.founders}</span>
               </div>
             )}
 
+            <div>
+              <span className="font-mono text-ink-muted text-[11px] block uppercase">
+                Operating Status
+              </span>
+              <span className="text-ink font-medium">
+                {bookstore.isStillOperating
+                  ? "Still Operating Today"
+                  : bookstore.yearClosed
+                  ? `Closed in ${bookstore.yearClosed}`
+                  : "Closed"}
+              </span>
+            </div>
+
             {specialties.length > 0 && (
-              <div className="space-y-1">
-                <span className="font-mono text-[10px] text-ink-muted block uppercase">Specialties</span>
+              <div>
+                <span className="font-mono text-ink-muted text-[11px] block uppercase mb-1">
+                  Literary Specialties
+                </span>
                 <div className="flex flex-wrap gap-1">
-                  {specialties.map((s) => (
+                  {specialties.map((spec, i) => (
                     <span
-                      key={s}
-                      className="px-2 py-0.5 rounded bg-parchment-light text-ink border border-parchment-border text-[10px]"
+                      key={i}
+                      className="px-2 py-0.5 rounded bg-parchment border border-parchment-border text-ink-light text-[11px]"
                     >
-                      {s}
+                      {spec}
                     </span>
                   ))}
                 </div>
@@ -446,11 +532,13 @@ export function BookstoreDetailView({ bookstore }: BookstoreDetailViewProps) {
             )}
 
             {trivia.length > 0 && (
-              <div className="space-y-1 pt-2 border-t border-parchment-border/60">
-                <span className="font-mono text-[10px] text-ink-muted block uppercase">Notable Lore &amp; Patrons</span>
-                <ul className="space-y-1 list-disc pl-4 text-ink-light text-[11px]">
-                  {trivia.map((t, idx) => (
-                    <li key={idx}>{t}</li>
+              <div>
+                <span className="font-mono text-ink-muted text-[11px] block uppercase mb-1">
+                  Notable Patrons &amp; Trivia
+                </span>
+                <ul className="space-y-1 list-disc list-inside text-ink-light">
+                  {trivia.map((t, i) => (
+                    <li key={i}>{t}</li>
                   ))}
                 </ul>
               </div>

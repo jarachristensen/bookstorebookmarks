@@ -28,7 +28,7 @@ export function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-30 border-b border-parchment-border bg-parchment/95 backdrop-blur-md transition-all shadow-xs">
+    <header className="relative z-30 border-b border-parchment-border bg-parchment transition-all shadow-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3">
         {/* Center Hero Banner: Crisp Bookmark Logo Masthead */}
         <div className="flex items-center justify-center">

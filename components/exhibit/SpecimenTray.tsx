@@ -34,7 +34,7 @@ export function SpecimenTray({
 }: SpecimenTrayProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [canvasWidth, setCanvasWidth] = useState<number>(1040);
-  const [trayHeight, setTrayHeight] = useState<number>(540);
+  const [trayHeight, setTrayHeight] = useState<number>(450);
 
   // Measure exact inner canvas dimensions dynamically
   useEffect(() => {
@@ -46,11 +46,11 @@ export function SpecimenTray({
 
         // Adjust tray height responsively based on screen width
         if (width < 640) {
-          setTrayHeight(440);
+          setTrayHeight(380);
         } else if (width < 1024) {
-          setTrayHeight(500);
+          setTrayHeight(420);
         } else {
-          setTrayHeight(540);
+          setTrayHeight(450);
         }
       }
     };

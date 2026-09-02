@@ -45,13 +45,13 @@ export function packSpecimenTrays<T extends { dimensions?: string | null; id?: s
   const {
     trayWidth,
     trayHeight,
-    buffer = 18,
+    buffer = 14,
     maxInchesHeight = 8.8,
   } = config;
 
   // 1. Calculate universal physical scale factor S (pixels per inch)
-  // Ensures standard tallest bookmark (~8.8 in) occupies ~82% of tray height
-  const scale = (trayHeight * 0.82) / maxInchesHeight;
+  // Ensures standard tallest bookmark (~8.8 in) occupies ~85% of tray height
+  const scale = (trayHeight * 0.85) / maxInchesHeight;
 
   // Natural curator placement rotation angles
   const tiltSequence = [-1.2, 0.9, -0.6, 1.4, -0.9, 1.1, -1.5, 0.7, 1.3, -0.8];

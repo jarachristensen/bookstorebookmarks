@@ -93,8 +93,8 @@ export function BookstoresDirectoryClient({ bookstores }: BookstoresDirectoryCli
             className="w-full md:w-auto px-3 py-2 text-xs font-serif bg-white border border-parchment-border rounded-xl text-ink focus:outline-none"
           >
             <option value="all">All Statuses</option>
-            <option value="open">Still Operating Today</option>
-            <option value="historic">Historic / Defunct</option>
+            <option value="open">Still Open</option>
+            <option value="historic">Closed Bookstores</option>
           </select>
         </div>
       </div>
@@ -151,8 +151,8 @@ export function BookstoresDirectoryClient({ bookstores }: BookstoresDirectoryCli
                         STILL OPEN
                       </span>
                     ) : (
-                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-stone-800/90 text-stone-200 shadow-xs">
-                        HISTORIC ARCHIVE
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-stone-900/90 text-stone-200 shadow-xs">
+                        {store.yearClosed ? `CLOSED (${store.yearClosed})` : "CLOSED"}
                       </span>
                     )}
                   </div>

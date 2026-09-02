@@ -157,7 +157,7 @@ export function TrayControls({
                   : "text-ink-muted hover:text-ink"
               }`}
             >
-              Historic
+              Closed
             </button>
           </div>
 
