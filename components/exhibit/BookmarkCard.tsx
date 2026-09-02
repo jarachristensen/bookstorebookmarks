@@ -4,8 +4,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { BookmarkWithDetails } from "@/lib/db/queries";
 import { PackedItem } from "@/lib/utils/bin-packing";
-import { MapPin, Sparkles, MoveUpRight } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 export interface BookmarkCardProps {
   packedItem?: PackedItem<BookmarkWithDetails>;
@@ -51,18 +50,8 @@ export function BookmarkCard({ packedItem, bookmark: propBookmark, onInspect }: 
       }}
       className="cursor-pointer select-none group focus:outline-none text-left p-0 border-none bg-transparent"
     >
-      {/* Specimen Bookmark Image with No Shadow at rest, Lifting with Shadow on Hover */}
+      {/* Specimen Bookmark Image with No Shadow at rest, Lifting with Deep Shadow on Hover */}
       <div className="relative w-full h-full filter drop-shadow-none group-hover:drop-shadow-[0_24px_38px_rgba(0,0,0,0.85)] transition-all duration-200">
-        {/* Featured Key Badge */}
-        {bookmark.isFeatured && (
-          <div className="absolute top-1.5 right-1.5 z-20 pointer-events-none">
-            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-500/95 text-stone-900 shadow-md">
-              <Sparkles className="w-2.5 h-2.5" />
-              <span>KEY</span>
-            </span>
-          </div>
-        )}
-
         {bookmark.frontImageUrl ? (
           <Image
             src={bookmark.frontImageUrl}
@@ -80,47 +69,10 @@ export function BookmarkCard({ packedItem, bookmark: propBookmark, onInspect }: 
         )}
       </div>
 
-      {/* Screen Reader & Accessible Spans */}
+      {/* Screen Reader Accessible Details */}
       <span className="sr-only">{store?.name || bookmark.title}</span>
       <span className="sr-only">{bookmark.dimensions}</span>
       {store && <span className="sr-only">{store.city}</span>}
-
-      {/* Floating Curator's Archival Specimen Tag (Hover & Focus) */}
-      <AnimatePresence>
-        {isHovered && (
-          <motion.div
-            initial={{ opacity: 0, y: 6, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 4, scale: 0.95 }}
-            transition={{ duration: 0.15 }}
-            className="absolute -bottom-14 left-1/2 -translate-x-1/2 z-50 pointer-events-none min-w-[200px] max-w-[260px] p-2.5 rounded-xl bg-stone-950/95 backdrop-blur-md text-white shadow-[0_14px_32px_rgba(0,0,0,0.85)] border border-amber-500/30 text-center space-y-0.5"
-          >
-            <div className="flex items-center justify-center gap-1">
-              <h4 className="font-serif text-xs font-bold text-parchment-light truncate">
-                {store?.name || bookmark.title}
-              </h4>
-              <MoveUpRight className="w-3 h-3 text-amber-300 shrink-0" />
-            </div>
-
-            <div className="flex items-center justify-center gap-1.5 text-[10px] text-stone-300 font-serif">
-              {bookmark.yearProduced ? (
-                <span className="italic">c. {bookmark.yearProduced}</span>
-              ) : (
-                <span className="italic">Vintage</span>
-              )}
-              <span>·</span>
-              <span className="font-mono text-stone-400">{bookmark.dimensions}</span>
-            </div>
-
-            {store && (
-              <div className="flex items-center justify-center gap-1 text-[10px] text-stone-400">
-                <MapPin className="w-2.5 h-2.5 text-rose-400 shrink-0" />
-                <span className="truncate">{store.city}, {store.country === "United States" ? store.stateProvince : store.country}</span>
-              </div>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
     </motion.button>
   );
 }
