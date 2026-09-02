@@ -21,10 +21,6 @@ export default async function BookstoresPage() {
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
         {/* Page Title & Intro */}
         <section className="text-center space-y-3 pb-6 border-b border-parchment-border">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100/70 border border-amber-300 text-amber-900 text-xs font-mono font-bold tracking-wide uppercase">
-            <Building2 className="w-3.5 h-3.5 text-archival-oxblood" />
-            <span>Curated Heritage Directory</span>
-          </div>
           <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-ink tracking-tight">
             Historic Bookstores &amp; Booksellers
           </h1>

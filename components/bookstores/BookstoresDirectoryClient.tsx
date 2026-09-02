@@ -4,6 +4,7 @@ import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { BookstoreWithDetails } from "@/lib/db/queries";
+import { getMostRecentStorefrontMedia } from "@/lib/utils/clipping-parser";
 import {
   Building2,
   MapPin,
@@ -111,11 +112,8 @@ export function BookstoresDirectoryClient({ bookstores }: BookstoresDirectoryCli
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredBookstores.map((store) => {
-            // Find storefront photo, or fallback to first photo or first bookmark front
-            const storefrontMedia =
-              store.archivalMedia.find((m) => m.isStorefront) ||
-              store.archivalMedia.find((m) => m.mediaType === "photo") ||
-              store.archivalMedia[0];
+            // Find most recent storefront photo, or fallback to first media or first bookmark front
+            const storefrontMedia = getMostRecentStorefrontMedia(store.archivalMedia);
 
             const heroImage =
               storefrontMedia?.imageUrl ||

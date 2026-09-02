@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { BookstoreWithDetails, BookmarkWithDetails } from "@/lib/db/queries";
 import { ArchivalMedia } from "@/db/schema";
+import { sortMediaByMostRecent } from "@/lib/utils/clipping-parser";
 import { BookmarkInspector } from "@/components/exhibit/BookmarkInspector";
 import { ClippingLightbox } from "@/components/exhibit/ClippingLightbox";
 import { BookstoreHorizontalTimeline } from "@/components/bookstores/BookstoreHorizontalTimeline";
@@ -50,10 +51,11 @@ export function BookstoreDetailView({ bookstore }: BookstoreDetailViewProps) {
   const [mediaFilter, setMediaFilter] = useState<"all" | "newspaper" | "photo">("all");
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
 
-  // Find all storefront / exterior photos
-  const storefrontPhotos = bookstore.archivalMedia.filter(
+  // Find all storefront / exterior photos, sorted by most recent first
+  const rawPhotos = bookstore.archivalMedia.filter(
     (m) => m.isStorefront || m.mediaType === "photo"
   );
+  const storefrontPhotos = React.useMemo(() => sortMediaByMostRecent(rawPhotos), [rawPhotos]);
   const currentPhoto = storefrontPhotos[activePhotoIdx] || storefrontPhotos[0] || null;
 
   // Filtered press media

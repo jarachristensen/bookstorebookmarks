@@ -145,3 +145,60 @@ export function parseClippingFilename(fileName: string | null | undefined): Pars
     caption,
   };
 }
+
+export interface MediaLike {
+  id?: string;
+  isStorefront?: boolean | number | null;
+  mediaType?: string | null;
+  imageUrl: string;
+  caption?: string | null;
+  sourcePublication?: string | null;
+  publicationDate?: string | null;
+  createdAt?: string | null;
+  displayOrder?: number | null;
+}
+
+/**
+ * Extracts a 4-digit year from media publication date, caption, or createdAt.
+ */
+export function extractYearFromMedia(m?: Partial<MediaLike> | null): number {
+  if (!m) return 0;
+  if (m.publicationDate) {
+    const match = m.publicationDate.match(/\b(18\d\d|19\d\d|20\d\d)\b/);
+    if (match) return parseInt(match[1], 10);
+  }
+  if (m.caption) {
+    const match = m.caption.match(/\b(18\d\d|19\d\d|20\d\d)\b/);
+    if (match) return parseInt(match[1], 10);
+  }
+  if (m.createdAt) {
+    const d = new Date(m.createdAt);
+    if (!isNaN(d.getTime())) return d.getFullYear();
+  }
+  return 0;
+}
+
+/**
+ * Returns storefront/exterior photos sorted so the most recent is first.
+ */
+export function sortMediaByMostRecent<T extends Partial<MediaLike>>(mediaList: T[]): T[] {
+  return [...mediaList].sort((a, b) => {
+    const yearA = extractYearFromMedia(a);
+    const yearB = extractYearFromMedia(b);
+    if (yearB !== yearA) return yearB - yearA;
+    return (b.displayOrder || 0) - (a.displayOrder || 0);
+  });
+}
+
+/**
+ * Returns the most recent storefront photo for a bookstore.
+ */
+export function getMostRecentStorefrontMedia<T extends Partial<MediaLike>>(mediaList: T[]): T | null {
+  if (!mediaList || mediaList.length === 0) return null;
+  const storefronts = mediaList.filter((m) => Boolean(m.isStorefront) || m.mediaType === "photo");
+  if (storefronts.length > 0) {
+    return sortMediaByMostRecent(storefronts)[0];
+  }
+  return mediaList[0] || null;
+}
+

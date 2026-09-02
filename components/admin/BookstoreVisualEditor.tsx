@@ -12,7 +12,7 @@ import {
   BookstoreHorizontalTimeline,
   TimelineEvent,
 } from "@/components/bookstores/BookstoreHorizontalTimeline";
-import { parseClippingFilename } from "@/lib/utils/clipping-parser";
+import { parseClippingFilename, sortMediaByMostRecent } from "@/lib/utils/clipping-parser";
 import { compressImageIfNeeded } from "@/lib/utils/image-compressor";
 import {
   MapPin,
@@ -145,9 +145,9 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
   const [selectedBookmark, setSelectedBookmark] = useState<BookmarkWithDetails | null>(null);
   const [selectedLightboxMedia, setSelectedLightboxMedia] = useState<ArchivalMedia | null>(null);
 
-  // Filter Storefront vs Press Clippings
+  // Filter Storefront vs Press Clippings (sorted by most recent first)
   const storefrontPhotos = useMemo(
-    () => mediaList.filter((m) => m.isStorefront || m.mediaType === "photo"),
+    () => sortMediaByMostRecent(mediaList.filter((m) => m.isStorefront || m.mediaType === "photo")),
     [mediaList]
   );
   const currentPhoto = storefrontPhotos[activePhotoIdx] || storefrontPhotos[0] || null;

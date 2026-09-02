@@ -45,9 +45,9 @@ export default async function HomePage() {
       <Header />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5">
-        {/* Curatorial Archive Stats & Curator Cabinet Action Strip */}
+        {/* Curatorial Archive Stats Strip */}
         <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-          {/* Stats Boxes (Matching Curator's Cabinet styling) */}
+          {/* Stats Boxes */}
           <div className="flex flex-wrap items-center gap-2.5">
             <Link
               href="/bookstores"
@@ -67,15 +67,6 @@ export default async function HomePage() {
               </span>
             </div>
           </div>
-
-          {/* Curator's Cabinet Button */}
-          <Link
-            href="/admin"
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs sm:text-sm rounded-md bg-white border border-parchment-border text-ink-light hover:text-ink hover:border-ink shadow-2xs hover:shadow-xs transition-all font-medium"
-          >
-            <Lock className="w-3.5 h-3.5 text-ink-muted" />
-            <span>Curator's Cabinet</span>
-          </Link>
         </div>
 
         <ExhibitGalleryClient

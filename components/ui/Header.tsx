@@ -20,6 +20,10 @@ export function Header() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // If on a bookstore detail page /bookstores/[id], link directly to its visual editor /admin/bookstores/[id]
+  const bookstoreMatch = pathname?.match(/^\/bookstores\/([^/]+)$/);
+  const curatorUrl = bookstoreMatch ? `/admin/bookstores/${bookstoreMatch[1]}` : "/admin";
+
   const navLinks = [
     { href: "/", label: "Archive Tray", icon: Bookmark },
     { href: "/bookstores", label: "Bookstores", icon: Building2 },
@@ -106,8 +110,9 @@ export function Header() {
 
             {/* Curator's Cabinet Button */}
             <Link
-              href="/admin"
+              href={curatorUrl}
               className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-serif bg-white border border-parchment-border text-ink-light hover:text-ink hover:border-ink shadow-2xs transition-all"
+              title={bookstoreMatch ? "Edit this Bookstore Dossier in Curator's Cabinet" : "Curator's Cabinet"}
             >
               <Lock className="w-3.5 h-3.5 text-ink-muted" />
               <span className="hidden sm:inline">Curator's Cabinet</span>
