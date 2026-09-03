@@ -19,6 +19,7 @@ import {
   ChevronLeft,
   ChevronRight,
   BookOpen,
+  Navigation,
 } from "lucide-react";
 import { marked } from "marked";
 
@@ -51,9 +52,19 @@ export function BookstoreDetailView({ bookstore }: BookstoreDetailViewProps) {
   const [mediaFilter, setMediaFilter] = useState<"all" | "newspaper" | "photo">("all");
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
 
-  // Find all storefront / exterior photos, sorted by most recent first
+  // Parse locations if available
+  let parsedLocations: any[] = [];
+  try {
+    if (bookstore.locations) parsedLocations = JSON.parse(bookstore.locations);
+  } catch {}
+
+  // Find all storefront / exterior / inside photos, sorted by most recent first
   const rawPhotos = bookstore.archivalMedia.filter(
-    (m) => m.isStorefront || m.mediaType === "photo"
+    (m) =>
+      Boolean(m.isStorefront) ||
+      m.mediaType === "photo" ||
+      m.mediaTag === "interior" ||
+      m.mediaTag === "storefront"
   );
   const storefrontPhotos = React.useMemo(() => sortMediaByMostRecent(rawPhotos), [rawPhotos]);
   const currentPhoto = storefrontPhotos[activePhotoIdx] || storefrontPhotos[0] || null;
@@ -138,6 +149,16 @@ export function BookstoreDetailView({ bookstore }: BookstoreDetailViewProps) {
                 {bookstore.yearOpened}–{bookstore.isStillOperating ? "Present" : bookstore.yearClosed || "Closed"}
               </span>
             </span>
+
+            {parsedLocations.length > 1 && (
+              <>
+                <span>·</span>
+                <span className="flex items-center gap-1 font-mono text-[11px] text-amber-900 bg-amber-100/70 border border-amber-300 px-2 py-0.5 rounded-full">
+                  <Navigation className="w-3 h-3 text-archival-oxblood" />
+                  <span>{parsedLocations.length} Historic Addresses</span>
+                </span>
+              </>
+            )}
           </div>
         </div>
 
@@ -164,6 +185,11 @@ export function BookstoreDetailView({ bookstore }: BookstoreDetailViewProps) {
                   priority
                   className="object-contain object-center group-hover:scale-[1.01] transition-transform duration-200"
                 />
+
+                {/* Badge for Storefront vs Interior */}
+                <div className="absolute top-2 left-2 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-xs border border-white/20 text-white font-mono text-[10px] font-bold tracking-wider uppercase pointer-events-none">
+                  {currentPhoto.mediaTag === "interior" ? "Inside / Interior" : "Storefront Photo"}
+                </div>
 
                 {/* Carousel navigation if multiple photos */}
                 {storefrontPhotos.length > 1 && (

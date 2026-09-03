@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { BookstoreWithDetails, BookmarkWithDetails } from "@/lib/db/queries";
-import { ArchivalMedia, CustomTimelineEvent } from "@/db/schema";
+import { ArchivalMedia, CustomTimelineEvent, BookstoreLocation } from "@/db/schema";
 import { BookmarkInspector } from "@/components/exhibit/BookmarkInspector";
 import { ClippingLightbox } from "@/components/exhibit/ClippingLightbox";
 import {
@@ -36,6 +36,10 @@ import {
   Globe,
   X,
   Sparkles,
+  Navigation,
+  ArrowRight,
+  PlusCircle,
+  Building2,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { marked } from "marked";
@@ -60,7 +64,93 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
   const [historicalBlurb, setHistoricalBlurb] = useState(initialData.historicalBlurb || "");
   const [isEditingBlurb, setIsEditingBlurb] = useState(false);
 
-  // Archival Media (Storefront Photos & Clippings)
+  // Multi-location Relocation Modeling
+  const getInitialLocations = (): BookstoreLocation[] => {
+    if (initialData.locations) {
+      try {
+        const parsed = JSON.parse(initialData.locations);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch {}
+    }
+    if (initialData.streetAddress) {
+      return [
+        {
+          id: `loc-init-1`,
+          label: "1st Location (Original)",
+          streetAddress: initialData.streetAddress,
+          city: initialData.city,
+          stateProvince: initialData.stateProvince || "",
+          country: initialData.country || "United States",
+          yearsActive: `${initialData.yearOpened}–${initialData.isStillOperating ? "Present" : initialData.yearClosed || ""}`,
+          isMovedFrom: false,
+          isCurrent: initialData.isStillOperating,
+        },
+      ];
+    }
+    return [
+      {
+        id: `loc-init-1`,
+        label: "1st Location (Original)",
+        streetAddress: "",
+        city: initialData.city || "",
+        stateProvince: initialData.stateProvince || "",
+        country: initialData.country || "United States",
+        yearsActive: "",
+        isMovedFrom: false,
+        isCurrent: true,
+      },
+    ];
+  };
+
+  const [locations, setLocations] = useState<BookstoreLocation[]>(getInitialLocations());
+
+  const addLocation = (isBranch = false) => {
+    const nextIndex = locations.length + 1;
+    const label = isBranch
+      ? `Branch / New Location`
+      : nextIndex === 2
+      ? "2nd Location (Relocated)"
+      : nextIndex === 3
+      ? "3rd Location (Relocated)"
+      : nextIndex === 4
+      ? "4th Location (Relocated)"
+      : `${nextIndex}th Location`;
+
+    setLocations([
+      ...locations,
+      {
+        id: `loc-${Date.now()}`,
+        label,
+        streetAddress: "",
+        city: city,
+        stateProvince: stateProvince,
+        country: country,
+        yearsActive: "",
+        isMovedFrom: !isBranch,
+        isCurrent: isBranch || isStillOperating,
+      },
+    ]);
+  };
+
+  const updateLocation = (index: number, updated: Partial<BookstoreLocation>) => {
+    const next = [...locations];
+    next[index] = { ...next[index], ...updated };
+    setLocations(next);
+    // Sync primary location to top-level city/address if index 0
+    if (index === 0) {
+      if (updated.streetAddress !== undefined) setStreetAddress(updated.streetAddress);
+      if (updated.city !== undefined) setCity(updated.city);
+      if (updated.stateProvince !== undefined) setStateProvince(updated.stateProvince);
+      if (updated.country !== undefined) setCountry(updated.country);
+    }
+  };
+
+  const removeLocation = (index: number) => {
+    if (locations.length <= 1) return;
+    setLocations(locations.filter((_, i) => i !== index));
+  };
+
+  // Archival Media (Storefront Photos, Inside Photos & Clippings)
   const [mediaList, setMediaList] = useState<ArchivalMedia[]>(initialData.archivalMedia || []);
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
 
@@ -70,6 +160,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
   const [storefrontPreviewUrl, setStorefrontPreviewUrl] = useState<string>("");
   const [storefrontYear, setStorefrontYear] = useState<string>(String(initialData.yearOpened || ""));
   const [storefrontCaption, setStorefrontCaption] = useState<string>("Historic Storefront & Shop Exterior");
+  const [storefrontTagType, setStorefrontTagType] = useState<"storefront" | "interior">("storefront");
   const [isUploadingStorefront, setIsUploadingStorefront] = useState(false);
 
   // Timeline Events State
@@ -145,17 +236,24 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
   const [selectedBookmark, setSelectedBookmark] = useState<BookmarkWithDetails | null>(null);
   const [selectedLightboxMedia, setSelectedLightboxMedia] = useState<ArchivalMedia | null>(null);
 
-  // Filter Storefront vs Press Clippings (sorted by most recent first)
+  // Storefront & Interior Photos (sorted by most recent first)
   const storefrontPhotos = useMemo(
-    () => sortMediaByMostRecent(mediaList.filter((m) => m.isStorefront || m.mediaType === "photo")),
+    () =>
+      sortMediaByMostRecent(
+        mediaList.filter(
+          (m) =>
+            Boolean(m.isStorefront) ||
+            m.mediaType === "photo" ||
+            m.mediaTag === "interior" ||
+            m.mediaTag === "storefront"
+        )
+      ),
     [mediaList]
   );
   const currentPhoto = storefrontPhotos[activePhotoIdx] || storefrontPhotos[0] || null;
 
-  const pressClippings = useMemo(
-    () => mediaList.filter((m) => !m.isStorefront),
-    [mediaList]
-  );
+  // Press Clippings & Media
+  const pressClippings = mediaList;
 
   // Helper to update current storefront image metadata
   const updateCurrentStorefrontMeta = (field: "publicationDate" | "caption", value: string) => {
@@ -165,9 +263,11 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
     );
   };
 
-  // Helper to remove a storefront photo
+  // Helper to remove a storefront photo from the carousel
   const removeStorefrontPhoto = (id: string) => {
-    setMediaList((prev) => prev.filter((m) => m.id !== id));
+    setMediaList((prev) =>
+      prev.map((m) => (m.id === id ? { ...m, isStorefront: false, mediaType: "newspaper", mediaTag: null } : m))
+    );
     if (activePhotoIdx > 0) setActivePhotoIdx(activePhotoIdx - 1);
   };
 
@@ -202,65 +302,68 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
       if (storefrontUploadFile) {
         const formData = new FormData();
         const compressed = await compressImageIfNeeded(storefrontUploadFile);
-        formData.append("file", compressed);
+        formData.append("file", compressed, storefrontUploadFile.name);
 
         const res = await fetch("/api/upload", {
           method: "POST",
           body: formData,
         });
+
         if (res.ok) {
           const data = await res.json();
           finalUrl = data.url;
         }
       }
 
-      const newPhoto: ArchivalMedia = {
+      const newMedia: ArchivalMedia = {
         id: `media-sf-${Date.now()}`,
         bookstoreId: initialData.id,
         mediaType: "photo",
         imageUrl: finalUrl,
-        caption: storefrontCaption || "Historic Storefront",
+        caption: storefrontCaption.trim() || `${storefrontTagType === "interior" ? "Inside / Interior View" : "Storefront Photograph"} (${storefrontYear || "Historic"})`,
         sourcePublication: null,
-        publicationDate: storefrontYear || null,
+        publicationDate: storefrontYear.trim() || null,
         transcriptionText: null,
         isStorefront: true,
-        mediaTag: "storefront",
+        mediaTag: storefrontTagType,
         displayOrder: 0,
         createdAt: new Date().toISOString(),
       };
 
-      setMediaList((prev) => [newPhoto, ...prev]);
+      setMediaList((prev) => [newMedia, ...prev]);
+      setActivePhotoIdx(0);
       setIsStorefrontModalOpen(false);
       setStorefrontUploadFile(null);
       setStorefrontPreviewUrl("");
-      setActivePhotoIdx(0);
+      setStorefrontYear(String(yearOpened || ""));
+      setStorefrontCaption("Historic Storefront & Shop Exterior");
     } catch (err) {
-      console.error("Storefront upload failed", err);
+      console.error("Failed to upload storefront photo:", err);
+      alert("Failed to upload storefront photo. Please try again.");
     } finally {
       setIsUploadingStorefront(false);
     }
   };
 
-  // Handle Bulk Upload for Press Clippings & Photos
+  // Bulk Media Drag and Drop
   const handleBulkMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
 
     setIsBulkUploading(true);
-    setBulkStatus(`Preparing to upload ${files.length} archival items...`);
+    setBulkStatus(`Processing and uploading ${files.length} items...`);
 
     const uploadedItems: ArchivalMedia[] = [];
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      setBulkStatus(`Uploading & analyzing ${i + 1} of ${files.length}: ${file.name}`);
-
       try {
         const parsed = parseClippingFilename(file.name);
         const compressed = await compressImageIfNeeded(file);
 
+        // Upload to server
         const formData = new FormData();
-        formData.append("file", compressed);
+        formData.append("file", compressed, file.name);
 
         const res = await fetch("/api/upload", {
           method: "POST",
@@ -269,10 +372,9 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
 
         let imageUrl = "";
         if (res.ok) {
-          const data = await res.json();
-          imageUrl = data.url;
+          const uploadRes = await res.json();
+          imageUrl = uploadRes.url;
         } else {
-          // Fallback to data url
           imageUrl = await new Promise((resolve) => {
             const reader = new FileReader();
             reader.onload = () => resolve(reader.result as string);
@@ -280,17 +382,20 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
           });
         }
 
+        // Auto-detect if name contains "storefront" or "inside" or "interior"
+        const isPhotoName = /storefront|exterior|interior|inside|facade|shopfront|photo/i.test(file.name);
+
         uploadedItems.push({
           id: `media-bulk-${Date.now()}-${i}`,
           bookstoreId: initialData.id,
-          mediaType: parsed.sourcePublication ? "newspaper" : "photo",
+          mediaType: isPhotoName ? "photo" : parsed.sourcePublication ? "newspaper" : "photo",
           imageUrl: imageUrl,
           caption: parsed.caption || file.name,
           sourcePublication: parsed.sourcePublication || null,
           publicationDate: parsed.publicationDate || null,
           transcriptionText: null,
-          isStorefront: false,
-          mediaTag: null,
+          isStorefront: isPhotoName,
+          mediaTag: /interior|inside/i.test(file.name) ? "interior" : isPhotoName ? "storefront" : null,
           displayOrder: mediaList.length + i,
           createdAt: new Date().toISOString(),
         });
@@ -380,14 +485,16 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
     setSaveSuccess(false);
 
     try {
+      const primaryLoc = locations[0];
       const payload = {
         bookstore: {
           id: initialData.id,
           name: name.trim(),
-          city: city.trim(),
-          stateProvince: stateProvince.trim() || null,
-          country: country.trim(),
-          streetAddress: streetAddress.trim() || null,
+          city: primaryLoc?.city || city.trim(),
+          stateProvince: primaryLoc?.stateProvince || stateProvince.trim() || null,
+          country: primaryLoc?.country || country.trim(),
+          streetAddress: primaryLoc?.streetAddress || streetAddress.trim() || null,
+          locations: locations,
           yearOpened: Number(yearOpened) || 1900,
           yearClosed: isStillOperating ? null : Number(yearClosed) || null,
           isStillOperating: isStillOperating,
@@ -538,8 +645,8 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
             </div>
           </div>
 
-          {/* Location & Year Founded Fields */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 shrink-0 lg:max-w-md">
+          {/* Core Metadata Fields */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 shrink-0 lg:max-w-md">
             <div>
               <label className="block text-[10px] font-mono uppercase tracking-wider text-ink-muted mb-1">
                 Year Opened *
@@ -550,45 +657,6 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                 onChange={(e) => setYearOpened(e.target.value)}
                 placeholder="1920"
                 className="w-full px-3 py-1.5 text-xs font-mono bg-parchment-light border border-parchment-border rounded-xl text-ink focus:outline-none focus:border-archival-oxblood"
-              />
-            </div>
-
-            <div>
-              <label className="block text-[10px] font-mono uppercase tracking-wider text-ink-muted mb-1">
-                City *
-              </label>
-              <input
-                type="text"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                placeholder="San Francisco"
-                className="w-full px-3 py-1.5 text-xs font-serif bg-parchment-light border border-parchment-border rounded-xl text-ink focus:outline-none focus:border-archival-oxblood"
-              />
-            </div>
-
-            <div>
-              <label className="block text-[10px] font-mono uppercase tracking-wider text-ink-muted mb-1">
-                State / Prov
-              </label>
-              <input
-                type="text"
-                value={stateProvince}
-                onChange={(e) => setStateProvince(e.target.value)}
-                placeholder="CA"
-                className="w-full px-3 py-1.5 text-xs font-serif bg-parchment-light border border-parchment-border rounded-xl text-ink focus:outline-none focus:border-archival-oxblood"
-              />
-            </div>
-
-            <div className="sm:col-span-2">
-              <label className="block text-[10px] font-mono uppercase tracking-wider text-ink-muted mb-1">
-                Primary Street Address
-              </label>
-              <input
-                type="text"
-                value={streetAddress}
-                onChange={(e) => setStreetAddress(e.target.value)}
-                placeholder="261 Columbus Ave"
-                className="w-full px-3 py-1.5 text-xs font-serif bg-parchment-light border border-parchment-border rounded-xl text-ink focus:outline-none focus:border-archival-oxblood"
               />
             </div>
 
@@ -608,6 +676,179 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
         </div>
       </div>
 
+      {/* 2.5 Historic Locations & Relocations Editor */}
+      <section className="p-6 sm:p-8 rounded-2xl bg-white border border-parchment-border shadow-xs space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-parchment-border pb-4">
+          <div className="space-y-1">
+            <h2 className="font-serif text-lg font-bold text-ink flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-archival-oxblood" />
+              <span>Historic Locations &amp; Relocation Journey</span>
+            </h2>
+            <p className="text-xs font-serif text-ink-muted italic">
+              Model the original founding address, relocations over the decades, or secondary branch storefronts.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => addLocation(false)}
+              className="gap-1.5 text-xs border-archival-oxblood/30 text-archival-oxblood hover:bg-rose-50"
+            >
+              <PlusCircle className="w-3.5 h-3.5" />
+              <span>+ Add Relocated Address</span>
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => addLocation(true)}
+              className="gap-1.5 text-xs text-ink-light hover:text-ink"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>+ Add Branch Location</span>
+            </Button>
+          </div>
+        </div>
+
+        {/* Location Cards */}
+        <div className="space-y-4">
+          {locations.map((loc, idx) => (
+            <div
+              key={loc.id || idx}
+              className="p-5 rounded-xl border border-parchment-border bg-parchment/20 space-y-4 relative"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-parchment-border/60 pb-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-archival-oxblood/10 text-archival-oxblood flex items-center justify-center font-mono text-xs font-bold">
+                    {idx + 1}
+                  </span>
+                  <input
+                    type="text"
+                    value={loc.label}
+                    onChange={(e) => updateLocation(idx, { label: e.target.value })}
+                    placeholder="e.g. 1st Location (Original)"
+                    className="font-serif font-bold text-sm text-ink bg-white px-2.5 py-1 border border-parchment-border rounded-lg"
+                  />
+                  {loc.isMovedFrom && (
+                    <span className="text-[10px] font-mono font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded-full border border-amber-300">
+                      RELOCATED
+                    </span>
+                  )}
+                  {loc.isCurrent && (
+                    <span className="text-[10px] font-mono font-bold bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded-full border border-emerald-300">
+                      CURRENT / OPERATING
+                    </span>
+                  )}
+                </div>
+
+                {locations.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeLocation(idx)}
+                    title="Remove this address"
+                    className="p-1.5 rounded-lg text-stone-400 hover:text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="sm:col-span-2">
+                  <label className="block text-[10px] font-mono uppercase tracking-wider text-ink-muted mb-1">
+                    Street Address *
+                  </label>
+                  <input
+                    type="text"
+                    value={loc.streetAddress}
+                    onChange={(e) => updateLocation(idx, { streetAddress: e.target.value })}
+                    placeholder="e.g. 261 Columbus Avenue"
+                    className="w-full px-3 py-1.5 text-xs font-serif bg-white border border-parchment-border rounded-lg text-ink focus:outline-none focus:border-archival-oxblood"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-mono uppercase tracking-wider text-ink-muted mb-1">
+                    City *
+                  </label>
+                  <input
+                    type="text"
+                    value={loc.city}
+                    onChange={(e) => updateLocation(idx, { city: e.target.value })}
+                    placeholder="San Francisco"
+                    className="w-full px-3 py-1.5 text-xs font-serif bg-white border border-parchment-border rounded-lg text-ink focus:outline-none focus:border-archival-oxblood"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-mono uppercase tracking-wider text-ink-muted mb-1">
+                    State / Province
+                  </label>
+                  <input
+                    type="text"
+                    value={loc.stateProvince || ""}
+                    onChange={(e) => updateLocation(idx, { stateProvince: e.target.value })}
+                    placeholder="CA"
+                    className="w-full px-3 py-1.5 text-xs font-serif bg-white border border-parchment-border rounded-lg text-ink focus:outline-none focus:border-archival-oxblood"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-mono uppercase tracking-wider text-ink-muted mb-1">
+                    Country
+                  </label>
+                  <input
+                    type="text"
+                    value={loc.country || "United States"}
+                    onChange={(e) => updateLocation(idx, { country: e.target.value })}
+                    placeholder="United States"
+                    className="w-full px-3 py-1.5 text-xs font-serif bg-white border border-parchment-border rounded-lg text-ink focus:outline-none focus:border-archival-oxblood"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-mono uppercase tracking-wider text-ink-muted mb-1">
+                    Years at this Address
+                  </label>
+                  <input
+                    type="text"
+                    value={loc.yearsActive || ""}
+                    onChange={(e) => updateLocation(idx, { yearsActive: e.target.value })}
+                    placeholder="e.g. 1953–1970 or Present"
+                    className="w-full px-3 py-1.5 text-xs font-mono bg-white border border-parchment-border rounded-lg text-ink focus:outline-none focus:border-archival-oxblood"
+                  />
+                </div>
+
+                <div className="sm:col-span-2 flex flex-wrap items-center gap-4 pt-4">
+                  <label className="inline-flex items-center gap-2 cursor-pointer text-xs font-serif text-ink">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(loc.isMovedFrom)}
+                      onChange={(e) => updateLocation(idx, { isMovedFrom: e.target.checked })}
+                      className="rounded text-archival-oxblood focus:ring-archival-oxblood"
+                    />
+                    <span>Relocated from this location (Moved)</span>
+                  </label>
+
+                  <label className="inline-flex items-center gap-2 cursor-pointer text-xs font-serif text-ink">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(loc.isCurrent)}
+                      onChange={(e) => updateLocation(idx, { isCurrent: e.target.checked })}
+                      className="rounded text-archival-oxblood focus:ring-archival-oxblood"
+                    />
+                    <span>Currently operating at this location</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* 3. Hero Showcase: Storefront Photo (Left) & Cataloged Bookmarks (Right) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left Column: Storefront Photo & Storefront Management */}
@@ -622,6 +863,11 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                   unoptimized
                   className="object-contain object-center"
                 />
+
+                {/* Badge for Storefront vs Interior */}
+                <div className="absolute top-2 left-2 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-xs border border-white/20 text-white font-mono text-[10px] font-bold tracking-wider uppercase">
+                  {currentPhoto.mediaTag === "interior" ? "Inside / Interior" : "Storefront Photo"}
+                </div>
 
                 {/* Carousel navigation */}
                 {storefrontPhotos.length > 1 && (
@@ -653,7 +899,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                 <button
                   type="button"
                   onClick={() => removeStorefrontPhoto(currentPhoto.id)}
-                  title="Remove this photo from storefronts"
+                  title="Remove from photo carousel"
                   className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/70 hover:bg-rose-900 text-white border border-white/20 transition-colors cursor-pointer"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -662,7 +908,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
             ) : (
               <div className="w-full h-72 flex flex-col items-center justify-center text-xs font-serif text-stone-400 italic gap-2">
                 <Camera className="w-8 h-8 text-stone-500" />
-                <span>No storefront photo attached yet</span>
+                <span>No storefront or inside photos attached yet</span>
               </div>
             )}
           </div>
@@ -693,7 +939,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                 </div>
               </div>
             ) : (
-              <span className="text-xs font-serif text-ink-muted italic">Add a storefront photo to showcase on the dossier.</span>
+              <span className="text-xs font-serif text-ink-muted italic">Add a storefront or interior photo to showcase on the dossier.</span>
             )}
 
             <Button
@@ -704,7 +950,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
               className="gap-1.5 shrink-0 border-archival-oxblood/30 text-archival-oxblood hover:bg-rose-50"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>Add Storefront</span>
+              <span>Add Storefront / Inside Photo</span>
             </Button>
           </div>
         </div>
@@ -850,7 +1096,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
               <div>
                 <h2 className="font-serif text-base font-bold text-ink flex items-center gap-2">
                   <Newspaper className="w-4 h-4 text-archival-oxblood" />
-                  <span>Press &amp; Clippings</span>
+                  <span>Archival Media, Photos &amp; Clippings</span>
                 </h2>
                 <span className="text-xs font-mono text-ink-muted">
                   {pressClippings.length} {pressClippings.length === 1 ? "Item" : "Items"}
@@ -893,96 +1139,154 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
               </div>
             )}
 
-            {/* List of Press Clippings with in-place name/date editing */}
+            {/* List of Press Clippings with in-place name/date editing & Storefront/Inside checkbox */}
             {pressClippings.length === 0 ? (
               <div className="p-6 text-center rounded-xl bg-parchment-light border border-dashed border-parchment-border text-xs font-serif text-ink-muted italic">
-                No press clippings attached yet. Click "Upload More" to drop in newspaper scans or articles.
+                No archival media attached yet. Click "Upload More" to drop in newspaper scans, storefront photos, or interior shots.
               </div>
             ) : (
-              <div className="space-y-3 max-h-[460px] overflow-y-auto pr-1">
-                {pressClippings.map((media) => (
-                  <div
-                    key={media.id}
-                    className="p-3 rounded-xl border border-parchment-border bg-parchment/30 space-y-2"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="relative w-16 h-16 rounded bg-stone-100 overflow-hidden shrink-0 border border-parchment-border">
-                        <Image
-                          src={media.imageUrl}
-                          alt={media.caption}
-                          fill
-                          unoptimized
-                          className="object-cover"
-                        />
-                      </div>
+              <div className="space-y-3 max-h-[520px] overflow-y-auto pr-1">
+                {pressClippings.map((media) => {
+                  const isCarouselPhoto = Boolean(
+                    media.isStorefront || media.mediaType === "photo" || media.mediaTag === "interior" || media.mediaTag === "storefront"
+                  );
 
-                      <div className="flex-1 space-y-1 min-w-0">
-                        <input
-                          type="text"
-                          value={media.caption}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setMediaList((prev) =>
-                              prev.map((m) => (m.id === media.id ? { ...m, caption: val } : m))
-                            );
-                          }}
-                          placeholder="Article title / Caption"
-                          className="w-full px-2 py-1 text-xs font-serif font-bold text-ink bg-white border border-parchment-border rounded-lg"
-                        />
-
-                        <div className="grid grid-cols-2 gap-1.5">
-                          <input
-                            type="text"
-                            value={media.sourcePublication || ""}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              setMediaList((prev) =>
-                                prev.map((m) => (m.id === media.id ? { ...m, sourcePublication: val } : m))
-                              );
-                            }}
-                            placeholder="e.g. NYT"
-                            className="px-2 py-0.5 text-[11px] font-serif bg-white border border-parchment-border rounded-lg"
-                          />
-                          <input
-                            type="text"
-                            value={media.publicationDate || ""}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              setMediaList((prev) =>
-                                prev.map((m) => (m.id === media.id ? { ...m, publicationDate: val } : m))
-                              );
-                            }}
-                            placeholder="e.g. 1955"
-                            className="px-2 py-0.5 text-[11px] font-mono bg-white border border-parchment-border rounded-lg"
+                  return (
+                    <div
+                      key={media.id}
+                      className="p-3 rounded-xl border border-parchment-border bg-parchment/30 space-y-2.5"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="relative w-16 h-16 rounded bg-stone-100 overflow-hidden shrink-0 border border-parchment-border">
+                          <Image
+                            src={media.imageUrl}
+                            alt={media.caption}
+                            fill
+                            unoptimized
+                            className="object-cover"
                           />
                         </div>
+
+                        <div className="flex-1 space-y-1.5 min-w-0">
+                          <input
+                            type="text"
+                            value={media.caption}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setMediaList((prev) =>
+                                prev.map((m) => (m.id === media.id ? { ...m, caption: val } : m))
+                              );
+                            }}
+                            placeholder="Caption / Headline"
+                            className="w-full px-2 py-1 text-xs font-serif font-bold text-ink bg-white border border-parchment-border rounded-lg"
+                          />
+
+                          <div className="grid grid-cols-2 gap-1.5">
+                            <input
+                              type="text"
+                              value={media.sourcePublication || ""}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setMediaList((prev) =>
+                                  prev.map((m) => (m.id === media.id ? { ...m, sourcePublication: val } : m))
+                                );
+                              }}
+                              placeholder="Publication / Source"
+                              className="px-2 py-0.5 text-[11px] font-serif bg-white border border-parchment-border rounded-lg"
+                            />
+                            <input
+                              type="text"
+                              value={media.publicationDate || ""}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setMediaList((prev) =>
+                                  prev.map((m) => (m.id === media.id ? { ...m, publicationDate: val } : m))
+                                );
+                              }}
+                              placeholder="Year / Date"
+                              className="px-2 py-0.5 text-[11px] font-mono bg-white border border-parchment-border rounded-lg"
+                            />
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => setMediaList((prev) => prev.filter((m) => m.id !== media.id))}
+                          title="Delete this item"
+                          className="p-1 rounded-md text-stone-400 hover:text-rose-700 hover:bg-rose-50 transition-colors"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() => setMediaList((prev) => prev.filter((m) => m.id !== media.id))}
-                        title="Delete this clipping"
-                        className="p-1 rounded-md text-stone-400 hover:text-rose-700 hover:bg-rose-50 transition-colors"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      {/* Storefront / Inside Checkbox */}
+                      <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-parchment-border/40 text-[11px] font-serif">
+                        <label className="inline-flex items-center gap-1.5 cursor-pointer font-medium text-ink">
+                          <input
+                            type="checkbox"
+                            checked={isCarouselPhoto}
+                            onChange={(e) => {
+                              const checked = e.target.checked;
+                              setMediaList((prev) =>
+                                prev.map((m) =>
+                                  m.id === media.id
+                                    ? {
+                                        ...m,
+                                        isStorefront: checked,
+                                        mediaType: checked ? "photo" : "newspaper",
+                                        mediaTag: checked ? (m.mediaTag || "storefront") : null,
+                                      }
+                                    : m
+                                )
+                              );
+                            }}
+                            className="rounded text-archival-oxblood focus:ring-archival-oxblood"
+                          />
+                          <span>Storefront / Inside Photo (Show in top carousel)</span>
+                        </label>
+
+                        {isCarouselPhoto && (
+                          <select
+                            value={media.mediaTag || (media.isStorefront ? "storefront" : "interior")}
+                            onChange={(e) => {
+                              const tag = e.target.value;
+                              setMediaList((prev) =>
+                                prev.map((m) =>
+                                  m.id === media.id
+                                    ? {
+                                        ...m,
+                                        isStorefront: true,
+                                        mediaType: "photo",
+                                        mediaTag: tag,
+                                      }
+                                    : m
+                                )
+                              );
+                            }}
+                            className="text-[10px] font-mono px-2 py-0.5 bg-white border border-parchment-border rounded text-ink"
+                          >
+                            <option value="storefront">Storefront / Exterior</option>
+                            <option value="interior">Inside / Interior</option>
+                          </select>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </section>
         </div>
       </div>
 
-      {/* --- MODAL: Add Storefront Photo --- */}
+      {/* --- MODAL: Add Storefront / Inside Photo --- */}
       {isStorefrontModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
           <div className="relative w-full max-w-lg bg-white border border-parchment-border rounded-2xl shadow-2xl p-6 space-y-5">
             <div className="flex items-center justify-between border-b border-parchment-border pb-3">
               <h3 className="font-serif text-lg font-bold text-ink flex items-center gap-2">
                 <Camera className="w-5 h-5 text-archival-oxblood" />
-                <span>Add Storefront Photo</span>
+                <span>Add Storefront or Inside Photo</span>
               </h3>
               <button
                 type="button"
@@ -1017,7 +1321,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
               ) : (
                 <label className="border-2 border-dashed border-parchment-border hover:border-archival-oxblood rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer bg-parchment-light/50 hover:bg-parchment-light transition-all">
                   <UploadCloud className="w-8 h-8 text-archival-oxblood mb-2" />
-                  <span className="font-serif text-sm font-bold text-ink">Choose Storefront Photo</span>
+                  <span className="font-serif text-sm font-bold text-ink">Choose Photo</span>
                   <span className="text-xs text-ink-muted font-mono mt-1">PNG, JPG, or WebP</span>
                   <input
                     type="file"
@@ -1031,6 +1335,20 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-mono text-ink-muted uppercase mb-1">
+                    Photo Type
+                  </label>
+                  <select
+                    value={storefrontTagType}
+                    onChange={(e) => setStorefrontTagType(e.target.value as any)}
+                    className="w-full px-3 py-1.5 text-xs font-serif bg-parchment-light border border-parchment-border rounded-lg text-ink"
+                  >
+                    <option value="storefront">Storefront / Exterior</option>
+                    <option value="interior">Inside / Interior</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono text-ink-muted uppercase mb-1">
                     Photo Year
                   </label>
                   <input
@@ -1041,22 +1359,23 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                     className="w-full px-3 py-1.5 text-xs font-mono bg-parchment-light border border-parchment-border rounded-lg"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs font-mono text-ink-muted uppercase mb-1">
-                    Caption
-                  </label>
-                  <input
-                    type="text"
-                    value={storefrontCaption}
-                    onChange={(e) => setStorefrontCaption(e.target.value)}
-                    placeholder="e.g. 1950 Storefront"
-                    className="w-full px-3 py-1.5 text-xs font-serif bg-parchment-light border border-parchment-border rounded-lg"
-                  />
-                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono text-ink-muted uppercase mb-1">
+                  Caption / Description
+                </label>
+                <input
+                  type="text"
+                  value={storefrontCaption}
+                  onChange={(e) => setStorefrontCaption(e.target.value)}
+                  placeholder="Historic Storefront Exterior"
+                  className="w-full px-3 py-1.5 text-xs font-serif bg-parchment-light border border-parchment-border rounded-lg"
+                />
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-parchment-border">
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-parchment-border">
               <Button
                 type="button"
                 variant="outline"
@@ -1069,10 +1388,17 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                 type="button"
                 size="sm"
                 onClick={handleUploadStorefront}
-                disabled={!storefrontPreviewUrl || isUploadingStorefront}
-                className="bg-archival-oxblood hover:bg-rose-950 text-white"
+                disabled={isUploadingStorefront || (!storefrontUploadFile && !storefrontPreviewUrl)}
+                className="bg-archival-oxblood text-white hover:bg-rose-950"
               >
-                {isUploadingStorefront ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Attach Storefront"}
+                {isUploadingStorefront ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Attaching...</span>
+                  </>
+                ) : (
+                  <span>Add to Carousel</span>
+                )}
               </Button>
             </div>
           </div>
@@ -1082,10 +1408,10 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
       {/* --- MODAL: Add / Edit Timeline Event --- */}
       {eventModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
-          <div className="relative w-full max-w-md bg-white border border-parchment-border rounded-2xl shadow-2xl p-6 space-y-4">
+          <div className="relative w-full max-w-lg bg-white border border-parchment-border rounded-2xl shadow-2xl p-6 space-y-5">
             <div className="flex items-center justify-between border-b border-parchment-border pb-3">
               <h3 className="font-serif text-lg font-bold text-ink flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-archival-amber" />
+                <Sparkles className="w-5 h-5 text-archival-oxblood" />
                 <span>{editingEventId ? "Edit Timeline Event" : "Add Timeline Event"}</span>
               </h3>
               <button
@@ -1097,54 +1423,73 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
               </button>
             </div>
 
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-mono text-ink-muted uppercase mb-1">
-                  Year *
-                </label>
-                <input
-                  type="number"
-                  value={eventYear}
-                  onChange={(e) => setEventYear(e.target.value)}
-                  placeholder="e.g. 1960"
-                  className="w-full px-3 py-1.5 text-sm font-mono bg-parchment-light border border-parchment-border rounded-xl"
-                />
+            <div className="space-y-4">
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-mono text-ink-muted uppercase mb-1">
+                    Event Year *
+                  </label>
+                  <input
+                    type="number"
+                    value={eventYear}
+                    onChange={(e) => setEventYear(e.target.value)}
+                    placeholder="1955"
+                    required
+                    className="w-full px-3 py-1.5 text-xs font-mono bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none focus:border-archival-oxblood"
+                  />
+                </div>
+
+                <div className="col-span-2">
+                  <label className="block text-xs font-mono text-ink-muted uppercase mb-1">
+                    Event Title / Headline
+                  </label>
+                  <input
+                    type="text"
+                    value={eventLabel}
+                    onChange={(e) => setEventLabel(e.target.value)}
+                    placeholder="e.g. Relocated to 41 W 47th St"
+                    className="w-full px-3 py-1.5 text-xs font-serif bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none focus:border-archival-oxblood"
+                  />
+                </div>
               </div>
 
               <div>
                 <label className="block text-xs font-mono text-ink-muted uppercase mb-1">
-                  Event Title / Description *
+                  Event Description *
                 </label>
-                <input
-                  type="text"
+                <textarea
                   value={eventDescription}
                   onChange={(e) => setEventDescription(e.target.value)}
-                  placeholder="e.g. Opened 2nd Location at 123 Fake Street"
-                  className="w-full px-3 py-1.5 text-sm font-serif bg-parchment-light border border-parchment-border rounded-xl"
+                  rows={3}
+                  placeholder="Describe the milestone or relocation event..."
+                  className="w-full px-3 py-2 text-xs font-serif bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none focus:border-archival-oxblood"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-mono text-ink-muted uppercase mb-1">
-                  Link Archival Photo / Clipping (Optional)
+                  Link to Photo / Press Clipping (Optional)
                 </label>
                 <select
                   value={eventMediaId}
                   onChange={(e) => setEventMediaId(e.target.value)}
-                  className="w-full px-3 py-2 text-xs font-serif bg-parchment-light border border-parchment-border rounded-xl"
+                  className="w-full px-3 py-2 text-xs font-serif bg-white border border-parchment-border rounded-lg text-ink focus:outline-none"
                 >
-                  <option value="">None / Text Only</option>
+                  <option value="">-- No Linked Image --</option>
                   {mediaList.map((m) => (
                     <option key={m.id} value={m.id}>
-                      {m.isStorefront ? "🏬 [Storefront] " : "📰 [Clipping] "}
+                      {m.publicationDate ? `[${m.publicationDate}] ` : ""}
                       {m.caption || m.sourcePublication || m.imageUrl}
                     </option>
                   ))}
                 </select>
+                <p className="text-[11px] font-serif text-ink-muted italic mt-1">
+                  When visitors click this milestone on the timeline, a high-resolution popup of this image will open.
+                </p>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-parchment-border">
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-parchment-border">
               <Button
                 type="button"
                 variant="outline"
@@ -1157,13 +1502,21 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                 type="button"
                 size="sm"
                 onClick={handleSaveEvent}
-                className="bg-archival-oxblood hover:bg-rose-950 text-white"
+                className="bg-archival-oxblood text-white hover:bg-rose-950"
               >
-                Save Event
+                {editingEventId ? "Update Event" : "Add to Timeline"}
               </Button>
             </div>
           </div>
         </div>
+      )}
+
+      {/* Lightbox Modal */}
+      {selectedLightboxMedia && (
+        <ClippingLightbox
+          media={selectedLightboxMedia}
+          onClose={() => setSelectedLightboxMedia(null)}
+        />
       )}
 
       {/* Bookmark Inspector Modal */}
@@ -1171,14 +1524,6 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
         <BookmarkInspector
           bookmark={selectedBookmark}
           onClose={() => setSelectedBookmark(null)}
-        />
-      )}
-
-      {/* Clipping Lightbox */}
-      {selectedLightboxMedia && (
-        <ClippingLightbox
-          media={selectedLightboxMedia}
-          onClose={() => setSelectedLightboxMedia(null)}
         />
       )}
     </div>
