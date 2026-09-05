@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Upload, X, Link as LinkIcon, Loader2, RotateCw, AlertCircle, Scissors } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { compressImageIfNeeded } from "@/lib/utils/image-compressor";
+import { compressImageIfNeeded, getNonTransparentBoundingBox } from "@/lib/utils/image-compressor";
 
 export interface ImageDropzoneProps {
   label: string;
@@ -64,20 +64,19 @@ export function ImageDropzone({
     if (!rawFile) return;
     setError("");
     setImageLoadError(false);
-    updateUploading(true, "Preparing preview...");
-
-    // 1. Instant client-side blob preview so the user sees the new image immediately!
-    const objectUrl = URL.createObjectURL(rawFile);
-    setLocalPreviewUrl(objectUrl);
-
-    if (onFileSelected) {
-      onFileSelected(rawFile);
-    }
+    updateUploading(true, "Auto-trimming transparency & optimizing...");
 
     try {
-      // 2. Optimize oversized image in browser (< 3MB)
-      updateUploading(true, "Optimizing scan...");
+      // 1. Automatically detect & crop transparent padding and optimize
       const file = await compressImageIfNeeded(rawFile);
+
+      // 2. Instant client-side blob preview with tightly cropped bookmark!
+      const objectUrl = URL.createObjectURL(file);
+      setLocalPreviewUrl(objectUrl);
+
+      if (onFileSelected) {
+        onFileSelected(file);
+      }
 
       updateUploading(true, "Uploading to archive...");
 
@@ -109,8 +108,8 @@ export function ImageDropzone({
         throw new Error(data.error || "Upload failed");
       }
 
-      // 4. Update parent state with permanent uploaded URL
-      onChange(data.url, rawFile);
+      // 4. Update parent state with permanent uploaded URL and cropped file
+      onChange(data.url, file);
     } catch (err: any) {
       console.error("Image Upload Failed:", err);
       if (err.name === "AbortError") {
@@ -228,94 +227,104 @@ export function ImageDropzone({
       const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const { data, width, height } = imgData;
 
-      // Helper: check if a pixel is white/blank scanner background
-      const isScannerWhiteOrBlank = (r: number, g: number, b: number, a: number) => {
-        if (a < 25) return true; // transparent
-        const brightness = (r + g + b) / 3;
-        const colorDiff = Math.max(Math.abs(r - g), Math.abs(g - b), Math.abs(r - b));
-        return brightness > 235 && colorDiff < 20;
-      };
-
-      // 1. Scan Top edge
+      // Check if image has transparent margins first
+      const transBbox = getNonTransparentBoundingBox(data, width, height, 15);
       let top = 0;
-      for (let y = 0; y < Math.floor(height * 0.20); y++) {
-        let whitePixels = 0;
-        for (let x = 0; x < width; x++) {
-          const idx = (y * width + x) * 4;
-          if (isScannerWhiteOrBlank(data[idx], data[idx + 1], data[idx + 2], data[idx + 3])) {
-            whitePixels++;
-          }
-        }
-        if (whitePixels / width > 0.85) {
-          top = y + 1;
-        } else {
-          break;
-        }
-      }
-
-      // 2. Scan Bottom edge
       let bottom = height;
-      for (let y = height - 1; y >= Math.floor(height * 0.80); y--) {
-        let whitePixels = 0;
-        for (let x = 0; x < width; x++) {
-          const idx = (y * width + x) * 4;
-          if (isScannerWhiteOrBlank(data[idx], data[idx + 1], data[idx + 2], data[idx + 3])) {
-            whitePixels++;
-          }
-        }
-        if (whitePixels / width > 0.85) {
-          bottom = y;
-        } else {
-          break;
-        }
-      }
-
-      // 3. Scan Left edge
       let left = 0;
-      for (let x = 0; x < Math.floor(width * 0.20); x++) {
-        let whitePixels = 0;
-        for (let y = 0; y < height; y++) {
-          const idx = (y * width + x) * 4;
-          if (isScannerWhiteOrBlank(data[idx], data[idx + 1], data[idx + 2], data[idx + 3])) {
-            whitePixels++;
-          }
-        }
-        if (whitePixels / height > 0.85) {
-          left = x + 1;
-        } else {
-          break;
-        }
-      }
-
-      // 4. Scan Right edge
       let right = width;
-      for (let x = width - 1; x >= Math.floor(width * 0.80); x--) {
-        let whitePixels = 0;
-        for (let y = 0; y < height; y++) {
-          const idx = (y * width + x) * 4;
-          if (isScannerWhiteOrBlank(data[idx], data[idx + 1], data[idx + 2], data[idx + 3])) {
-            whitePixels++;
+
+      if (transBbox && (transBbox.x > 0 || transBbox.y > 0 || transBbox.width < width || transBbox.height < height)) {
+        left = transBbox.x;
+        top = transBbox.y;
+        right = transBbox.x + transBbox.width;
+        bottom = transBbox.y + transBbox.height;
+      } else {
+        // Helper: check if a pixel is white/blank scanner background
+        const isScannerWhiteOrBlank = (r: number, g: number, b: number, a: number) => {
+          if (a < 25) return true; // transparent
+          const brightness = (r + g + b) / 3;
+          const colorDiff = Math.max(Math.abs(r - g), Math.abs(g - b), Math.abs(r - b));
+          return brightness > 235 && colorDiff < 20;
+        };
+
+        // 1. Scan Top edge
+        for (let y = 0; y < Math.floor(height * 0.20); y++) {
+          let whitePixels = 0;
+          for (let x = 0; x < width; x++) {
+            const idx = (y * width + x) * 4;
+            if (isScannerWhiteOrBlank(data[idx], data[idx + 1], data[idx + 2], data[idx + 3])) {
+              whitePixels++;
+            }
+          }
+          if (whitePixels / width > 0.85) {
+            top = y + 1;
+          } else {
+            break;
           }
         }
-        if (whitePixels / height > 0.85) {
-          right = x;
-        } else {
-          break;
-        }
-      }
 
-      // 1px micro-shave on detected borders to eliminate edge antialiasing artifacts
-      if (top > 0 || bottom < height || left > 0 || right < width) {
-        top = Math.min(top + 1, height - 10);
-        bottom = Math.max(bottom - 1, top + 10);
-        left = Math.min(left + 1, width - 10);
-        right = Math.max(right - 1, left + 10);
-      } else {
-        // Fallback: trim 2px all around
-        top = Math.min(2, Math.floor(height * 0.05));
-        bottom = Math.max(height - 2, top + 10);
-        left = Math.min(2, Math.floor(width * 0.05));
-        right = Math.max(width - 2, left + 10);
+        // 2. Scan Bottom edge
+        for (let y = height - 1; y >= Math.floor(height * 0.80); y--) {
+          let whitePixels = 0;
+          for (let x = 0; x < width; x++) {
+            const idx = (y * width + x) * 4;
+            if (isScannerWhiteOrBlank(data[idx], data[idx + 1], data[idx + 2], data[idx + 3])) {
+              whitePixels++;
+            }
+          }
+          if (whitePixels / width > 0.85) {
+            bottom = y;
+          } else {
+            break;
+          }
+        }
+
+        // 3. Scan Left edge
+        for (let x = 0; x < Math.floor(width * 0.20); x++) {
+          let whitePixels = 0;
+          for (let y = 0; y < height; y++) {
+            const idx = (y * width + x) * 4;
+            if (isScannerWhiteOrBlank(data[idx], data[idx + 1], data[idx + 2], data[idx + 3])) {
+              whitePixels++;
+            }
+          }
+          if (whitePixels / height > 0.85) {
+            left = x + 1;
+          } else {
+            break;
+          }
+        }
+
+        // 4. Scan Right edge
+        for (let x = width - 1; x >= Math.floor(width * 0.80); x--) {
+          let whitePixels = 0;
+          for (let y = 0; y < height; y++) {
+            const idx = (y * width + x) * 4;
+            if (isScannerWhiteOrBlank(data[idx], data[idx + 1], data[idx + 2], data[idx + 3])) {
+              whitePixels++;
+            }
+          }
+          if (whitePixels / height > 0.85) {
+            right = x;
+          } else {
+            break;
+          }
+        }
+
+        // 1px micro-shave on detected borders to eliminate edge antialiasing artifacts
+        if (top > 0 || bottom < height || left > 0 || right < width) {
+          top = Math.min(top + 1, height - 10);
+          bottom = Math.max(bottom - 1, top + 10);
+          left = Math.min(left + 1, width - 10);
+          right = Math.max(right - 1, left + 10);
+        } else {
+          // Fallback: trim 2px all around
+          top = Math.min(2, Math.floor(height * 0.05));
+          bottom = Math.max(height - 2, top + 10);
+          left = Math.min(2, Math.floor(width * 0.05));
+          right = Math.max(width - 2, left + 10);
+        }
       }
 
       const cropWidth = right - left;
