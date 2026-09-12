@@ -26,11 +26,10 @@ describe("UI Design System Components", () => {
     expect(clicked).toBe(true);
   });
 
-  it("should render Header with title and Partners & Donors link", () => {
+  it("should render Header with navigation links and actions", () => {
     render(<Header />);
-    expect(screen.getAllByText(/Bookstore/i).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText(/Bookmark/i).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText(/Archive/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByRole("link", { name: /The Bookstore Bookmark Archive/i })).toBeDefined();
     expect(screen.getByRole("link", { name: /Partners & Donors/i })).toBeDefined();
+    expect(screen.getByRole("link", { name: /Bookstores/i })).toBeDefined();
   });
 });

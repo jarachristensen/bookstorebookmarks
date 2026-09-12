@@ -2,8 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
-import Link from "next/link";
-import { Search, Shuffle, BookOpen, Compass, X, Sparkles, Filter } from "lucide-react";
+import { Search, Shuffle, X } from "lucide-react";
 import { motion } from "framer-motion";
 
 export interface RisographHeroProps {
@@ -55,61 +54,53 @@ export function RisographHero({
 
   return (
     <section className="relative w-full py-4 sm:py-6 lg:py-8">
+      {/* Embedded SVG Filter for Organic Risograph Ink Micro-Texture */}
+      <svg className="sr-only" aria-hidden="true" width="0" height="0">
+        <defs>
+          <filter id="riso-ink-bleed" x="-10%" y="-10%" width="120%" height="120%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="3" result="noise" />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.4" xChannelSelector="R" yChannelSelector="G" />
+          </filter>
+        </defs>
+      </svg>
+
       {/* 2-Column Split Hero Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 xl:gap-12 items-center">
         
-        {/* Left Column: Bold Duotone Typography, Tagline, Stats & Search/Filter Controls */}
+        {/* Left Column: Bold Duotone Typography, Tagline & Search/Filter Controls */}
         <div className="lg:col-span-7 xl:col-span-7 flex flex-col justify-center space-y-4 sm:space-y-5">
           
-          {/* Duotone Masthead Heading */}
-          <div className="space-y-1 sm:space-y-2">
-            <h1 className="font-serif font-black text-3xl sm:text-5xl md:text-6xl tracking-tight leading-[1.08] select-none">
-              <span className="text-[#F43F7A] drop-shadow-[0_1px_1px_rgba(244,63,122,0.25)]">The</span>{" "}
-              <span className="text-[#2563EB] drop-shadow-[0_1px_1px_rgba(37,99,235,0.25)]">Bookstore</span>{" "}
+          {/* Duotone Masthead Heading with Risograph Print Texture */}
+          <div className="space-y-1.5 sm:space-y-2">
+            <h1 className="font-serif font-black text-3xl sm:text-5xl md:text-6xl tracking-tight leading-[1.08] select-none riso-title-texture">
+              <span className="riso-ink-magenta">The</span>{" "}
+              <span className="riso-ink-blue">Bookstore</span>{" "}
               <br className="hidden sm:inline" />
-              <span className="text-[#F43F7A] drop-shadow-[0_1px_1px_rgba(244,63,122,0.25)]">Bookmark</span>{" "}
-              <span className="text-[#2563EB] drop-shadow-[0_1px_1px_rgba(37,99,235,0.25)]">Archive</span>
+              <span className="riso-ink-magenta">Bookmark</span>{" "}
+              <span className="riso-ink-blue">Archive</span>
             </h1>
 
-            <p className="font-serif italic text-base sm:text-lg md:text-xl text-[#2563EB] max-w-xl font-medium pt-1">
+            <p className="font-serif text-base sm:text-lg md:text-xl text-[#2563EB] max-w-xl font-medium pt-1">
               They saved our place, now there is a place to save them.
             </p>
           </div>
 
-          {/* Curatorial Stats Strip */}
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-1">
-            <Link
-              href="/bookstores"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#E8E2D5] text-xs sm:text-sm font-medium text-stone-700 hover:text-[#F43F7A] hover:border-[#F43F7A] shadow-xs transition-all group"
-              title="Browse all cataloged bookstores"
-            >
-              <BookOpen className="w-3.5 h-3.5 text-[#F43F7A]" />
-              <span>
-                <strong className="text-stone-900 font-bold group-hover:text-[#F43F7A]">{totalBookstores}</strong> Historic Bookstores ↗
-              </span>
-            </Link>
-
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#E8E2D5] text-xs sm:text-sm font-medium text-stone-700 shadow-xs">
-              <Compass className="w-3.5 h-3.5 text-[#2563EB]" />
-              <span>
-                <strong className="text-stone-900 font-bold">{totalBookmarks}</strong> Cataloged Bookmarks
-              </span>
-            </div>
-
+          {/* Shuffle Spread Action Strip */}
+          <div className="flex items-center pt-0.5">
             <button
               type="button"
               onClick={onShuffle}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white border border-[#E8E2D5] text-xs sm:text-sm font-medium text-stone-800 hover:bg-[#FAF8F5] hover:border-[#F43F7A] hover:text-[#F43F7A] shadow-xs transition-all cursor-pointer active:scale-95 ml-auto sm:ml-0"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white border border-[#E8E2D5] text-xs sm:text-sm font-medium text-stone-800 hover:bg-[#FAF8F5] hover:border-[#F43F7A] hover:text-[#F43F7A] shadow-xs transition-all cursor-pointer active:scale-95 group"
               title="Shuffle the bookmark spread"
               aria-label="Shuffle Spread"
             >
-              <Shuffle className="w-3.5 h-3.5 text-[#F59E0B]" />
+              <Shuffle className="w-3.5 h-3.5 text-[#F59E0B] group-hover:rotate-45 transition-transform" />
               <span>Shuffle Spread</span>
             </button>
           </div>
 
           {/* Risograph Search & Filter Toolbar */}
-          <div className="space-y-3 pt-2">
+          <div className="space-y-3 pt-1">
             {/* Search Input Bar */}
             <div className="relative flex items-center w-full max-w-2xl bg-white rounded-xl border-2 border-[#2563EB]/40 shadow-xs focus-within:border-[#2563EB] focus-within:ring-2 focus-within:ring-[#2563EB]/20 transition-all overflow-hidden">
               <div className="pl-3.5 pr-2 flex items-center pointer-events-none text-[#2563EB]">
@@ -170,7 +161,7 @@ export function RisographHero({
                       : "text-stone-600 hover:text-stone-900"
                   }`}
                 >
-                  Historic Only
+                  Permanently Closed
                 </button>
               </div>
 

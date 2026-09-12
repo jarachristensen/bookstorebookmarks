@@ -34,6 +34,27 @@ body {
   background-size: 20px 20px, 100% 100%;
 }
 
+/* Authentic Risograph Screenprint Typography Texture */
+.riso-title-texture {
+  filter: url(#riso-ink-bleed);
+  letter-spacing: -0.025em;
+  -webkit-font-smoothing: antialiased;
+}
+
+.riso-ink-magenta {
+  color: #F43F7A;
+  text-shadow: 
+    0.75px 0.75px 0px rgba(244, 63, 122, 0.35),
+    -0.5px -0.5px 0px rgba(245, 158, 11, 0.2);
+}
+
+.riso-ink-blue {
+  color: #2563EB;
+  text-shadow: 
+    0.75px 0.75px 0px rgba(37, 99, 235, 0.35),
+    -0.5px -0.5px 0px rgba(16, 185, 129, 0.2);
+}
+
 .paper-shadow-soft {
   box-shadow: 0 2px 8px -1px rgba(24, 24, 27, 0.06), 0 1px 3px -1px rgba(24, 24, 27, 0.04);
 }

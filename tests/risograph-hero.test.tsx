@@ -4,7 +4,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { RisographHero } from "@/components/home/RisographHero";
 
 describe("RisographHero Component", () => {
-  it("renders duotone title, tagline, stats badges, search input, and filter pills", () => {
+  it("renders duotone title, tagline, search input, Permanently Closed pill, and shuffle button", () => {
     const handleSearch = vi.fn();
     const handleShuffle = vi.fn();
 
@@ -34,8 +34,7 @@ describe("RisographHero Component", () => {
     expect(screen.getAllByText(/Bookmark/i).length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText(/Archive/i).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText(/They saved our place, now there is a place to save them/i)).toBeDefined();
-    expect(screen.getByText(/42/i)).toBeDefined();
-    expect(screen.getByText(/150/i)).toBeDefined();
+    expect(screen.getByText(/Permanently Closed/i)).toBeDefined();
 
     const searchInput = screen.getByPlaceholderText(/search/i);
     fireEvent.change(searchInput, { target: { value: "gotham" } });
