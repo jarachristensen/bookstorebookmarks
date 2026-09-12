@@ -233,10 +233,10 @@ export function RisographHero({
         {/* Right Column: Illustrated Hand Holding Fan of Bookmarks Artwork */}
         <div className="lg:col-span-5 xl:col-span-5 flex items-center justify-center lg:justify-end">
           <motion.div
-            initial={{ opacity: 0, y: 25, scale: 0.94 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
+            initial={{ opacity: 0, y: 25, scale: 0.94, rotate: -20 }}
+            animate={{ opacity: 1, y: 0, scale: 1, rotate: -20 }}
             transition={{ duration: 0.55, ease: "easeOut" }}
-            whileHover={{ y: -8, scale: 1.03, transition: { duration: 0.25 } }}
+            whileHover={{ y: -8, scale: 1.03, rotate: -17, transition: { duration: 0.25 } }}
             className="relative w-full max-w-[270px] xs:max-w-[340px] sm:max-w-[380px] lg:max-w-[430px] xl:max-w-[500px] flex items-center justify-center select-none"
           >
             {/* Subtle Risograph Ambient Glow behind artwork */}
