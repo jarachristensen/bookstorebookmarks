@@ -103,71 +103,143 @@ body {
   background: #B8A992;
 }
 
-/* Antique Flat-File Cabinet & Card Catalog Skeuomorphism */
+/* Antique Hardwood Flat-File Cabinet & Card Catalog Furniture Skeuomorphism */
 .cabinet-antique-housing {
-  background: linear-gradient(175deg, #441d08 0%, #301406 50%, #1f0b02 100%);
+  background: 
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.08) 0px, rgba(0, 0, 0, 0.08) 2px, transparent 2px, transparent 8px),
+    linear-gradient(180deg, #5c290d 0%, #3e1906 35%, #2a0f03 80%, #1a0801 100%);
   box-shadow: 
-    0 35px 70px -15px rgba(0, 0, 0, 0.7),
-    0 15px 30px -5px rgba(0, 0, 0, 0.5),
-    inset 0 2px 4px rgba(255, 230, 180, 0.35),
-    inset 0 -4px 8px rgba(0, 0, 0, 0.9);
+    0 40px 80px -15px rgba(0, 0, 0, 0.8),
+    0 20px 35px -5px rgba(0, 0, 0, 0.6),
+    inset 0 3px 6px rgba(255, 235, 190, 0.35),
+    inset 0 -5px 12px rgba(0, 0, 0, 0.95);
 }
 
-.drawer-face-antique {
-  background: linear-gradient(180deg, #6c3214 0%, #56240d 30%, #421b0a 70%, #321306 100%);
+.cabinet-housing-rim {
+  background: linear-gradient(180deg, #743410 0%, #4a2007 50%, #290f02 100%);
   box-shadow: 
-    0 6px 14px rgba(0, 0, 0, 0.4),
-    inset 0 1px 2px rgba(255, 235, 205, 0.45),
-    inset 0 -2px 4px rgba(0, 0, 0, 0.7);
+    inset 0 2px 4px rgba(255, 240, 200, 0.4),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.8),
+    0 4px 15px rgba(0, 0, 0, 0.6);
 }
 
-.drawer-face-antique:hover {
-  background: linear-gradient(180deg, #783918 0%, #602a10 30%, #4a200d 70%, #3b1708 100%);
+/* Individual Hardwood Drawer Plank */
+.drawer-face-plank {
+  background: 
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.015) 0px, rgba(255, 255, 255, 0.015) 1px, transparent 1px, transparent 6px),
+    linear-gradient(180deg, #733513 0%, #5d290c 20%, #481d07 70%, #351304 100%);
   box-shadow: 
-    0 10px 22px rgba(0, 0, 0, 0.5),
-    inset 0 1px 3px rgba(255, 245, 220, 0.6),
-    inset 0 -2px 4px rgba(0, 0, 0, 0.7);
+    0 5px 12px rgba(0, 0, 0, 0.45),
+    inset 0 1.5px 2px rgba(255, 235, 205, 0.5),
+    inset 0 -2.5px 4px rgba(0, 0, 0, 0.85);
 }
 
-.brass-label-holder {
-  background: linear-gradient(135deg, #d4af37 0%, #aa8c2c 35%, #7a6118 70%, #d4af37 100%);
+.drawer-face-plank:hover {
+  background: 
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.02) 0px, rgba(255, 255, 255, 0.02) 1px, transparent 1px, transparent 6px),
+    linear-gradient(180deg, #823e18 0%, #6b3010 20%, #522209 70%, #3e1705 100%);
   box-shadow: 
-    0 3px 6px rgba(0, 0, 0, 0.45),
-    inset 0 1px 1px rgba(255, 255, 255, 0.5),
-    inset 0 -1px 2px rgba(0, 0, 0, 0.6);
+    0 10px 24px rgba(0, 0, 0, 0.6),
+    inset 0 2px 3px rgba(255, 245, 220, 0.7),
+    inset 0 -3px 5px rgba(0, 0, 0, 0.9);
 }
 
-.brass-cup-pull {
-  background: radial-gradient(circle at 50% 25%, #eed27c 0%, #c49c30 40%, #7d5e16 80%, #4d370b 100%);
+/* Authentic Antique Brass Card-Catalog Label Holder */
+.brass-card-holder-frame {
+  background: linear-gradient(145deg, #f7e096 0%, #d4af37 25%, #9b791e 65%, #6a500e 100%);
   box-shadow: 
-    0 6px 10px rgba(0, 0, 0, 0.55),
-    inset 0 2px 2px rgba(255, 255, 255, 0.6),
-    inset 0 -2px 3px rgba(0, 0, 0, 0.8);
+    0 4px 10px rgba(0, 0, 0, 0.6),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.7),
+    inset 0 -1.5px 2px rgba(0, 0, 0, 0.7);
+}
+
+/* Aged Parchment Index Card */
+.parchment-index-card {
+  background: #fbf6ec;
+  background-image: 
+    radial-gradient(rgba(180, 140, 90, 0.08) 1px, transparent 0),
+    linear-gradient(180deg, #fffdf9 0%, #f7f0e1 100%);
+  background-size: 16px 16px, 100% 100%;
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.25),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.15),
+    0 1px 1px rgba(255, 255, 255, 0.6);
+}
+
+/* 3D Sculpted Antique Brass Cup Handle / Bin Pull */
+.brass-cup-handle-sculpted {
+  position: relative;
+  background: 
+    radial-gradient(ellipse at 50% 15%, #fff3b0 0%, #dfb743 30%, #9e7a1c 70%, #573f08 100%);
+  box-shadow: 
+    0 8px 16px rgba(0, 0, 0, 0.7),
+    0 2px 4px rgba(0, 0, 0, 0.5),
+    inset 0 2px 3px rgba(255, 255, 255, 0.8),
+    inset 0 -3px 5px rgba(0, 0, 0, 0.9);
+}
+
+/* Deep Underside Grip Shadow of the Cup Handle */
+.brass-cup-handle-sculpted::after {
+  content: "";
+  position: absolute;
+  bottom: 0px;
+  left: 12%;
+  right: 12%;
+  height: 60%;
+  background: radial-gradient(ellipse at 50% 100%, #1e1403 0%, #3e2808 60%, transparent 100%);
+  border-bottom-left-radius: 9999px;
+  border-bottom-right-radius: 9999px;
+  opacity: 0.95;
+  box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.9);
+}
+
+/* Slotted Antique Brass Screw Head */
+.brass-screw-head {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 40%, #fae69e 0%, #b8932b 50%, #684f0f 100%);
+  box-shadow: 
+    0 1px 2px rgba(0, 0, 0, 0.6),
+    inset 0 0.5px 1px rgba(255, 255, 255, 0.7);
+  position: relative;
+}
+
+.brass-screw-head::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 15%;
+  right: 15%;
+  height: 1px;
+  background: #2a1b02;
+  transform: translateY(-50%) rotate(35deg);
 }
 
 .brass-plaque-title {
-  background: linear-gradient(180deg, #f5da8a 0%, #d4af37 40%, #9e7f1e 85%, #695210 100%);
+  background: linear-gradient(180deg, #f7df8f 0%, #d8b23c 40%, #9e7f1e 85%, #695210 100%);
   box-shadow: 
-    0 4px 10px rgba(0, 0, 0, 0.5),
-    inset 0 1px 2px rgba(255, 255, 255, 0.7),
-    inset 0 -1px 2px rgba(0, 0, 0, 0.5);
+    0 4px 12px rgba(0, 0, 0, 0.6),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.8),
+    inset 0 -1.5px 2px rgba(0, 0, 0, 0.6);
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 .brass-button {
-  background: linear-gradient(180deg, #eed27c 0%, #c89e2c 50%, #926f14 100%);
+  background: linear-gradient(180deg, #f5da8a 0%, #cea432 50%, #926f14 100%);
   color: #1a1003;
   box-shadow: 
-    0 4px 8px rgba(0, 0, 0, 0.4),
-    inset 0 1px 2px rgba(255, 255, 255, 0.6),
-    inset 0 -1px 2px rgba(0, 0, 0, 0.6);
+    0 4px 10px rgba(0, 0, 0, 0.5),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.7),
+    inset 0 -1.5px 2px rgba(0, 0, 0, 0.7);
 }
 
 .brass-button:hover {
-  background: linear-gradient(180deg, #fae298 0%, #d8ae3a 50%, #a47e19 100%);
+  background: linear-gradient(180deg, #fae69e 0%, #ddb43e 50%, #a47e19 100%);
   box-shadow: 
-    0 6px 12px rgba(0, 0, 0, 0.5),
-    inset 0 1px 3px rgba(255, 255, 255, 0.8),
-    inset 0 -1px 2px rgba(0, 0, 0, 0.6);
+    0 6px 15px rgba(0, 0, 0, 0.6),
+    inset 0 2px 3px rgba(255, 255, 255, 0.9),
+    inset 0 -1.5px 2px rgba(0, 0, 0, 0.7);
 }
+
 
