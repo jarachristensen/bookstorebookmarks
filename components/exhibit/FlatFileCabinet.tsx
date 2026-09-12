@@ -221,8 +221,8 @@ export function FlatFileCabinet({
                       }}
                       className={`relative group cursor-pointer rounded-lg py-3 px-2 sm:px-3 drawer-face-plank border ${
                         isMaster
-                          ? "border-amber-400/80 ring-1 ring-amber-400/30"
-                          : "border-[#613014]/80"
+                          ? "border-[#874e17]"
+                          : "border-[#361605]"
                       } transition-all duration-200 select-none shadow-md flex items-center justify-center`}
                       role="button"
                       tabIndex={0}
