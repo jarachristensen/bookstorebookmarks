@@ -28,7 +28,7 @@ describe("UI Design System Components", () => {
 
   it("should render Header with navigation links and actions", () => {
     render(<Header />);
-    expect(screen.getByRole("link", { name: /The Bookstore Bookmark Archive/i })).toBeDefined();
+    expect(screen.getByRole("link", { name: /^Archive$/i })).toBeDefined();
     expect(screen.getByRole("link", { name: /Partners & Donors/i })).toBeDefined();
     expect(screen.getByRole("link", { name: /Bookstores/i })).toBeDefined();
   });

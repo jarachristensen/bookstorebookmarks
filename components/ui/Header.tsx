@@ -34,17 +34,6 @@ export function Header() {
   return (
     <header className="relative z-30 border-b border-[#E8E2D5] bg-[#FAF8F5]/95 backdrop-blur-xs transition-all shadow-2xs sticky top-0">
       <div className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-4">
-        {/* Brand Masthead Logo Link */}
-        <Link
-          href="/"
-          className="group inline-flex items-center gap-2 select-none shrink-0 p-1 rounded-lg hover:bg-white/80 transition-all"
-          title="The Bookstore Bookmark Archive"
-          aria-label="The Bookstore Bookmark Archive"
-        >
-          <div className="w-8 h-8 rounded-lg bg-white border border-[#E8E2D5] flex items-center justify-center text-[#F43F7A] group-hover:border-[#F43F7A] group-hover:text-[#F43F7A] transition-colors shadow-2xs">
-            <Bookmark className="w-4 h-4" />
-          </div>
-        </Link>
 
         {/* Desktop Nav Links */}
         <nav className="hidden md:flex items-center gap-1 sm:gap-1.5">
