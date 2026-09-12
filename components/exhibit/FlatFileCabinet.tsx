@@ -10,8 +10,6 @@ import {
   Layers,
   ChevronLeft,
   Sparkles,
-  MapPin,
-  Maximize2,
   Compass,
   ArrowRight,
 } from "lucide-react";
@@ -93,11 +91,12 @@ export function FlatFileCabinet({
             <button
               type="button"
               onClick={() => onSelectDrawer(null)}
+              aria-label="Close Cabinet"
               className="brass-button px-3.5 py-1.5 rounded-lg text-xs font-serif font-bold uppercase tracking-wider flex items-center gap-1.5 transition-transform active:scale-95 cursor-pointer shadow-md"
-              title="Push drawer back into cabinet"
+              title="Close active drawer and return to full cabinet"
             >
               <ChevronLeft className="w-4 h-4 text-amber-950" />
-              <span>Push Drawer In / Close Cabinet</span>
+              <span>Close Cabinet</span>
             </button>
           ) : (
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-xs font-serif italic">
@@ -108,7 +107,7 @@ export function FlatFileCabinet({
         </div>
 
         {/* Closed Cabinet State: Stacked Hardwood Drawer Fronts & Invitation Prompt */}
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
           {isClosed ? (
             <motion.div
               key="closed-cabinet-stack"
@@ -132,8 +131,7 @@ export function FlatFileCabinet({
 
               {/* Stack of Antique Hardwood Drawer Fronts */}
               <div className="grid grid-cols-1 gap-2.5 sm:gap-3">
-                {drawers.map((drawer, index) => {
-                  const isHovered = hoveredDrawerId === drawer.id;
+                {drawers.map((drawer) => {
                   const isMaster = drawer.id === "drawer-all";
 
                   return (
@@ -224,7 +222,7 @@ export function FlatFileCabinet({
           ) : (
             /* Open Drawer State: Realistic Wooden Slide Out & Interior Specimen Tray */
             <motion.div
-              key={`open-drawer-${activeDrawer.id}`}
+              key={`open-drawer-${activeDrawer?.id || "unknown"}`}
               variants={drawerSlideVariants}
               initial="closed"
               animate="open"
@@ -237,6 +235,7 @@ export function FlatFileCabinet({
                   <button
                     type="button"
                     onClick={() => onSelectDrawer(null)}
+                    aria-label="Push Drawer In"
                     className="brass-button px-3 py-1.5 rounded-lg text-xs font-serif font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shadow-md shrink-0 hover:scale-105 active:scale-95 transition-transform"
                     title="Slide drawer back into cabinet"
                   >
@@ -247,14 +246,14 @@ export function FlatFileCabinet({
                   <div className="text-left">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-mono font-bold text-amber-400 uppercase tracking-wider">
-                        {activeDrawer.romanNumeral}:
+                        {activeDrawer?.romanNumeral}:
                       </span>
                       <h3 className="font-serif font-bold text-base sm:text-lg text-amber-100">
-                        {activeDrawer.title}
+                        {activeDrawer?.title}
                       </h3>
                     </div>
                     <p className="text-xs text-amber-200/75 font-serif italic">
-                      {activeDrawer.subtitle} ({activeDrawer.count} {activeDrawer.count === 1 ? "Specimen" : "Specimens"})
+                      {activeDrawer?.subtitle} ({activeDrawer?.count} {activeDrawer?.count === 1 ? "Specimen" : "Specimens"})
                     </p>
                   </div>
                 </div>
@@ -262,7 +261,7 @@ export function FlatFileCabinet({
                 {/* Regional Quick Drawer Switcher Tabs */}
                 <div className="flex items-center gap-1.5 overflow-x-auto max-w-full pb-1 md:pb-0 scrollbar-none">
                   {drawers.map((d) => {
-                    const isCurrent = d.id === activeDrawer.id;
+                    const isCurrent = d.id === activeDrawer?.id;
                     return (
                       <button
                         key={d.id}
@@ -283,13 +282,15 @@ export function FlatFileCabinet({
               </div>
 
               {/* The 2D Velvet Specimen Tray for the Open Drawer */}
-              <SpecimenTray
-                bookmarks={activeDrawer.bookmarks}
-                currentPage={1}
-                direction={1}
-                onInspect={onInspectBookmark}
-                onShuffle={onShuffle}
-              />
+              {activeDrawer && (
+                <SpecimenTray
+                  bookmarks={activeDrawer.bookmarks}
+                  currentPage={1}
+                  direction={1}
+                  onInspect={onInspectBookmark}
+                  onShuffle={onShuffle}
+                />
+              )}
             </motion.div>
           )}
         </AnimatePresence>

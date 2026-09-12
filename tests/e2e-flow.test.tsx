@@ -15,7 +15,7 @@ describe("Main Exhibit Flow Integration", () => {
     filterOptions = await getFilterOptions();
   });
 
-  it("should render the full interactive gallery, filter bookmarks, open 3D inspector, and transition to dossier", () => {
+  it("should render the flat-file cabinet closed, pull open a drawer, inspect a bookmark in 3D, and navigate to bookstore page", () => {
     render(
       <ExhibitGalleryClient
         initialBookmarks={initialBookmarks}
@@ -23,18 +23,20 @@ describe("Main Exhibit Flow Integration", () => {
       />
     );
 
-    // Verify main title / tray
-    expect(screen.getByText(/Tray I of/i)).toBeDefined();
+    // Verify cabinet is closed with the prompt
+    expect(screen.getByText(/✦ Pull Any Brass Drawer to Inspect Specimens ✦/i)).toBeDefined();
+    expect(screen.getByText(/New York & East Coast/i)).toBeDefined();
 
-    // Verify bookmarks rendered
-    const stores = screen.getAllByText(/Gotham Book Mart/i);
-    expect(stores.length).toBeGreaterThanOrEqual(1);
-    const parisStores = screen.getAllByText(/Shakespeare and Company/i);
-    expect(parisStores.length).toBeGreaterThanOrEqual(1);
+    // Pull open the New York & East Coast drawer
+    const nyDrawer = screen.getByRole("button", { name: /open new york & east coast/i });
+    fireEvent.click(nyDrawer);
+
+    // Verify drawer opened with bookmarks rendered
+    const gothamButtons = screen.getAllByRole("button", { name: /gotham book mart/i });
+    expect(gothamButtons.length).toBeGreaterThanOrEqual(1);
 
     // Click on Gotham bookmark to inspect
-    const gothamCard = screen.getAllByRole("button", { name: /gotham book mart/i })[0];
-    fireEvent.click(gothamCard);
+    fireEvent.click(gothamButtons[0]);
 
     // Verify inspector opened with flip button
     expect(screen.getByRole("button", { name: /flip to verso/i })).toBeDefined();
@@ -47,5 +49,12 @@ describe("Main Exhibit Flow Integration", () => {
     // Close inspector
     const closeBtn = screen.getByRole("button", { name: /close inspector/i });
     fireEvent.click(closeBtn);
+
+    // Push drawer back in / close cabinet
+    const pushInBtn = screen.getByRole("button", { name: /push drawer in/i });
+    fireEvent.click(pushInBtn);
+
+    // Verify back in closed cabinet state
+    expect(screen.getByText(/✦ Pull Any Brass Drawer to Inspect Specimens ✦/i)).toBeDefined();
   });
 });

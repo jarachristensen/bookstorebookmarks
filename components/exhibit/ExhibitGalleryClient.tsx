@@ -3,9 +3,10 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { BookmarkWithDetails } from "@/lib/db/queries";
 import { TrayControls } from "./TrayControls";
-import { SpecimenTray } from "./SpecimenTray";
+import { FlatFileCabinet } from "./FlatFileCabinet";
 import { BookmarkInspector } from "./BookmarkInspector";
 import { BookstoreDossier } from "./BookstoreDossier";
+import { getGeographicDrawers } from "@/lib/utils/geographic-drawers";
 import { motion, AnimatePresence } from "framer-motion";
 
 export interface FilterOptions {
@@ -51,10 +52,8 @@ export function ExhibitGalleryClient({
   const [era, setEra] = useState("all");
   const [status, setStatus] = useState<"all" | "open" | "historic">("all");
 
-  // Pagination & Drawer States
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalDrawers, setTotalDrawers] = useState(1);
-  const [pageDirection, setPageDirection] = useState(1);
+  // Flat-File Cabinet Active Drawer State (starts null / closed)
+  const [activeDrawerId, setActiveDrawerId] = useState<string | null>(null);
 
   // Modal / Drawer Selection States
   const [inspectingBookmark, setInspectingBookmark] = useState<BookmarkWithDetails | null>(null);
@@ -63,7 +62,6 @@ export function ExhibitGalleryClient({
   // Manual Shuffle / Randomize
   const handleShuffle = useCallback(() => {
     setShuffledBookmarks(shuffleArray(initialBookmarks));
-    setCurrentPage(1);
   }, [initialBookmarks]);
 
   // Dynamic available cities based on selected country
@@ -132,43 +130,27 @@ export function ExhibitGalleryClient({
     });
   }, [shuffledBookmarks, search, country, city, era, status]);
 
-  // Reset pagination when search or filters change
+  // Compute Populated Geographic Drawers from Filtered Bookmarks
+  const geographicDrawers = useMemo(() => {
+    return getGeographicDrawers(filteredBookmarks);
+  }, [filteredBookmarks]);
+
+  // Reset or adjust active drawer when filters change
   const handleSearchChange = (val: string) => {
     setSearch(val);
-    setCurrentPage(1);
   };
   const handleCountryChange = (val: string) => {
     setCountry(val);
     setCity("all");
-    setCurrentPage(1);
   };
   const handleCityChange = (val: string) => {
     setCity(val);
-    setCurrentPage(1);
   };
   const handleEraChange = (val: string) => {
     setEra(val);
-    setCurrentPage(1);
   };
   const handleStatusChange = (val: "all" | "open" | "historic") => {
     setStatus(val);
-    setCurrentPage(1);
-  };
-
-  const safeCurrentPage = Math.min(Math.max(1, currentPage), Math.max(1, totalDrawers));
-
-  const handlePrevPage = () => {
-    if (safeCurrentPage > 1) {
-      setPageDirection(-1);
-      setCurrentPage((prev) => prev - 1);
-    }
-  };
-
-  const handleNextPage = () => {
-    if (safeCurrentPage < totalDrawers) {
-      setPageDirection(1);
-      setCurrentPage((prev) => prev + 1);
-    }
   };
 
   // Lock body scroll when modal or drawer is open
@@ -187,8 +169,8 @@ export function ExhibitGalleryClient({
     <div className="space-y-6">
       {/* Search and Archival Filter Controls */}
       <TrayControls
-        currentPage={safeCurrentPage}
-        totalPages={totalDrawers}
+        currentPage={1}
+        totalPages={1}
         totalItems={filteredBookmarks.length}
         pageSize={8}
         search={search}
@@ -204,23 +186,16 @@ export function ExhibitGalleryClient({
         eras={filterOptions.eras}
         status={status}
         onStatusChange={handleStatusChange}
-        onPrevPage={handlePrevPage}
-        onNextPage={handleNextPage}
         onShuffle={handleShuffle}
       />
 
-      {/* The 2D Packed Antique Hardwood & Dark Red Velvet Specimen Tray */}
-      <SpecimenTray
-        bookmarks={filteredBookmarks}
-        currentPage={safeCurrentPage}
-        direction={pageDirection}
-        onInspect={(bm) => setInspectingBookmark(bm)}
-        onPrevPage={handlePrevPage}
-        onNextPage={handleNextPage}
+      {/* The Antique Flat-File / Card Catalog Cabinet (Geographic Drawers) */}
+      <FlatFileCabinet
+        drawers={geographicDrawers}
+        activeDrawerId={activeDrawerId}
+        onSelectDrawer={(drawerId) => setActiveDrawerId(drawerId)}
+        onInspectBookmark={(bm) => setInspectingBookmark(bm)}
         onShuffle={handleShuffle}
-        hasPrev={safeCurrentPage > 1}
-        hasNext={safeCurrentPage < totalDrawers}
-        onTotalDrawersCalculated={(total) => setTotalDrawers(total)}
       />
 
       {/* Modal Inspector View with 3D Flip (Mobile & Desktop Responsive) */}

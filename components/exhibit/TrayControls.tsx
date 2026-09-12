@@ -22,8 +22,8 @@ export interface TrayControlsProps {
   eras: { label: string; value: string }[];
   status: "all" | "open" | "historic";
   onStatusChange: (val: "all" | "open" | "historic") => void;
-  onPrevPage: () => void;
-  onNextPage: () => void;
+  onPrevPage?: () => void;
+  onNextPage?: () => void;
   onShuffle?: () => void;
 }
 
@@ -198,14 +198,16 @@ export function TrayControls({
         </div>
       </div>
 
-      {/* Tray Turning Pagination Strip */}
+      {/* Archive Count & Randomize Strip */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-2 py-1">
         <div className="flex items-center gap-2">
-          <span className="font-serif font-bold text-lg text-ink">
-            Tray {toRoman(currentPage)} of {toRoman(Math.max(totalPages, 1))}
-          </span>
-          <span className="text-xs font-mono text-ink-muted">
-            ({totalItems} {totalItems === 1 ? "specimen" : "specimens"} in archive)
+          {totalPages > 1 && (
+            <span className="font-serif font-bold text-lg text-ink">
+              Tray {toRoman(currentPage)} of {toRoman(Math.max(totalPages, 1))} ·{" "}
+            </span>
+          )}
+          <span className="text-xs sm:text-sm font-serif text-ink-muted">
+            <span className="font-bold text-ink">{totalItems}</span> {totalItems === 1 ? "Specimen Bookmark" : "Specimen Bookmarks"} in Archive
           </span>
         </div>
 
@@ -220,39 +222,41 @@ export function TrayControls({
               className="flex items-center gap-1.5 text-xs text-archival-oxblood border-archival-oxblood/30 hover:bg-rose-50"
             >
               <Dices className="w-3.5 h-3.5 text-archival-oxblood" />
-              <span>Randomize Tray</span>
+              <span>Randomize Order</span>
             </Button>
           )}
 
-          <div className="flex items-center gap-1.5">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onPrevPage}
-              disabled={currentPage <= 1}
-              aria-label="Previous Tray"
-              className="flex items-center gap-1 text-xs"
-            >
-              <ChevronLeft className="w-4 h-4" />
-              <span className="hidden sm:inline">Prev</span>
-            </Button>
+          {onPrevPage && onNextPage && totalPages > 1 && (
+            <div className="flex items-center gap-1.5">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onPrevPage}
+                disabled={currentPage <= 1}
+                aria-label="Previous Tray"
+                className="flex items-center gap-1 text-xs"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span className="hidden sm:inline">Prev</span>
+              </Button>
 
-            <span className="text-xs font-mono px-2.5 py-1.5 rounded-lg bg-white border border-parchment-border text-ink font-semibold shadow-2xs">
-              {currentPage} / {Math.max(totalPages, 1)}
-            </span>
+              <span className="text-xs font-mono px-2.5 py-1.5 rounded-lg bg-white border border-parchment-border text-ink font-semibold shadow-2xs">
+                {currentPage} / {Math.max(totalPages, 1)}
+              </span>
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onNextPage}
-              disabled={currentPage >= totalPages}
-              aria-label="Next Tray"
-              className="flex items-center gap-1 text-xs"
-            >
-              <span className="hidden sm:inline">Next</span>
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-          </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onNextPage}
+                disabled={currentPage >= totalPages}
+                aria-label="Next Tray"
+                className="flex items-center gap-1 text-xs"
+              >
+                <span className="hidden sm:inline">Next</span>
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>
