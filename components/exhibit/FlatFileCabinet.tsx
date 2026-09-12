@@ -152,8 +152,8 @@ export function FlatFileCabinet({
                       onClick={() => onSelectDrawer(drawer.id)}
                       className={`relative group cursor-pointer rounded-lg p-2.5 sm:p-3.5 drawer-face-plank border ${
                         isMaster
-                          ? "border-amber-400/70 bg-gradient-to-r from-[#6b3012] via-[#52220b] to-[#6b3012]"
-                          : "border-[#85401b]/60"
+                          ? "border-amber-400/80 ring-1 ring-amber-400/30"
+                          : "border-[#613014]/80"
                       } transition-all duration-200 select-none shadow-md`}
                       role="button"
                       tabIndex={0}

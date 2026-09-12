@@ -103,48 +103,56 @@ body {
   background: #B8A992;
 }
 
-/* Antique Hardwood Flat-File Cabinet & Card Catalog Furniture Skeuomorphism */
+/* Real Photographic Antique Hardwood Cabinet & Drawer Planks */
 .cabinet-antique-housing {
-  background: 
-    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.09) 0px, rgba(0, 0, 0, 0.09) 1px, transparent 1px, transparent 6px),
-    radial-gradient(circle at 50% -20%, rgba(255, 220, 160, 0.15) 0%, transparent 70%),
-    linear-gradient(180deg, #4d2109 0%, #361504 35%, #230d02 75%, #140601 100%);
+  background-color: #2b1104;
+  background-image: 
+    radial-gradient(ellipse at 50% -10%, rgba(255, 235, 190, 0.22) 0%, rgba(0, 0, 0, 0.4) 80%),
+    url('/textures/walnut-cabinet.jpg');
+  background-size: 100% 100%, 600px auto;
+  background-repeat: no-repeat, repeat;
   box-shadow: 
-    0 45px 90px -15px rgba(0, 0, 0, 0.9),
-    0 25px 40px -5px rgba(0, 0, 0, 0.7),
-    inset 0 3px 6px rgba(255, 235, 190, 0.4),
-    inset 0 -6px 14px rgba(0, 0, 0, 0.98);
+    0 50px 100px -20px rgba(0, 0, 0, 0.95),
+    0 25px 45px -8px rgba(0, 0, 0, 0.8),
+    inset 0 4px 8px rgba(255, 235, 190, 0.4),
+    inset 0 -8px 16px rgba(0, 0, 0, 0.98);
 }
 
 .cabinet-housing-rim {
-  background: linear-gradient(180deg, #743410 0%, #4a2007 50%, #290f02 100%);
+  background-color: #3b1706;
+  background-image: url('/textures/walnut-cabinet.jpg');
+  background-size: cover;
   box-shadow: 
-    inset 0 2px 4px rgba(255, 240, 200, 0.4),
-    inset 0 -3px 6px rgba(0, 0, 0, 0.8),
-    0 4px 15px rgba(0, 0, 0, 0.6);
+    inset 0 2px 4px rgba(255, 240, 200, 0.5),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.85),
+    0 4px 15px rgba(0, 0, 0, 0.7);
 }
 
-/* Individual Hardwood Drawer Planks with Subtle Natural Variations */
+/* Individual Photographic Hardwood Drawer Planks */
 .drawer-face-plank {
-  background: 
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.02) 0px, rgba(255, 255, 255, 0.02) 1px, transparent 1px, transparent 8px),
-    radial-gradient(ellipse at 50% 0%, rgba(255, 235, 200, 0.12) 0%, transparent 75%),
-    linear-gradient(180deg, #783815 0%, #632c0f 25%, #4c1f08 70%, #361404 100%);
+  background-color: #3d1b08;
+  background-image: 
+    radial-gradient(ellipse at 50% 0%, rgba(255, 240, 210, 0.18) 0%, transparent 75%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.25) 100%),
+    url('/textures/drawer-plank.jpg');
+  background-size: 100% 100%, 100% 100%, cover;
+  background-position: center;
+  background-repeat: no-repeat;
   box-shadow: 
-    0 6px 14px rgba(0, 0, 0, 0.5),
-    inset 0 1.5px 2px rgba(255, 235, 205, 0.55),
-    inset 0 -2.5px 4px rgba(0, 0, 0, 0.9);
+    0 8px 18px rgba(0, 0, 0, 0.6),
+    inset 0 2px 2.5px rgba(255, 240, 215, 0.65),
+    inset 0 -3px 5px rgba(0, 0, 0, 0.95);
 }
 
 .drawer-face-plank:hover {
-  background: 
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.03) 0px, rgba(255, 255, 255, 0.03) 1px, transparent 1px, transparent 8px),
-    radial-gradient(ellipse at 50% 0%, rgba(255, 245, 215, 0.18) 0%, transparent 75%),
-    linear-gradient(180deg, #87411a 0%, #703312 25%, #56240a 70%, #401705 100%);
+  background-image: 
+    radial-gradient(ellipse at 50% 0%, rgba(255, 245, 220, 0.28) 0%, transparent 75%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(0, 0, 0, 0.15) 100%),
+    url('/textures/drawer-plank.jpg');
   box-shadow: 
-    0 12px 28px rgba(0, 0, 0, 0.7),
-    inset 0 2px 3px rgba(255, 245, 220, 0.75),
-    inset 0 -3px 5px rgba(0, 0, 0, 0.95);
+    0 14px 32px rgba(0, 0, 0, 0.75),
+    inset 0 2.5px 4px rgba(255, 250, 230, 0.85),
+    inset 0 -3.5px 6px rgba(0, 0, 0, 0.98);
 }
 
 /* Authentic Antique Brass Card-Catalog Label Holder */
