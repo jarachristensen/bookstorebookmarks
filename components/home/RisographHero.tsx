@@ -85,20 +85,6 @@ export function RisographHero({
             </p>
           </div>
 
-          {/* Shuffle Spread Action Strip */}
-          <div className="flex items-center pt-0.5">
-            <button
-              type="button"
-              onClick={onShuffle}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white border border-[#E8E2D5] text-xs sm:text-sm font-medium text-stone-800 hover:bg-[#FAF8F5] hover:border-[#F43F7A] hover:text-[#F43F7A] shadow-xs transition-all cursor-pointer active:scale-95 group"
-              title="Shuffle the bookmark spread"
-              aria-label="Shuffle Spread"
-            >
-              <Shuffle className="w-3.5 h-3.5 text-[#F59E0B] group-hover:rotate-45 transition-transform" />
-              <span>Shuffle Spread</span>
-            </button>
-          </div>
-
           {/* Risograph Search & Filter Toolbar */}
           <div className="space-y-3 pt-1">
             {/* Search Input Bar */}
@@ -226,6 +212,20 @@ export function RisographHero({
                   <span>Clear Filters</span>
                 </button>
               )}
+            </div>
+
+            {/* Shuffle Spread Button (Underneath dropdowns, above bookmarks) */}
+            <div className="pt-1">
+              <button
+                type="button"
+                onClick={onShuffle}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white border border-[#E8E2D5] text-xs sm:text-sm font-medium text-stone-800 hover:bg-[#FAF8F5] hover:border-[#F43F7A] hover:text-[#F43F7A] shadow-xs transition-all cursor-pointer active:scale-95 group"
+                title="Shuffle the bookmark spread"
+                aria-label="Shuffle Spread"
+              >
+                <Shuffle className="w-3.5 h-3.5 text-[#F59E0B] group-hover:rotate-45 transition-transform" />
+                <span>Shuffle Spread</span>
+              </button>
             </div>
           </div>
         </div>
