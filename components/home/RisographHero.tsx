@@ -56,10 +56,10 @@ export function RisographHero({
   return (
     <section className="relative w-full py-4 sm:py-6 lg:py-8">
       {/* 2-Column Split Hero Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 xl:gap-12 items-center">
         
         {/* Left Column: Bold Duotone Typography, Tagline, Stats & Search/Filter Controls */}
-        <div className="lg:col-span-7 xl:col-span-8 flex flex-col justify-center space-y-4 sm:space-y-5">
+        <div className="lg:col-span-7 xl:col-span-7 flex flex-col justify-center space-y-4 sm:space-y-5">
           
           {/* Duotone Masthead Heading */}
           <div className="space-y-1 sm:space-y-2">
@@ -239,24 +239,24 @@ export function RisographHero({
           </div>
         </div>
 
-        {/* Right Column: Illustrated Hand Holding Fan of Bookmarks Artwork */}
-        <div className="lg:col-span-5 xl:col-span-4 flex items-center justify-center lg:justify-end">
+        {/* Right Column: Illustrated Hand Holding Fan of Bookmarks Artwork (Large & Prominent) */}
+        <div className="lg:col-span-5 xl:col-span-5 flex items-center justify-center lg:justify-end">
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            initial={{ opacity: 0, y: 25, scale: 0.94 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-            whileHover={{ y: -6, scale: 1.02, transition: { duration: 0.25 } }}
-            className="relative w-full max-w-[280px] sm:max-w-[340px] lg:max-w-[380px] flex items-center justify-center select-none"
+            transition={{ duration: 0.55, ease: "easeOut" }}
+            whileHover={{ y: -8, scale: 1.03, transition: { duration: 0.25 } }}
+            className="relative w-full max-w-[340px] xs:max-w-[420px] sm:max-w-[480px] lg:max-w-[540px] xl:max-w-[620px] flex items-center justify-center select-none"
           >
             {/* Subtle Risograph Ambient Glow behind artwork */}
-            <div className="absolute inset-4 bg-gradient-to-tr from-[#F43F7A]/15 via-[#F59E0B]/10 to-[#2563EB]/15 rounded-full blur-2xl pointer-events-none -z-10" />
+            <div className="absolute inset-2 bg-gradient-to-tr from-[#F43F7A]/20 via-[#F59E0B]/15 to-[#2563EB]/20 rounded-full blur-3xl pointer-events-none -z-10" />
 
-            <div className="relative w-full aspect-[4/5] drop-shadow-[0_12px_24px_rgba(0,0,0,0.12)]">
+            <div className="relative w-full aspect-[674/708] drop-shadow-[0_16px_36px_rgba(24,24,27,0.16)]">
               <Image
                 src="/images/risograph-hero.png"
                 alt="The Bookstore Bookmark Archive — Illustrated hand fanning colorful bookmarks"
                 fill
-                sizes="(max-width: 640px) 280px, (max-width: 1024px) 340px, 380px"
+                sizes="(max-width: 640px) 340px, (max-width: 1024px) 480px, 620px"
                 className="object-contain"
                 priority
               />
