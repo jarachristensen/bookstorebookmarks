@@ -61,4 +61,24 @@ describe("BookmarkInspector Component", () => {
     fireEvent.click(flipBtn);
     expect(screen.getByRole("button", { name: /flip to recto/i })).toBeDefined();
   });
+
+  it("should render horizontal layout when bookmark is landscape", () => {
+    const landscapeBookmark: BookmarkWithDetails = {
+      ...mockBookmark,
+      id: "landscape-bm-1",
+      dimensions: '7.5" × 2.25"',
+    };
+
+    render(
+      <BookmarkInspector
+        bookmark={landscapeBookmark}
+        onClose={() => {}}
+      />
+    );
+
+    expect(screen.getByText(/7.5" × 2.25"/i)).toBeDefined();
+    expect(screen.getByRole("button", { name: /flip to verso/i })).toBeDefined();
+    const bookstoreLink = screen.getByRole("link", { name: /view bookstore page & history/i });
+    expect(bookstoreLink.getAttribute("href")).toBe("/bookstores/gotham-book-mart");
+  });
 });

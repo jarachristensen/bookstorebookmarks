@@ -39,18 +39,13 @@ describe("Main Exhibit Flow Integration", () => {
     // Verify inspector opened with flip button
     expect(screen.getByRole("button", { name: /flip to verso/i })).toBeDefined();
 
-    // Open dossier from inspector
-    const dossierBtn = screen.getByRole("button", { name: /read full bookstore dossier/i });
-    fireEvent.click(dossierBtn);
+    // Verify bookstore page link in inspector
+    const bookstoreLink = screen.getByRole("link", { name: /view bookstore page & history/i });
+    expect(bookstoreLink).toBeDefined();
+    expect(bookstoreLink.getAttribute("href")).toBe("/bookstores/gotham-book-mart");
 
-    // Verify bookstore research dossier opened
-    const founders = screen.getAllByText(/Frances Steloff/i);
-    expect(founders.length).toBeGreaterThanOrEqual(1);
-    const mottos = screen.getAllByText(/Wise Men Fish Here/i);
-    expect(mottos.length).toBeGreaterThanOrEqual(1);
-
-    // Close dossier
-    const closeDossier = screen.getByRole("button", { name: /close dossier/i });
-    fireEvent.click(closeDossier);
+    // Close inspector
+    const closeBtn = screen.getByRole("button", { name: /close inspector/i });
+    fireEvent.click(closeBtn);
   });
 });
