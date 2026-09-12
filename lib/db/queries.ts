@@ -5,6 +5,7 @@ import { eq, asc, desc } from "drizzle-orm";
 export interface FilterOptions {
   search?: string;
   city?: string;
+  country?: string;
   era?: string; // e.g. "pre-1940", "1940-1960", "post-1960"
   status?: "all" | "open" | "historic";
   specialty?: string;
@@ -42,10 +43,14 @@ export async function getBookmarksWithBookstores(filters?: FilterOptions): Promi
 
   if (!filters) return results;
 
-  const { search, city, era, status, specialty } = filters;
+  const { search, city, country, era, status, specialty } = filters;
 
   if (city && city !== "all") {
     results = results.filter((bm) => bm.bookstore?.city.toLowerCase() === city.toLowerCase());
+  }
+
+  if (country && country !== "all") {
+    results = results.filter((bm) => bm.bookstore?.country.toLowerCase() === country.toLowerCase());
   }
 
   if (status && status !== "all") {
@@ -86,6 +91,7 @@ export async function getBookmarksWithBookstores(filters?: FilterOptions): Promi
       const materialMatch = bm.material.toLowerCase().includes(q);
       const storeNameMatch = bm.bookstore?.name.toLowerCase().includes(q);
       const cityMatch = bm.bookstore?.city.toLowerCase().includes(q);
+      const countryMatch = bm.bookstore?.country?.toLowerCase().includes(q);
       const foundersMatch = bm.bookstore?.founders?.toLowerCase().includes(q);
       const blurbMatch = bm.bookstore?.historicalBlurb.toLowerCase().includes(q);
       const triviaMatch = bm.bookstore?.notablePatronsTrivia?.toLowerCase().includes(q);
@@ -96,6 +102,7 @@ export async function getBookmarksWithBookstores(filters?: FilterOptions): Promi
         materialMatch ||
         storeNameMatch ||
         cityMatch ||
+        countryMatch ||
         foundersMatch ||
         blurbMatch ||
         triviaMatch
@@ -178,11 +185,13 @@ export async function getBookstoreById(id: string): Promise<BookstoreWithDetails
  */
 export async function getFilterOptions(): Promise<{
   cities: string[];
+  countries: string[];
   eras: { label: string; value: string }[];
   specialties: string[];
 }> {
   const allStores = await db.select().from(bookstores);
   const cities = Array.from(new Set(allStores.map((s) => s.city))).filter(Boolean).sort();
+  const countries = Array.from(new Set(allStores.map((s) => s.country))).filter(Boolean).sort();
 
   const specialtiesSet = new Set<string>();
   for (const store of allStores) {
@@ -196,6 +205,7 @@ export async function getFilterOptions(): Promise<{
 
   return {
     cities,
+    countries,
     eras: [
       { label: "All Eras", value: "all" },
       { label: "Early Century (Pre-1940)", value: "pre-1940" },

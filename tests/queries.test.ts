@@ -23,10 +23,14 @@ describe("Data Access Queries", () => {
     expect(gotham?.bookstore?.archivalMedia.length).toBeGreaterThanOrEqual(1);
   });
 
-  it("should filter bookmarks by search query, city, and status", async () => {
+  it("should filter bookmarks by search query, city, country, and status", async () => {
     const parisResults = await getBookmarksWithBookstores({ city: "Paris" });
     expect(parisResults.length).toBeGreaterThanOrEqual(1);
     expect(parisResults[0].bookstore?.city).toBe("Paris");
+
+    const franceResults = await getBookmarksWithBookstores({ country: "France" });
+    expect(franceResults.length).toBeGreaterThanOrEqual(1);
+    expect(franceResults[0].bookstore?.country).toBe("France");
 
     const searchResults = await getBookmarksWithBookstores({ search: "Ferlinghetti" });
     expect(searchResults.length).toBe(1);
@@ -41,10 +45,12 @@ describe("Data Access Queries", () => {
     expect(bookmark?.bookstore?.archivalMedia.length).toBeGreaterThanOrEqual(1);
   });
 
-  it("should extract distinct filter options", async () => {
+  it("should extract distinct filter options including countries", async () => {
     const options = await getFilterOptions();
     expect(options.cities).toContain("New York");
     expect(options.cities).toContain("Paris");
+    expect(options.countries).toContain("United States");
+    expect(options.countries).toContain("France");
     expect(options.eras.length).toBeGreaterThan(0);
   });
 });

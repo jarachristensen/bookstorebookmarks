@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { Header } from "@/components/ui/Header";
 import { getAllBookstores } from "@/lib/db/queries";
 import { BookstoresDirectoryClient } from "@/components/bookstores/BookstoresDirectoryClient";
@@ -34,7 +35,29 @@ export default async function BookstoresPage() {
       </main>
 
       <footer className="border-t border-parchment-border py-8 bg-[#F4EFE6] text-center text-xs font-serif text-ink-muted">
-        <div className="max-w-7xl mx-auto px-4 space-y-2">
+        <div className="max-w-7xl mx-auto px-4 space-y-3">
+          <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-serif text-ink-light">
+            <Link href="/" className="hover:text-archival-oxblood hover:underline">
+              Archive Tray
+            </Link>
+            <span>·</span>
+            <Link href="/bookstores" className="hover:text-archival-oxblood hover:underline font-bold text-archival-oxblood">
+              Bookstores
+            </Link>
+            <span>·</span>
+            <Link href="/partners" className="hover:text-archival-oxblood hover:underline">
+              Partners &amp; Donors
+            </Link>
+            <span>·</span>
+            <Link href="/about" className="hover:text-archival-oxblood hover:underline">
+              About Archive
+            </Link>
+            <span>·</span>
+            <Link href="/contact" className="hover:text-archival-oxblood hover:underline">
+              Donate &amp; Submissions
+            </Link>
+          </div>
+
           <p className="font-semibold text-ink">
             Bookstore Bookmark Archive &amp; Historical Research Dossier
           </p>

@@ -15,6 +15,7 @@ import {
   ExternalLink,
   ArrowLeft,
   Newspaper,
+  Camera,
   FileText,
   ChevronLeft,
   ChevronRight,
@@ -49,8 +50,33 @@ function getCleanCaption(caption?: string | null): string | null {
 export function BookstoreDetailView({ bookstore }: BookstoreDetailViewProps) {
   const [selectedBookmark, setSelectedBookmark] = useState<BookmarkWithDetails | null>(null);
   const [selectedLightboxMedia, setSelectedLightboxMedia] = useState<ArchivalMedia | null>(null);
-  const [mediaFilter, setMediaFilter] = useState<"all" | "newspaper" | "photo">("all");
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
+
+  // Split media into newspaper clippings and photos
+  const newspaperClippings = React.useMemo(
+    () =>
+      bookstore.archivalMedia.filter(
+        (m) =>
+          m.mediaType === "newspaper" ||
+          (!m.isStorefront && m.mediaType !== "photo" && m.mediaTag !== "interior" && m.mediaTag !== "storefront")
+      ),
+    [bookstore.archivalMedia]
+  );
+  const photosList = React.useMemo(
+    () =>
+      bookstore.archivalMedia.filter(
+        (m) =>
+          m.mediaType === "photo" ||
+          Boolean(m.isStorefront) ||
+          m.mediaTag === "interior" ||
+          m.mediaTag === "storefront"
+      ),
+    [bookstore.archivalMedia]
+  );
+
+  const [activeMediaTab, setActiveMediaTab] = useState<"newspaper" | "photo">(() =>
+    newspaperClippings.length > 0 ? "newspaper" : "photo"
+  );
 
   // Parse locations if available
   let parsedLocations: any[] = [];
@@ -68,12 +94,6 @@ export function BookstoreDetailView({ bookstore }: BookstoreDetailViewProps) {
   );
   const storefrontPhotos = React.useMemo(() => sortMediaByMostRecent(rawPhotos), [rawPhotos]);
   const currentPhoto = storefrontPhotos[activePhotoIdx] || storefrontPhotos[0] || null;
-
-  // Filtered press media
-  const filteredMedia = bookstore.archivalMedia.filter((m) => {
-    if (mediaFilter === "all") return true;
-    return m.mediaType === mediaFilter;
-  });
 
   const nextPhoto = () => {
     if (storefrontPhotos.length > 1) {
@@ -315,72 +335,142 @@ export function BookstoreDetailView({ bookstore }: BookstoreDetailViewProps) {
           </section>
         </div>
 
-        {/* Archival Press & Photos (5 cols) */}
+        {/* Archival Media: Newspaper Clippings & Photos Tabs (5 cols) */}
         <div className="lg:col-span-5 space-y-6">
           {bookstore.archivalMedia.length > 0 && (
             <section className="p-6 rounded-2xl bg-white border border-parchment-border shadow-xs space-y-4">
               <div className="flex items-center justify-between border-b border-parchment-border pb-3">
-                <h2 className="font-serif text-base font-bold text-ink flex items-center gap-2">
-                  <Newspaper className="w-4 h-4 text-archival-oxblood" />
-                  <span>Press &amp; Clippings</span>
-                </h2>
-
-                <div className="flex items-center gap-1 text-[11px] font-serif bg-parchment-light p-0.5 rounded border border-parchment-border">
+                {/* Tabs */}
+                <div className="flex items-center gap-1.5 p-0.5 rounded-lg bg-parchment-muted text-xs font-serif">
                   <button
                     type="button"
-                    onClick={() => setMediaFilter("all")}
-                    className={`px-2 py-0.5 rounded ${
-                      mediaFilter === "all" ? "bg-white font-bold text-ink shadow-2xs" : "text-ink-muted"
+                    onClick={() => setActiveMediaTab("newspaper")}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-all cursor-pointer ${
+                      activeMediaTab === "newspaper"
+                        ? "bg-white font-bold text-archival-oxblood shadow-xs"
+                        : "text-ink-muted hover:text-ink"
                     }`}
                   >
-                    All ({bookstore.archivalMedia.length})
+                    <Newspaper className="w-3.5 h-3.5" />
+                    <span>Newspaper Clippings ({newspaperClippings.length})</span>
                   </button>
                   <button
                     type="button"
-                    onClick={() => setMediaFilter("newspaper")}
-                    className={`px-2 py-0.5 rounded ${
-                      mediaFilter === "newspaper" ? "bg-white font-bold text-ink shadow-2xs" : "text-ink-muted"
+                    onClick={() => setActiveMediaTab("photo")}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-all cursor-pointer ${
+                      activeMediaTab === "photo"
+                        ? "bg-white font-bold text-archival-oxblood shadow-xs"
+                        : "text-ink-muted hover:text-ink"
                     }`}
                   >
-                    Clippings
+                    <Camera className="w-3.5 h-3.5" />
+                    <span>Photos ({photosList.length})</span>
                   </button>
                 </div>
               </div>
 
-              <div className="space-y-3">
-                {filteredMedia.slice(0, 4).map((media, idx) => {
-                  const displayCaption = getCleanCaption(media.caption) || "Archival Press Clipping";
+              {/* Tab Contents */}
+              {activeMediaTab === "newspaper" ? (
+                newspaperClippings.length === 0 ? (
+                  <div className="p-6 text-center text-xs font-serif text-ink-muted italic">
+                    No newspaper clippings attached yet.
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {newspaperClippings.map((media, idx) => {
+                      const displayCaption = getCleanCaption(media.caption) || "Archival Press Clipping";
 
-                  return (
-                    <div
-                      key={media.id || `media-${idx}`}
-                      onClick={() => setSelectedLightboxMedia(media)}
-                      className="group cursor-pointer flex items-center gap-3 p-2.5 rounded-xl border border-parchment-border bg-parchment/30 hover:bg-parchment-light transition-all shadow-2xs"
-                    >
-                      <div className="relative w-16 h-16 rounded bg-stone-100 overflow-hidden shrink-0 border border-parchment-border">
-                        <Image
-                          src={media.imageUrl}
-                          alt={displayCaption}
-                          fill
-                          unoptimized
-                          className="object-cover group-hover:scale-105 transition-transform"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-serif text-xs font-bold text-ink group-hover:text-archival-oxblood transition-colors truncate">
-                          {displayCaption}
-                        </h4>
-                        {media.sourcePublication && (
-                          <p className="font-serif text-[11px] text-ink-muted italic truncate">
-                            {media.sourcePublication}
-                            {media.publicationDate ? ` (${media.publicationDate})` : ""}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                      return (
+                        <div
+                          key={media.id || `clipping-${idx}`}
+                          onClick={() => setSelectedLightboxMedia(media)}
+                          className="group cursor-pointer flex items-center gap-3 p-2.5 rounded-xl border border-parchment-border bg-parchment/30 hover:bg-parchment-light transition-all shadow-2xs"
+                        >
+                          <div className="relative w-16 h-16 rounded bg-stone-100 overflow-hidden shrink-0 border border-parchment-border">
+                            <Image
+                              src={media.imageUrl}
+                              alt={displayCaption}
+                              fill
+                              unoptimized
+                              className="object-cover group-hover:scale-105 transition-transform"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-serif text-xs font-bold text-ink group-hover:text-archival-oxblood transition-colors truncate">
+                              {displayCaption}
+                            </h4>
+                            {media.sourcePublication && (
+                              <p className="font-serif text-[11px] text-ink-muted italic truncate">
+                                {media.sourcePublication}
+                                {media.publicationDate ? ` (${media.publicationDate})` : ""}
+                              </p>
+                            )}
+                            <span className="text-[10px] font-mono text-archival-oxblood group-hover:underline block mt-0.5">
+                              Read clipping &amp; transcription →
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )
+              ) : (
+                photosList.length === 0 ? (
+                  <div className="p-6 text-center text-xs font-serif text-ink-muted italic">
+                    No additional photographs cataloged.
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {photosList.map((media, idx) => {
+                      const displayCaption = getCleanCaption(media.caption) || `${bookstore.name} Photograph`;
+                      const tagLabel =
+                        media.mediaTag === "interior"
+                          ? "Inside / Interior"
+                          : media.isStorefront || media.mediaTag === "storefront"
+                          ? "Storefront"
+                          : "Historic Photo";
+
+                      return (
+                        <div
+                          key={media.id || `photo-${idx}`}
+                          onClick={() => setSelectedLightboxMedia(media)}
+                          className="group cursor-pointer flex items-center gap-3 p-2.5 rounded-xl border border-parchment-border bg-parchment/30 hover:bg-parchment-light transition-all shadow-2xs"
+                        >
+                          <div className="relative w-16 h-16 rounded bg-stone-100 overflow-hidden shrink-0 border border-parchment-border">
+                            <Image
+                              src={media.imageUrl}
+                              alt={displayCaption}
+                              fill
+                              unoptimized
+                              className="object-cover group-hover:scale-105 transition-transform"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-stone-200 text-ink">
+                                {tagLabel}
+                              </span>
+                              {media.publicationDate && (
+                                <span className="text-[10px] font-mono text-ink-muted">
+                                  c. {media.publicationDate}
+                                </span>
+                              )}
+                            </div>
+                            <h4 className="font-serif text-xs font-bold text-ink group-hover:text-archival-oxblood transition-colors truncate mt-0.5">
+                              {displayCaption}
+                            </h4>
+                            {media.sourcePublication && (
+                              <p className="font-serif text-[11px] text-ink-muted italic truncate">
+                                Credit: {media.sourcePublication}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )
+              )}
             </section>
           )}
         </div>

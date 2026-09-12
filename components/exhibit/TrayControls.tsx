@@ -11,6 +11,9 @@ export interface TrayControlsProps {
   pageSize: number;
   search: string;
   onSearchChange: (val: string) => void;
+  country?: string;
+  onCountryChange?: (val: string) => void;
+  countries?: string[];
   city: string;
   onCityChange: (val: string) => void;
   cities: string[];
@@ -31,6 +34,9 @@ export function TrayControls({
   pageSize,
   search,
   onSearchChange,
+  country = "all",
+  onCountryChange,
+  countries = [],
   city,
   onCityChange,
   cities,
@@ -53,20 +59,22 @@ export function TrayControls({
       [1, "I"],
     ];
     let result = "";
+    let n = num;
     for (const [val, letter] of romanMap) {
-      while (num >= val) {
+      while (n >= val) {
         result += letter;
-        num -= val;
+        n -= val;
       }
     }
     return result || "I";
   };
 
   const hasActiveFilters =
-    search !== "" || city !== "all" || era !== "all" || status !== "all";
+    search !== "" || (country !== "all" && onCountryChange) || city !== "all" || era !== "all" || status !== "all";
 
   const clearFilters = () => {
     onSearchChange("");
+    if (onCountryChange) onCountryChange("all");
     onCityChange("all");
     onEraChange("all");
     onStatusChange("all");
@@ -80,7 +88,7 @@ export function TrayControls({
         <div className="relative w-full md:w-80">
           <input
             type="text"
-            placeholder="Search bookmark, bookstore, city..."
+            placeholder="Search bookmark, bookstore, city, country..."
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
             className="w-full px-3.5 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink placeholder:text-ink-muted/60 focus:outline-none focus:ring-2 focus:ring-amber-700/30 focus:border-amber-800 transition-all font-serif"
@@ -97,6 +105,22 @@ export function TrayControls({
 
         {/* Dropdown Filters */}
         <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+          {/* Country Filter */}
+          {countries.length > 0 && onCountryChange && (
+            <select
+              value={country}
+              onChange={(e) => onCountryChange(e.target.value)}
+              className="px-3 py-2 text-xs sm:text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none focus:ring-2 focus:ring-amber-700/30 cursor-pointer font-serif"
+            >
+              <option value="all">All Countries</option>
+              {countries.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          )}
+
           {/* City Filter */}
           <select
             value={city}

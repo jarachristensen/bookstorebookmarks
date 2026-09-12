@@ -723,7 +723,8 @@ export function BookmarkForm({
             </label>
             <input
               type="text"
-              placeholder="e.g. United States"
+              list="country-suggestions"
+              placeholder="e.g. United States, United Kingdom, France"
               value={formData.bookstore.country}
               onChange={(e) =>
                 setFormData({
@@ -733,6 +734,33 @@ export function BookmarkForm({
               }
               className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-serif"
             />
+            <datalist id="country-suggestions">
+              <option value="United States" />
+              <option value="United Kingdom" />
+              <option value="France" />
+              <option value="Canada" />
+              <option value="Germany" />
+              <option value="Japan" />
+              <option value="Italy" />
+              <option value="Spain" />
+              <option value="Australia" />
+              <option value="Ireland" />
+              <option value="Scotland" />
+              <option value="Netherlands" />
+              <option value="Belgium" />
+              <option value="Switzerland" />
+              <option value="Austria" />
+              <option value="Argentina" />
+              <option value="Mexico" />
+              <option value="Brazil" />
+              <option value="Portugal" />
+              <option value="Greece" />
+              <option value="Sweden" />
+              <option value="Norway" />
+              <option value="Denmark" />
+              <option value="India" />
+              <option value="New Zealand" />
+            </datalist>
           </div>
 
           <div>

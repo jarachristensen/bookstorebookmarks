@@ -23,19 +23,33 @@ export interface BookstoresDirectoryClientProps {
 
 export function BookstoresDirectoryClient({ bookstores }: BookstoresDirectoryClientProps) {
   const [search, setSearch] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState("all");
   const [selectedCity, setSelectedCity] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
 
-  const cities = useMemo(() => {
+  const countries = useMemo(() => {
     const set = new Set<string>();
     bookstores.forEach((s) => {
-      if (s.city) set.add(s.city);
+      if (s.country) set.add(s.country);
     });
     return Array.from(set).sort();
   }, [bookstores]);
 
+  const cities = useMemo(() => {
+    const set = new Set<string>();
+    bookstores.forEach((s) => {
+      if (selectedCountry === "all" || s.country?.toLowerCase() === selectedCountry.toLowerCase()) {
+        if (s.city) set.add(s.city);
+      }
+    });
+    return Array.from(set).sort();
+  }, [bookstores, selectedCountry]);
+
   const filteredBookstores = useMemo(() => {
     return bookstores.filter((store) => {
+      if (selectedCountry !== "all" && store.country?.toLowerCase() !== selectedCountry.toLowerCase()) {
+        return false;
+      }
       if (selectedCity !== "all" && store.city.toLowerCase() !== selectedCity.toLowerCase()) {
         return false;
       }
@@ -49,13 +63,14 @@ export function BookstoresDirectoryClient({ bookstores }: BookstoresDirectoryCli
         const q = search.toLowerCase();
         const matchesName = store.name.toLowerCase().includes(q);
         const matchesCity = store.city.toLowerCase().includes(q);
+        const matchesCountry = store.country?.toLowerCase().includes(q);
         const matchesBlurb = store.historicalBlurb.toLowerCase().includes(q);
         const matchesFounders = store.founders?.toLowerCase().includes(q);
-        return matchesName || matchesCity || matchesBlurb || matchesFounders;
+        return matchesName || matchesCity || matchesCountry || matchesBlurb || matchesFounders;
       }
       return true;
     });
-  }, [bookstores, search, selectedCity, selectedStatus]);
+  }, [bookstores, search, selectedCountry, selectedCity, selectedStatus]);
 
   return (
     <div className="space-y-8">
@@ -65,19 +80,39 @@ export function BookstoresDirectoryClient({ bookstores }: BookstoresDirectoryCli
         <div className="relative w-full md:flex-1">
           <input
             type="text"
-            placeholder="Search bookstores by name, city, founders, or history..."
+            placeholder="Search bookstores by name, city, country, founders, or history..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full px-4 py-2 text-sm bg-parchment-light border border-parchment-border rounded-xl text-ink font-serif focus:outline-none focus:border-archival-oxblood placeholder:text-ink-muted/70"
           />
         </div>
 
-        {/* City Filter */}
-        <div className="flex items-center gap-2 w-full md:w-auto">
+        {/* Filter Dropdowns */}
+        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+          {/* Country Filter */}
+          {countries.length > 0 && (
+            <select
+              value={selectedCountry}
+              onChange={(e) => {
+                setSelectedCountry(e.target.value);
+                setSelectedCity("all");
+              }}
+              className="px-3 py-2 text-xs font-serif bg-white border border-parchment-border rounded-xl text-ink focus:outline-none"
+            >
+              <option value="all">All Countries</option>
+              {countries.map((country) => (
+                <option key={country} value={country}>
+                  {country}
+                </option>
+              ))}
+            </select>
+          )}
+
+          {/* City Filter */}
           <select
             value={selectedCity}
             onChange={(e) => setSelectedCity(e.target.value)}
-            className="w-full md:w-auto px-3 py-2 text-xs font-serif bg-white border border-parchment-border rounded-xl text-ink focus:outline-none"
+            className="px-3 py-2 text-xs font-serif bg-white border border-parchment-border rounded-xl text-ink focus:outline-none"
           >
             <option value="all">All Cities</option>
             {cities.map((city) => (
@@ -91,7 +126,7 @@ export function BookstoresDirectoryClient({ bookstores }: BookstoresDirectoryCli
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className="w-full md:w-auto px-3 py-2 text-xs font-serif bg-white border border-parchment-border rounded-xl text-ink focus:outline-none"
+            className="px-3 py-2 text-xs font-serif bg-white border border-parchment-border rounded-xl text-ink focus:outline-none"
           >
             <option value="all">All Statuses</option>
             <option value="open">Operating</option>

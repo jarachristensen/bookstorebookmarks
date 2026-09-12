@@ -13,6 +13,7 @@ export const dynamic = "force-dynamic";
 
 const defaultFilterOptions = {
   cities: [] as string[],
+  countries: [] as string[],
   eras: [
     { label: "All Eras", value: "all" },
     { label: "Early Century (Pre-1940)", value: "pre-1940" },
@@ -80,6 +81,10 @@ export default async function HomePage() {
           <div className="flex items-center justify-center gap-4 text-xs font-serif text-ink-light">
             <Link href="/bookstores" className="hover:text-archival-oxblood hover:underline">
               Bookstores
+            </Link>
+            <span>·</span>
+            <Link href="/partners" className="hover:text-archival-oxblood hover:underline">
+              Partners &amp; Donors
             </Link>
             <span>·</span>
             <Link href="/about" className="hover:text-archival-oxblood hover:underline">

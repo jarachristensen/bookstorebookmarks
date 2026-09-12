@@ -94,7 +94,7 @@ export function BookstoreDossier({
               <Badge variant={store.isStillOperating ? "spruce" : "oxblood"}>
                 {store.isStillOperating
                   ? `Still Operating (Opened ${store.yearOpened})`
-                  : `Historic Landmark (${store.yearOpened}–${store.yearClosed})`}
+                  : `Years Open: ${store.yearOpened}–${store.yearClosed || "Closed"}`}
               </Badge>
               <span className="text-xs font-mono text-ink-muted">
                 {store.country}

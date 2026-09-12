@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export interface FilterOptions {
   cities: string[];
+  countries?: string[];
   eras: { label: string; value: string }[];
   specialties: string[];
 }
@@ -45,6 +46,7 @@ export function ExhibitGalleryClient({
 
   // Filter States
   const [search, setSearch] = useState("");
+  const [country, setCountry] = useState("all");
   const [city, setCity] = useState("all");
   const [era, setEra] = useState("all");
   const [status, setStatus] = useState<"all" | "open" | "historic">("all");
@@ -64,32 +66,50 @@ export function ExhibitGalleryClient({
     setCurrentPage(1);
   }, [initialBookmarks]);
 
+  // Dynamic available cities based on selected country
+  const availableCities = useMemo(() => {
+    if (country === "all") return filterOptions.cities;
+    const set = new Set<string>();
+    initialBookmarks.forEach((bm) => {
+      if (bm.bookstore?.country?.toLowerCase() === country.toLowerCase() && bm.bookstore?.city) {
+        set.add(bm.bookstore.city);
+      }
+    });
+    return Array.from(set).sort();
+  }, [initialBookmarks, filterOptions.cities, country]);
+
   // Filter Logic (Evaluated against the randomized collection)
   const filteredBookmarks = useMemo(() => {
     return shuffledBookmarks.filter((bm) => {
       const store = bm.bookstore;
 
-      // 1. Search query across title, bookstore name, city, state, and notes
+      // 1. Search query across title, bookstore name, city, state, country, and notes
       if (search.trim()) {
         const q = search.toLowerCase();
         const matchTitle = bm.title.toLowerCase().includes(q);
         const matchStore = store?.name.toLowerCase().includes(q);
         const matchCity = store?.city.toLowerCase().includes(q);
         const matchState = store?.stateProvince?.toLowerCase().includes(q);
+        const matchCountry = store?.country?.toLowerCase().includes(q);
         const matchNotes = bm.acquisitionNotes?.toLowerCase().includes(q);
         const matchTrivia = store?.historicalBlurb?.toLowerCase().includes(q);
 
-        if (!matchTitle && !matchStore && !matchCity && !matchState && !matchNotes && !matchTrivia) {
+        if (!matchTitle && !matchStore && !matchCity && !matchState && !matchCountry && !matchNotes && !matchTrivia) {
           return false;
         }
       }
 
-      // 2. City filter
+      // 2. Country filter
+      if (country !== "all" && store?.country?.toLowerCase() !== country.toLowerCase()) {
+        return false;
+      }
+
+      // 3. City filter
       if (city !== "all" && store?.city !== city) {
         return false;
       }
 
-      // 3. Status filter (open vs historic/closed)
+      // 4. Status filter (open vs historic/closed)
       if (status === "open" && !store?.isStillOperating) {
         return false;
       }
@@ -97,7 +117,7 @@ export function ExhibitGalleryClient({
         return false;
       }
 
-      // 4. Era filter
+      // 5. Era filter
       if (era !== "all" && bm.yearProduced) {
         const yr = bm.yearProduced;
         if (era === "pre-1970" && yr >= 1970) return false;
@@ -110,11 +130,16 @@ export function ExhibitGalleryClient({
 
       return true;
     });
-  }, [shuffledBookmarks, search, city, era, status]);
+  }, [shuffledBookmarks, search, country, city, era, status]);
 
   // Reset pagination when search or filters change
   const handleSearchChange = (val: string) => {
     setSearch(val);
+    setCurrentPage(1);
+  };
+  const handleCountryChange = (val: string) => {
+    setCountry(val);
+    setCity("all");
     setCurrentPage(1);
   };
   const handleCityChange = (val: string) => {
@@ -168,9 +193,12 @@ export function ExhibitGalleryClient({
         pageSize={8}
         search={search}
         onSearchChange={handleSearchChange}
+        country={country}
+        onCountryChange={handleCountryChange}
+        countries={filterOptions.countries || []}
         city={city}
         onCityChange={handleCityChange}
-        cities={filterOptions.cities}
+        cities={availableCities}
         era={era}
         onEraChange={handleEraChange}
         eras={filterOptions.eras}

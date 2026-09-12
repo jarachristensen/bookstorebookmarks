@@ -154,14 +154,18 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
   const [mediaList, setMediaList] = useState<ArchivalMedia[]>(initialData.archivalMedia || []);
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
 
-  // Storefront Upload Modal State
-  const [isStorefrontModalOpen, setIsStorefrontModalOpen] = useState(false);
-  const [storefrontUploadFile, setStorefrontUploadFile] = useState<File | null>(null);
-  const [storefrontPreviewUrl, setStorefrontPreviewUrl] = useState<string>("");
-  const [storefrontYear, setStorefrontYear] = useState<string>(String(initialData.yearOpened || ""));
-  const [storefrontCaption, setStorefrontCaption] = useState<string>("Historic Storefront & Shop Exterior");
-  const [storefrontTagType, setStorefrontTagType] = useState<"storefront" | "interior">("storefront");
-  const [isUploadingStorefront, setIsUploadingStorefront] = useState(false);
+  // Photo Upload Modal State (Storefront, Inside, General archival photo)
+  const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
+  const [photoUploadFile, setPhotoUploadFile] = useState<File | null>(null);
+  const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string>("");
+  const [photoTitle, setPhotoTitle] = useState<string>("");
+  const [photoDate, setPhotoDate] = useState<string>(String(initialData.yearOpened || ""));
+  const [photoInfo, setPhotoInfo] = useState<string>("");
+  const [photoSource, setPhotoSource] = useState<string>("");
+  const [photoTagType, setPhotoTagType] = useState<"storefront" | "interior" | "photo">("storefront");
+  const [photoIsCarousel, setPhotoIsCarousel] = useState<boolean>(true);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [activeMediaTab, setActiveMediaTab] = useState<"clippings" | "photos">("clippings");
 
   // Timeline Events State
   const [timelineEvents, setTimelineEvents] = useState<CustomTimelineEvent[]>(() => {
@@ -252,8 +256,28 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
   );
   const currentPhoto = storefrontPhotos[activePhotoIdx] || storefrontPhotos[0] || null;
 
-  // Press Clippings & Media
-  const pressClippings = mediaList;
+  // Split Media into Newspaper Clippings & Photos
+  const newspaperClippings = useMemo(
+    () =>
+      mediaList.filter(
+        (m) =>
+          m.mediaType === "newspaper" ||
+          (!m.isStorefront && m.mediaType !== "photo" && m.mediaTag !== "interior" && m.mediaTag !== "storefront")
+      ),
+    [mediaList]
+  );
+
+  const photosList = useMemo(
+    () =>
+      mediaList.filter(
+        (m) =>
+          m.mediaType === "photo" ||
+          Boolean(m.isStorefront) ||
+          m.mediaTag === "interior" ||
+          m.mediaTag === "storefront"
+      ),
+    [mediaList]
+  );
 
   // Helper to update current storefront image metadata
   const updateCurrentStorefrontMeta = (field: "publicationDate" | "caption", value: string) => {
@@ -271,38 +295,38 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
     if (activePhotoIdx > 0) setActivePhotoIdx(activePhotoIdx - 1);
   };
 
-  // Handle Storefront File Selection
-  const handleStorefrontFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle Photo File Selection
+  const handlePhotoFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setStorefrontUploadFile(file);
+    setPhotoUploadFile(file);
 
     // Parse year if found in filename
     const yearMatch = file.name.match(/\b(18\d{2}|19\d{2}|20\d{2})\b/);
-    if (yearMatch) {
-      setStorefrontYear(yearMatch[0]);
+    if (yearMatch && !photoDate) {
+      setPhotoDate(yearMatch[0]);
     }
 
     const compressed = await compressImageIfNeeded(file);
     const reader = new FileReader();
     reader.onload = () => {
-      setStorefrontPreviewUrl(reader.result as string);
+      setPhotoPreviewUrl(reader.result as string);
     };
     reader.readAsDataURL(compressed);
   };
 
-  // Upload & Attach Storefront Photo
-  const handleUploadStorefront = async () => {
-    if (!storefrontUploadFile && !storefrontPreviewUrl) return;
-    setIsUploadingStorefront(true);
+  // Upload & Attach Photo (with manual Title, Date, Info, Source)
+  const handleUploadPhoto = async () => {
+    if (!photoUploadFile && !photoPreviewUrl) return;
+    setIsUploadingPhoto(true);
 
     try {
-      let finalUrl = storefrontPreviewUrl;
+      let finalUrl = photoPreviewUrl;
 
-      if (storefrontUploadFile) {
+      if (photoUploadFile) {
         const formData = new FormData();
-        const compressed = await compressImageIfNeeded(storefrontUploadFile);
-        formData.append("file", compressed, storefrontUploadFile.name);
+        const compressed = await compressImageIfNeeded(photoUploadFile);
+        formData.append("file", compressed, photoUploadFile.name);
 
         const res = await fetch("/api/upload", {
           method: "POST",
@@ -315,33 +339,45 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
         }
       }
 
+      const defaultTitle =
+        photoTagType === "interior"
+          ? "Inside / Interior Photograph"
+          : photoTagType === "storefront"
+          ? "Storefront & Exterior View"
+          : "Archival Photograph";
+
       const newMedia: ArchivalMedia = {
-        id: `media-sf-${Date.now()}`,
+        id: `media-photo-${Date.now()}`,
         bookstoreId: initialData.id,
         mediaType: "photo",
         imageUrl: finalUrl,
-        caption: storefrontCaption.trim() || `${storefrontTagType === "interior" ? "Inside / Interior View" : "Storefront Photograph"} (${storefrontYear || "Historic"})`,
-        sourcePublication: null,
-        publicationDate: storefrontYear.trim() || null,
-        transcriptionText: null,
-        isStorefront: true,
-        mediaTag: storefrontTagType,
-        displayOrder: 0,
+        caption: photoTitle.trim() || defaultTitle,
+        sourcePublication: photoSource.trim() || null,
+        publicationDate: photoDate.trim() || null,
+        transcriptionText: photoInfo.trim() || null,
+        isStorefront: photoIsCarousel,
+        mediaTag: photoIsCarousel ? photoTagType : null,
+        displayOrder: mediaList.length,
         createdAt: new Date().toISOString(),
       };
 
       setMediaList((prev) => [newMedia, ...prev]);
       setActivePhotoIdx(0);
-      setIsStorefrontModalOpen(false);
-      setStorefrontUploadFile(null);
-      setStorefrontPreviewUrl("");
-      setStorefrontYear(String(yearOpened || ""));
-      setStorefrontCaption("Historic Storefront & Shop Exterior");
+      setIsPhotoModalOpen(false);
+      setPhotoUploadFile(null);
+      setPhotoPreviewUrl("");
+      setPhotoTitle("");
+      setPhotoDate(String(yearOpened || ""));
+      setPhotoInfo("");
+      setPhotoSource("");
+      setPhotoTagType("storefront");
+      setPhotoIsCarousel(true);
+      setActiveMediaTab("photos");
     } catch (err) {
-      console.error("Failed to upload storefront photo:", err);
-      alert("Failed to upload storefront photo. Please try again.");
+      console.error("Failed to upload photo:", err);
+      alert("Failed to upload photo. Please try again.");
     } finally {
-      setIsUploadingStorefront(false);
+      setIsUploadingPhoto(false);
     }
   };
 
@@ -802,11 +838,39 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                   </label>
                   <input
                     type="text"
+                    list="country-suggestions"
                     value={loc.country || "United States"}
                     onChange={(e) => updateLocation(idx, { country: e.target.value })}
                     placeholder="United States"
                     className="w-full px-3 py-1.5 text-xs font-serif bg-white border border-parchment-border rounded-lg text-ink focus:outline-none focus:border-archival-oxblood"
                   />
+                  <datalist id="country-suggestions">
+                    <option value="United States" />
+                    <option value="United Kingdom" />
+                    <option value="France" />
+                    <option value="Canada" />
+                    <option value="Germany" />
+                    <option value="Japan" />
+                    <option value="Italy" />
+                    <option value="Spain" />
+                    <option value="Australia" />
+                    <option value="Ireland" />
+                    <option value="Scotland" />
+                    <option value="Netherlands" />
+                    <option value="Belgium" />
+                    <option value="Switzerland" />
+                    <option value="Austria" />
+                    <option value="Argentina" />
+                    <option value="Mexico" />
+                    <option value="Brazil" />
+                    <option value="Portugal" />
+                    <option value="Greece" />
+                    <option value="Sweden" />
+                    <option value="Norway" />
+                    <option value="Denmark" />
+                    <option value="India" />
+                    <option value="New Zealand" />
+                  </datalist>
                 </div>
 
                 <div>
@@ -946,7 +1010,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => setIsStorefrontModalOpen(true)}
+              onClick={() => setIsPhotoModalOpen(true)}
               className="gap-1.5 shrink-0 border-archival-oxblood/30 text-archival-oxblood hover:bg-rose-50"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -1089,47 +1153,82 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
           </section>
         </div>
 
-        {/* Right Column: Press & Clippings Section with Bulk Dropzone & In-Place Editing */}
+        {/* Right Column: Archival Media Section (Separate Newspaper Clippings & Photos Tabs) */}
         <div className="lg:col-span-5 space-y-4">
           <section className="p-6 rounded-2xl bg-white border border-parchment-border shadow-xs space-y-4">
-            <div className="flex items-center justify-between border-b border-parchment-border pb-3">
-              <div>
-                <h2 className="font-serif text-base font-bold text-ink flex items-center gap-2">
-                  <Newspaper className="w-4 h-4 text-archival-oxblood" />
-                  <span>Archival Media, Photos &amp; Clippings</span>
-                </h2>
-                <span className="text-xs font-mono text-ink-muted">
-                  {pressClippings.length} {pressClippings.length === 1 ? "Item" : "Items"}
-                </span>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-parchment-border pb-3">
+              {/* Tab Selector */}
+              <div className="flex items-center gap-1.5 p-0.5 rounded-lg bg-parchment-muted text-xs font-serif">
+                <button
+                  type="button"
+                  onClick={() => setActiveMediaTab("clippings")}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-all cursor-pointer ${
+                    activeMediaTab === "clippings"
+                      ? "bg-white font-bold text-archival-oxblood shadow-xs"
+                      : "text-ink-muted hover:text-ink"
+                  }`}
+                >
+                  <Newspaper className="w-3.5 h-3.5" />
+                  <span>Clippings ({newspaperClippings.length})</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveMediaTab("photos")}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-all cursor-pointer ${
+                    activeMediaTab === "photos"
+                      ? "bg-white font-bold text-archival-oxblood shadow-xs"
+                      : "text-ink-muted hover:text-ink"
+                  }`}
+                >
+                  <Camera className="w-3.5 h-3.5" />
+                  <span>Photos ({photosList.length})</span>
+                </button>
               </div>
 
-              {/* Bulk Upload Button */}
-              <div>
-                <input
-                  ref={bulkInputRef}
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={handleBulkMediaUpload}
-                  className="hidden"
-                  id="bulk-clipping-upload"
-                />
+              {/* Upload Buttons based on active tab */}
+              {activeMediaTab === "clippings" ? (
+                <div>
+                  <input
+                    ref={bulkInputRef}
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleBulkMediaUpload}
+                    className="hidden"
+                    id="bulk-clipping-upload"
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => bulkInputRef.current?.click()}
+                    disabled={isBulkUploading}
+                    className="gap-1 text-xs border-archival-oxblood/30 text-archival-oxblood hover:bg-rose-50"
+                  >
+                    {isBulkUploading ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <UploadCloud className="w-3.5 h-3.5" />
+                    )}
+                    <span>Scan Clippings</span>
+                  </Button>
+                </div>
+              ) : (
                 <Button
                   type="button"
                   size="sm"
                   variant="outline"
-                  onClick={() => bulkInputRef.current?.click()}
-                  disabled={isBulkUploading}
+                  onClick={() => {
+                    setIsPhotoModalOpen(true);
+                    setPhotoTagType("storefront");
+                    setPhotoIsCarousel(true);
+                  }}
                   className="gap-1 text-xs border-archival-oxblood/30 text-archival-oxblood hover:bg-rose-50"
                 >
-                  {isBulkUploading ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  ) : (
-                    <UploadCloud className="w-3.5 h-3.5" />
-                  )}
-                  <span>Upload More</span>
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add Photo</span>
                 </Button>
-              </div>
+              )}
             </div>
 
             {bulkStatus && (
@@ -1139,158 +1238,271 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
               </div>
             )}
 
-            {/* List of Press Clippings with in-place name/date editing & Storefront/Inside checkbox */}
-            {pressClippings.length === 0 ? (
-              <div className="p-6 text-center rounded-xl bg-parchment-light border border-dashed border-parchment-border text-xs font-serif text-ink-muted italic">
-                No archival media attached yet. Click "Upload More" to drop in newspaper scans, storefront photos, or interior shots.
-              </div>
-            ) : (
-              <div className="space-y-3 max-h-[520px] overflow-y-auto pr-1">
-                {pressClippings.map((media) => {
-                  const isCarouselPhoto = Boolean(
-                    media.isStorefront || media.mediaType === "photo" || media.mediaTag === "interior" || media.mediaTag === "storefront"
-                  );
-
-                  return (
-                    <div
-                      key={media.id}
-                      className="p-3 rounded-xl border border-parchment-border bg-parchment/30 space-y-2.5"
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className="relative w-16 h-16 rounded bg-stone-100 overflow-hidden shrink-0 border border-parchment-border">
-                          <Image
-                            src={media.imageUrl}
-                            alt={media.caption}
-                            fill
-                            unoptimized
-                            className="object-cover"
-                          />
-                        </div>
-
-                        <div className="flex-1 space-y-1.5 min-w-0">
-                          <input
-                            type="text"
-                            value={media.caption}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              setMediaList((prev) =>
-                                prev.map((m) => (m.id === media.id ? { ...m, caption: val } : m))
-                              );
-                            }}
-                            placeholder="Caption / Headline"
-                            className="w-full px-2 py-1 text-xs font-serif font-bold text-ink bg-white border border-parchment-border rounded-lg"
-                          />
-
-                          <div className="grid grid-cols-2 gap-1.5">
-                            <input
-                              type="text"
-                              value={media.sourcePublication || ""}
-                              onChange={(e) => {
-                                const val = e.target.value;
-                                setMediaList((prev) =>
-                                  prev.map((m) => (m.id === media.id ? { ...m, sourcePublication: val } : m))
-                                );
-                              }}
-                              placeholder="Publication / Source"
-                              className="px-2 py-0.5 text-[11px] font-serif bg-white border border-parchment-border rounded-lg"
-                            />
-                            <input
-                              type="text"
-                              value={media.publicationDate || ""}
-                              onChange={(e) => {
-                                const val = e.target.value;
-                                setMediaList((prev) =>
-                                  prev.map((m) => (m.id === media.id ? { ...m, publicationDate: val } : m))
-                                );
-                              }}
-                              placeholder="Year / Date"
-                              className="px-2 py-0.5 text-[11px] font-mono bg-white border border-parchment-border rounded-lg"
+            {/* Tab 1: Newspaper Clippings (Automated Scanner & Parser) */}
+            {activeMediaTab === "clippings" && (
+              <div>
+                {newspaperClippings.length === 0 ? (
+                  <div className="p-6 text-center rounded-xl bg-parchment-light border border-dashed border-parchment-border text-xs font-serif text-ink-muted italic">
+                    No newspaper clippings attached yet. Click "Scan Clippings" to upload historical articles.
+                  </div>
+                ) : (
+                  <div className="space-y-3 max-h-[520px] overflow-y-auto pr-1">
+                    {newspaperClippings.map((media) => (
+                      <div
+                        key={media.id}
+                        className="p-3 rounded-xl border border-parchment-border bg-parchment/30 space-y-2.5"
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="relative w-16 h-16 rounded bg-stone-100 overflow-hidden shrink-0 border border-parchment-border">
+                            <Image
+                              src={media.imageUrl}
+                              alt={media.caption}
+                              fill
+                              unoptimized
+                              className="object-cover"
                             />
                           </div>
-                        </div>
 
-                        <button
-                          type="button"
-                          onClick={() => setMediaList((prev) => prev.filter((m) => m.id !== media.id))}
-                          title="Delete this item"
-                          className="p-1 rounded-md text-stone-400 hover:text-rose-700 hover:bg-rose-50 transition-colors"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
+                          <div className="flex-1 space-y-1.5 min-w-0">
+                            <input
+                              type="text"
+                              value={media.caption}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setMediaList((prev) =>
+                                  prev.map((m) => (m.id === media.id ? { ...m, caption: val } : m))
+                                );
+                              }}
+                              placeholder="Article Headline / Caption"
+                              className="w-full px-2 py-1 text-xs font-serif font-bold text-ink bg-white border border-parchment-border rounded-lg"
+                            />
 
-                      {/* Storefront / Inside Checkbox */}
-                      <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-parchment-border/40 text-[11px] font-serif">
-                        <label className="inline-flex items-center gap-1.5 cursor-pointer font-medium text-ink">
-                          <input
-                            type="checkbox"
-                            checked={isCarouselPhoto}
-                            onChange={(e) => {
-                              const checked = e.target.checked;
-                              setMediaList((prev) =>
-                                prev.map((m) =>
-                                  m.id === media.id
-                                    ? {
-                                        ...m,
-                                        isStorefront: checked,
-                                        mediaType: checked ? "photo" : "newspaper",
-                                        mediaTag: checked ? (m.mediaTag || "storefront") : null,
-                                      }
-                                    : m
-                                )
-                              );
-                            }}
-                            className="rounded text-archival-oxblood focus:ring-archival-oxblood"
-                          />
-                          <span>Storefront / Inside Photo (Show in top carousel)</span>
-                        </label>
+                            <div className="grid grid-cols-2 gap-1.5">
+                              <input
+                                type="text"
+                                value={media.sourcePublication || ""}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setMediaList((prev) =>
+                                    prev.map((m) => (m.id === media.id ? { ...m, sourcePublication: val } : m))
+                                  );
+                                }}
+                                placeholder="Newspaper / Publication"
+                                className="px-2 py-0.5 text-[11px] font-serif bg-white border border-parchment-border rounded-lg"
+                              />
+                              <input
+                                type="text"
+                                value={media.publicationDate || ""}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setMediaList((prev) =>
+                                    prev.map((m) => (m.id === media.id ? { ...m, publicationDate: val } : m))
+                                  );
+                                }}
+                                placeholder="Date (e.g. Oct 14, 1968)"
+                                className="px-2 py-0.5 text-[11px] font-mono bg-white border border-parchment-border rounded-lg"
+                              />
+                            </div>
 
-                        {isCarouselPhoto && (
-                          <select
-                            value={media.mediaTag || (media.isStorefront ? "storefront" : "interior")}
-                            onChange={(e) => {
-                              const tag = e.target.value;
-                              setMediaList((prev) =>
-                                prev.map((m) =>
-                                  m.id === media.id
-                                    ? {
-                                        ...m,
-                                        isStorefront: true,
-                                        mediaType: "photo",
-                                        mediaTag: tag,
-                                      }
-                                    : m
-                                )
-                              );
-                            }}
-                            className="text-[10px] font-mono px-2 py-0.5 bg-white border border-parchment-border rounded text-ink"
+                            <textarea
+                              rows={2}
+                              value={media.transcriptionText || ""}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setMediaList((prev) =>
+                                  prev.map((m) => (m.id === media.id ? { ...m, transcriptionText: val } : m))
+                                );
+                              }}
+                              placeholder="Article transcription or excerpt notes..."
+                              className="w-full px-2 py-1 text-[11px] font-serif bg-white border border-parchment-border rounded-lg"
+                            />
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => setMediaList((prev) => prev.filter((m) => m.id !== media.id))}
+                            title="Delete this clipping"
+                            className="p-1 rounded-md text-stone-400 hover:text-rose-700 hover:bg-rose-50 transition-colors"
                           >
-                            <option value="storefront">Storefront / Exterior</option>
-                            <option value="interior">Inside / Interior</option>
-                          </select>
-                        )}
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Tab 2: Archival & Storefront Photos (Manual Metadata Entry) */}
+            {activeMediaTab === "photos" && (
+              <div>
+                {photosList.length === 0 ? (
+                  <div className="p-6 text-center rounded-xl bg-parchment-light border border-dashed border-parchment-border text-xs font-serif text-ink-muted italic">
+                    No archival photos cataloged yet. Click "Add Photo" to manually add storefront, interior, or historical photos.
+                  </div>
+                ) : (
+                  <div className="space-y-3 max-h-[520px] overflow-y-auto pr-1">
+                    {photosList.map((media) => {
+                      const isCarouselPhoto = Boolean(
+                        media.isStorefront || media.mediaTag === "interior" || media.mediaTag === "storefront"
+                      );
+
+                      return (
+                        <div
+                          key={media.id}
+                          className="p-3 rounded-xl border border-parchment-border bg-parchment/30 space-y-2.5"
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="relative w-16 h-16 rounded bg-stone-100 overflow-hidden shrink-0 border border-parchment-border">
+                              <Image
+                                src={media.imageUrl}
+                                alt={media.caption}
+                                fill
+                                unoptimized
+                                className="object-cover"
+                              />
+                            </div>
+
+                            <div className="flex-1 space-y-1.5 min-w-0">
+                              <input
+                                type="text"
+                                value={media.caption}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setMediaList((prev) =>
+                                    prev.map((m) => (m.id === media.id ? { ...m, caption: val } : m))
+                                  );
+                                }}
+                                placeholder="Photo Title"
+                                className="w-full px-2 py-1 text-xs font-serif font-bold text-ink bg-white border border-parchment-border rounded-lg"
+                              />
+
+                              <div className="grid grid-cols-2 gap-1.5">
+                                <input
+                                  type="text"
+                                  value={media.publicationDate || ""}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setMediaList((prev) =>
+                                      prev.map((m) => (m.id === media.id ? { ...m, publicationDate: val } : m))
+                                    );
+                                  }}
+                                  placeholder="Date / Year (e.g. 1954)"
+                                  className="px-2 py-0.5 text-[11px] font-mono bg-white border border-parchment-border rounded-lg"
+                                />
+                                <input
+                                  type="text"
+                                  value={media.sourcePublication || ""}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setMediaList((prev) =>
+                                      prev.map((m) => (m.id === media.id ? { ...m, sourcePublication: val } : m))
+                                    );
+                                  }}
+                                  placeholder="Source / Photo Credit"
+                                  className="px-2 py-0.5 text-[11px] font-serif bg-white border border-parchment-border rounded-lg"
+                                />
+                              </div>
+
+                              <input
+                                type="text"
+                                value={media.transcriptionText || ""}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setMediaList((prev) =>
+                                    prev.map((m) => (m.id === media.id ? { ...m, transcriptionText: val } : m))
+                                  );
+                                }}
+                                placeholder="Information & context notes..."
+                                className="w-full px-2 py-0.5 text-[11px] font-serif bg-white border border-parchment-border rounded-lg"
+                              />
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => setMediaList((prev) => prev.filter((m) => m.id !== media.id))}
+                              title="Delete this photo"
+                              className="p-1 rounded-md text-stone-400 hover:text-rose-700 hover:bg-rose-50 transition-colors"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+
+                          {/* Top Carousel Placement Controls */}
+                          <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-parchment-border/40 text-[11px] font-serif">
+                            <label className="inline-flex items-center gap-1.5 cursor-pointer font-medium text-ink">
+                              <input
+                                type="checkbox"
+                                checked={isCarouselPhoto}
+                                onChange={(e) => {
+                                  const checked = e.target.checked;
+                                  setMediaList((prev) =>
+                                    prev.map((m) =>
+                                      m.id === media.id
+                                        ? {
+                                            ...m,
+                                            isStorefront: checked,
+                                            mediaType: "photo",
+                                            mediaTag: checked ? (m.mediaTag || "storefront") : null,
+                                          }
+                                        : m
+                                    )
+                                  );
+                                }}
+                                className="rounded text-archival-oxblood focus:ring-archival-oxblood"
+                              />
+                              <span>Show in Top Photo Carousel</span>
+                            </label>
+
+                            {isCarouselPhoto && (
+                              <select
+                                value={media.mediaTag || (media.isStorefront ? "storefront" : "interior")}
+                                onChange={(e) => {
+                                  const tag = e.target.value;
+                                  setMediaList((prev) =>
+                                    prev.map((m) =>
+                                      m.id === media.id
+                                        ? {
+                                            ...m,
+                                            isStorefront: true,
+                                            mediaType: "photo",
+                                            mediaTag: tag,
+                                          }
+                                        : m
+                                    )
+                                  );
+                                }}
+                                className="text-[10px] font-mono px-2 py-0.5 bg-white border border-parchment-border rounded text-ink"
+                              >
+                                <option value="storefront">Storefront / Exterior</option>
+                                <option value="interior">Inside / Interior</option>
+                              </select>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
           </section>
         </div>
       </div>
 
-      {/* --- MODAL: Add Storefront / Inside Photo --- */}
-      {isStorefrontModalOpen && (
+      {/* --- MODAL: Add Archival / Storefront / Inside Photo (Manual Metadata Entry) --- */}
+      {isPhotoModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
-          <div className="relative w-full max-w-lg bg-white border border-parchment-border rounded-2xl shadow-2xl p-6 space-y-5">
+          <div className="relative w-full max-w-lg bg-white border border-parchment-border rounded-2xl shadow-2xl p-6 space-y-5 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-parchment-border pb-3">
               <h3 className="font-serif text-lg font-bold text-ink flex items-center gap-2">
                 <Camera className="w-5 h-5 text-archival-oxblood" />
-                <span>Add Storefront or Inside Photo</span>
+                <span>Add Photograph</span>
               </h3>
               <button
                 type="button"
-                onClick={() => setIsStorefrontModalOpen(false)}
+                onClick={() => setIsPhotoModalOpen(false)}
                 className="p-1 rounded-full text-stone-400 hover:text-ink cursor-pointer"
               >
                 <X className="w-5 h-5" />
@@ -1298,10 +1510,10 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
             </div>
 
             <div className="space-y-4">
-              {storefrontPreviewUrl ? (
+              {photoPreviewUrl ? (
                 <div className="relative w-full h-48 rounded-xl bg-stone-900 overflow-hidden border border-parchment-border flex items-center justify-center">
                   <Image
-                    src={storefrontPreviewUrl}
+                    src={photoPreviewUrl}
                     alt="Preview"
                     fill
                     unoptimized
@@ -1310,10 +1522,10 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                   <button
                     type="button"
                     onClick={() => {
-                      setStorefrontPreviewUrl("");
-                      setStorefrontUploadFile(null);
+                      setPhotoPreviewUrl("");
+                      setPhotoUploadFile(null);
                     }}
-                    className="absolute top-2 right-2 p-1 rounded bg-black/70 text-white hover:bg-rose-800"
+                    className="absolute top-2 right-2 p-1 rounded bg-black/70 text-white hover:bg-rose-800 cursor-pointer"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -1321,57 +1533,102 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
               ) : (
                 <label className="border-2 border-dashed border-parchment-border hover:border-archival-oxblood rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer bg-parchment-light/50 hover:bg-parchment-light transition-all">
                   <UploadCloud className="w-8 h-8 text-archival-oxblood mb-2" />
-                  <span className="font-serif text-sm font-bold text-ink">Choose Photo</span>
+                  <span className="font-serif text-sm font-bold text-ink">Choose Photo Image</span>
                   <span className="text-xs text-ink-muted font-mono mt-1">PNG, JPG, or WebP</span>
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={handleStorefrontFileSelect}
+                    onChange={handlePhotoFileSelect}
                     className="hidden"
                   />
                 </label>
               )}
 
+              {/* Title / Caption */}
+              <div>
+                <label className="block text-xs font-mono text-ink-muted uppercase mb-1">
+                  Title / Caption *
+                </label>
+                <input
+                  type="text"
+                  value={photoTitle}
+                  onChange={(e) => setPhotoTitle(e.target.value)}
+                  placeholder="e.g. Storefront on 47th Street or Main Reading Room"
+                  className="w-full px-3 py-1.5 text-xs font-serif bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none focus:border-archival-oxblood"
+                />
+              </div>
+
+              {/* Date & Source Row */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-mono text-ink-muted uppercase mb-1">
-                    Photo Type
+                    Date / Year
                   </label>
-                  <select
-                    value={storefrontTagType}
-                    onChange={(e) => setStorefrontTagType(e.target.value as any)}
-                    className="w-full px-3 py-1.5 text-xs font-serif bg-parchment-light border border-parchment-border rounded-lg text-ink"
-                  >
-                    <option value="storefront">Storefront / Exterior</option>
-                    <option value="interior">Inside / Interior</option>
-                  </select>
+                  <input
+                    type="text"
+                    value={photoDate}
+                    onChange={(e) => setPhotoDate(e.target.value)}
+                    placeholder="e.g. 1954 or c. 1960"
+                    className="w-full px-3 py-1.5 text-xs font-mono bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none focus:border-archival-oxblood"
+                  />
                 </div>
 
                 <div>
                   <label className="block text-xs font-mono text-ink-muted uppercase mb-1">
-                    Photo Year
+                    Source / Credit
                   </label>
                   <input
                     type="text"
-                    value={storefrontYear}
-                    onChange={(e) => setStorefrontYear(e.target.value)}
-                    placeholder="e.g. 1950"
-                    className="w-full px-3 py-1.5 text-xs font-mono bg-parchment-light border border-parchment-border rounded-lg"
+                    value={photoSource}
+                    onChange={(e) => setPhotoSource(e.target.value)}
+                    placeholder="e.g. NYPL Archival Collection"
+                    className="w-full px-3 py-1.5 text-xs font-serif bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none focus:border-archival-oxblood"
                   />
                 </div>
               </div>
 
+              {/* Information / Notes */}
               <div>
                 <label className="block text-xs font-mono text-ink-muted uppercase mb-1">
-                  Caption / Description
+                  Information / Description Notes
                 </label>
-                <input
-                  type="text"
-                  value={storefrontCaption}
-                  onChange={(e) => setStorefrontCaption(e.target.value)}
-                  placeholder="Historic Storefront Exterior"
-                  className="w-full px-3 py-1.5 text-xs font-serif bg-parchment-light border border-parchment-border rounded-lg"
+                <textarea
+                  rows={2}
+                  value={photoInfo}
+                  onChange={(e) => setPhotoInfo(e.target.value)}
+                  placeholder="Additional context or notes about this photograph..."
+                  className="w-full px-3 py-1.5 text-xs font-serif bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none focus:border-archival-oxblood"
                 />
+              </div>
+
+              {/* Placement Options */}
+              <div className="p-3 rounded-xl bg-parchment-muted/60 border border-parchment-border space-y-2">
+                <label className="flex items-center gap-2 cursor-pointer font-serif text-xs font-medium text-ink">
+                  <input
+                    type="checkbox"
+                    checked={photoIsCarousel}
+                    onChange={(e) => setPhotoIsCarousel(e.target.checked)}
+                    className="rounded text-archival-oxblood focus:ring-archival-oxblood"
+                  />
+                  <span>Show in Top Hero Carousel</span>
+                </label>
+
+                {photoIsCarousel && (
+                  <div>
+                    <label className="block text-[10px] font-mono text-ink-muted uppercase mb-1">
+                      Carousel Placement Tag
+                    </label>
+                    <select
+                      value={photoTagType}
+                      onChange={(e) => setPhotoTagType(e.target.value as any)}
+                      className="w-full px-3 py-1.5 text-xs font-serif bg-white border border-parchment-border rounded-lg text-ink"
+                    >
+                      <option value="storefront">Storefront / Exterior View</option>
+                      <option value="interior">Inside / Interior View</option>
+                      <option value="photo">General Archival Photograph</option>
+                    </select>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -1380,24 +1637,24 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => setIsStorefrontModalOpen(false)}
+                onClick={() => setIsPhotoModalOpen(false)}
               >
                 Cancel
               </Button>
               <Button
                 type="button"
                 size="sm"
-                onClick={handleUploadStorefront}
-                disabled={isUploadingStorefront || (!storefrontUploadFile && !storefrontPreviewUrl)}
+                onClick={handleUploadPhoto}
+                disabled={isUploadingPhoto || (!photoUploadFile && !photoPreviewUrl)}
                 className="bg-archival-oxblood text-white hover:bg-rose-950"
               >
-                {isUploadingStorefront ? (
+                {isUploadingPhoto ? (
                   <>
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    <span>Attaching...</span>
+                    <span>Uploading...</span>
                   </>
                 ) : (
-                  <span>Add to Carousel</span>
+                  <span>Save Photograph</span>
                 )}
               </Button>
             </div>

@@ -14,6 +14,7 @@ import {
   Menu,
   X,
   Compass,
+  HeartHandshake,
 } from "lucide-react";
 
 export function Header() {
@@ -27,6 +28,7 @@ export function Header() {
   const navLinks = [
     { href: "/", label: "Archive Tray", icon: Bookmark },
     { href: "/bookstores", label: "Bookstores", icon: Building2 },
+    { href: "/partners", label: "Partners & Donors", icon: HeartHandshake },
     { href: "/about", label: "About Archive", icon: Info },
     { href: "/contact", label: "Contact", icon: Mail },
   ];

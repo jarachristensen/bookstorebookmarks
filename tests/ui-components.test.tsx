@@ -26,8 +26,9 @@ describe("UI Design System Components", () => {
     expect(clicked).toBe(true);
   });
 
-  it("should render Header with title", () => {
+  it("should render Header with title and Partners & Donors link", () => {
     render(<Header />);
     expect(screen.getByText(/Bookstore Bookmark Archive/i)).toBeDefined();
+    expect(screen.getByRole("link", { name: /Partners & Donors/i })).toBeDefined();
   });
 });
