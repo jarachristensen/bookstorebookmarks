@@ -102,3 +102,72 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #B8A992;
 }
+
+/* Antique Flat-File Cabinet & Card Catalog Skeuomorphism */
+.cabinet-antique-housing {
+  background: linear-gradient(175deg, #441d08 0%, #301406 50%, #1f0b02 100%);
+  box-shadow: 
+    0 35px 70px -15px rgba(0, 0, 0, 0.7),
+    0 15px 30px -5px rgba(0, 0, 0, 0.5),
+    inset 0 2px 4px rgba(255, 230, 180, 0.35),
+    inset 0 -4px 8px rgba(0, 0, 0, 0.9);
+}
+
+.drawer-face-antique {
+  background: linear-gradient(180deg, #6c3214 0%, #56240d 30%, #421b0a 70%, #321306 100%);
+  box-shadow: 
+    0 6px 14px rgba(0, 0, 0, 0.4),
+    inset 0 1px 2px rgba(255, 235, 205, 0.45),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.7);
+}
+
+.drawer-face-antique:hover {
+  background: linear-gradient(180deg, #783918 0%, #602a10 30%, #4a200d 70%, #3b1708 100%);
+  box-shadow: 
+    0 10px 22px rgba(0, 0, 0, 0.5),
+    inset 0 1px 3px rgba(255, 245, 220, 0.6),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.7);
+}
+
+.brass-label-holder {
+  background: linear-gradient(135deg, #d4af37 0%, #aa8c2c 35%, #7a6118 70%, #d4af37 100%);
+  box-shadow: 
+    0 3px 6px rgba(0, 0, 0, 0.45),
+    inset 0 1px 1px rgba(255, 255, 255, 0.5),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.brass-cup-pull {
+  background: radial-gradient(circle at 50% 25%, #eed27c 0%, #c49c30 40%, #7d5e16 80%, #4d370b 100%);
+  box-shadow: 
+    0 6px 10px rgba(0, 0, 0, 0.55),
+    inset 0 2px 2px rgba(255, 255, 255, 0.6),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.8);
+}
+
+.brass-plaque-title {
+  background: linear-gradient(180deg, #f5da8a 0%, #d4af37 40%, #9e7f1e 85%, #695210 100%);
+  box-shadow: 
+    0 4px 10px rgba(0, 0, 0, 0.5),
+    inset 0 1px 2px rgba(255, 255, 255, 0.7),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.brass-button {
+  background: linear-gradient(180deg, #eed27c 0%, #c89e2c 50%, #926f14 100%);
+  color: #1a1003;
+  box-shadow: 
+    0 4px 8px rgba(0, 0, 0, 0.4),
+    inset 0 1px 2px rgba(255, 255, 255, 0.6),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.brass-button:hover {
+  background: linear-gradient(180deg, #fae298 0%, #d8ae3a 50%, #a47e19 100%);
+  box-shadow: 
+    0 6px 12px rgba(0, 0, 0, 0.5),
+    inset 0 1px 3px rgba(255, 255, 255, 0.8),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.6);
+}
+
