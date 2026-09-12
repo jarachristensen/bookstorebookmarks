@@ -76,22 +76,22 @@ export default async function HomePage() {
         />
       </main>
 
-      <footer className="border-t border-parchment-border py-8 bg-[#F4EFE6] text-center text-xs font-serif text-ink-muted">
+      <footer className="border-t border-[#E8E2D5] py-8 bg-[#FAF8F5] text-center text-xs text-stone-600">
         <div className="max-w-7xl mx-auto px-4 space-y-3">
-          <div className="flex items-center justify-center gap-4 text-xs font-serif text-ink-light">
-            <Link href="/bookstores" className="hover:text-archival-oxblood hover:underline">
+          <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-stone-700 font-medium">
+            <Link href="/bookstores" className="hover:text-[#F43F7A] hover:underline">
               Bookstores
             </Link>
             <span>·</span>
-            <Link href="/partners" className="hover:text-archival-oxblood hover:underline">
+            <Link href="/partners" className="hover:text-[#F43F7A] hover:underline">
               Partners &amp; Donors
             </Link>
             <span>·</span>
-            <Link href="/about" className="hover:text-archival-oxblood hover:underline">
+            <Link href="/about" className="hover:text-[#F43F7A] hover:underline">
               About Archive
             </Link>
             <span>·</span>
-            <Link href="/contact" className="hover:text-archival-oxblood hover:underline">
+            <Link href="/contact" className="hover:text-[#F43F7A] hover:underline">
               Donate &amp; Submissions
             </Link>
             <span>·</span>
@@ -99,21 +99,21 @@ export default async function HomePage() {
               href="https://www.instagram.com/bookstorebookmarks"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 hover:text-rose-700 hover:underline"
+              className="inline-flex items-center gap-1 text-[#F43F7A] hover:underline"
             >
-              <Instagram className="w-3.5 h-3.5 text-pink-600" />
+              <Instagram className="w-3.5 h-3.5" />
               <span>@bookstorebookmarks</span>
             </a>
           </div>
 
-          <p className="font-semibold text-ink">
-            Bookstore Bookmark Archive &amp; Historical Research Dossier
+          <p className="font-serif font-bold text-stone-900 text-sm">
+            <span className="text-[#F43F7A]">The</span> <span className="text-[#2563EB]">Bookstore</span> <span className="text-[#F43F7A]">Bookmark</span> <span className="text-[#2563EB]">Archive</span>
           </p>
-          <p className="italic">
-            Dedicated to the memory of independent booksellers, radical presses, and the ephemera that marks our reading journeys.
+          <p className="italic font-serif text-stone-700 max-w-xl mx-auto">
+            "They saved our place, now there is a place to save them."
           </p>
-          <p className="font-mono text-[10px] text-ink-muted/80">
-            Archival Specimen System v1.0 · SQLite &amp; Next.js App
+          <p className="font-mono text-[10px] text-stone-400">
+            A Living Digital Archive of Independent &amp; Historic Bookseller Ephemera
           </p>
         </div>
       </footer>
