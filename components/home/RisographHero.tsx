@@ -239,14 +239,14 @@ export function RisographHero({
           </div>
         </div>
 
-        {/* Right Column: Illustrated Hand Holding Fan of Bookmarks Artwork (Large & Prominent) */}
+        {/* Right Column: Illustrated Hand Holding Fan of Bookmarks Artwork */}
         <div className="lg:col-span-5 xl:col-span-5 flex items-center justify-center lg:justify-end">
           <motion.div
             initial={{ opacity: 0, y: 25, scale: 0.94 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.55, ease: "easeOut" }}
             whileHover={{ y: -8, scale: 1.03, transition: { duration: 0.25 } }}
-            className="relative w-full max-w-[340px] xs:max-w-[420px] sm:max-w-[480px] lg:max-w-[540px] xl:max-w-[620px] flex items-center justify-center select-none"
+            className="relative w-full max-w-[270px] xs:max-w-[340px] sm:max-w-[380px] lg:max-w-[430px] xl:max-w-[500px] flex items-center justify-center select-none"
           >
             {/* Subtle Risograph Ambient Glow behind artwork */}
             <div className="absolute inset-2 bg-gradient-to-tr from-[#F43F7A]/20 via-[#F59E0B]/15 to-[#2563EB]/20 rounded-full blur-3xl pointer-events-none -z-10" />
@@ -256,7 +256,7 @@ export function RisographHero({
                 src="/images/risograph-hero.png"
                 alt="The Bookstore Bookmark Archive — Illustrated hand fanning colorful bookmarks"
                 fill
-                sizes="(max-width: 640px) 340px, (max-width: 1024px) 480px, 620px"
+                sizes="(max-width: 640px) 270px, (max-width: 1024px) 380px, 500px"
                 className="object-contain"
                 priority
               />
