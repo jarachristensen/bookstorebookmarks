@@ -2,11 +2,10 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { BookmarkWithDetails } from "@/lib/db/queries";
-import { TrayControls } from "./TrayControls";
-import { FlatFileCabinet } from "./FlatFileCabinet";
+import { RisographHero } from "@/components/home/RisographHero";
+import { BookmarkPaperSpread } from "@/components/home/BookmarkPaperSpread";
 import { BookmarkInspector } from "./BookmarkInspector";
 import { BookstoreDossier } from "./BookstoreDossier";
-import { getGeographicDrawers } from "@/lib/utils/geographic-drawers";
 import { motion, AnimatePresence } from "framer-motion";
 
 export interface FilterOptions {
@@ -52,16 +51,18 @@ export function ExhibitGalleryClient({
   const [era, setEra] = useState("all");
   const [status, setStatus] = useState<"all" | "open" | "historic">("all");
 
-  // Flat-File Cabinet Active Drawer State (starts null / closed)
-  const [activeDrawerId, setActiveDrawerId] = useState<string | null>(null);
-
-  // Modal / Drawer Selection States
+  // Modal / Selection States
   const [inspectingBookmark, setInspectingBookmark] = useState<BookmarkWithDetails | null>(null);
   const [dossierBookmark, setDossierBookmark] = useState<BookmarkWithDetails | null>(null);
 
   // Manual Shuffle / Randomize
   const handleShuffle = useCallback(() => {
     setShuffledBookmarks(shuffleArray(initialBookmarks));
+  }, [initialBookmarks]);
+
+  // Unique bookstores count
+  const totalBookstores = useMemo(() => {
+    return new Set(initialBookmarks.map((b) => b.bookstoreId)).size;
   }, [initialBookmarks]);
 
   // Dynamic available cities based on selected country
@@ -130,27 +131,22 @@ export function ExhibitGalleryClient({
     });
   }, [shuffledBookmarks, search, country, city, era, status]);
 
-  // Compute Populated Geographic Drawers from Filtered Bookmarks
-  const geographicDrawers = useMemo(() => {
-    return getGeographicDrawers(filteredBookmarks);
-  }, [filteredBookmarks]);
-
-  // Reset or adjust active drawer when filters change
-  const handleSearchChange = (val: string) => {
-    setSearch(val);
-  };
+  // Handlers for filter controls
+  const handleSearchChange = (val: string) => setSearch(val);
   const handleCountryChange = (val: string) => {
     setCountry(val);
     setCity("all");
   };
-  const handleCityChange = (val: string) => {
-    setCity(val);
-  };
-  const handleEraChange = (val: string) => {
-    setEra(val);
-  };
-  const handleStatusChange = (val: "all" | "open" | "historic") => {
-    setStatus(val);
+  const handleCityChange = (val: string) => setCity(val);
+  const handleEraChange = (val: string) => setEra(val);
+  const handleStatusChange = (val: "all" | "open" | "historic") => setStatus(val);
+
+  const handleResetFilters = () => {
+    setSearch("");
+    setCountry("all");
+    setCity("all");
+    setEra("all");
+    setStatus("all");
   };
 
   // Lock body scroll when modal or drawer is open
@@ -166,13 +162,11 @@ export function ExhibitGalleryClient({
   }, [inspectingBookmark, dossierBookmark]);
 
   return (
-    <div className="space-y-6">
-      {/* Search and Archival Filter Controls */}
-      <TrayControls
-        currentPage={1}
-        totalPages={1}
-        totalItems={filteredBookmarks.length}
-        pageSize={8}
+    <div className="space-y-4 sm:space-y-6">
+      {/* Risograph Split 2-Column Hero Masthead */}
+      <RisographHero
+        totalBookstores={totalBookstores}
+        totalBookmarks={initialBookmarks.length}
         search={search}
         onSearchChange={handleSearchChange}
         country={country}
@@ -189,13 +183,11 @@ export function ExhibitGalleryClient({
         onShuffle={handleShuffle}
       />
 
-      {/* The Antique Flat-File / Card Catalog Cabinet (Geographic Drawers) */}
-      <FlatFileCabinet
-        drawers={geographicDrawers}
-        activeDrawerId={activeDrawerId}
-        onSelectDrawer={(drawerId) => setActiveDrawerId(drawerId)}
+      {/* Dense Minimalist Bookmark Paper Spread Grid */}
+      <BookmarkPaperSpread
+        bookmarks={filteredBookmarks}
         onInspectBookmark={(bm) => setInspectingBookmark(bm)}
-        onShuffle={handleShuffle}
+        onResetFilters={handleResetFilters}
       />
 
       {/* Modal Inspector View with 3D Flip (Mobile & Desktop Responsive) */}

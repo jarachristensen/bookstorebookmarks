@@ -15,7 +15,7 @@ describe("Main Exhibit Flow Integration", () => {
     filterOptions = await getFilterOptions();
   });
 
-  it("should render the flat-file cabinet closed, pull open a drawer, inspect a bookmark in 3D, and navigate to bookstore page", () => {
+  it("should render the Risograph hero, display bookmark paper spread, search/filter, and inspect bookmark in 3D", () => {
     render(
       <ExhibitGalleryClient
         initialBookmarks={initialBookmarks}
@@ -23,19 +23,19 @@ describe("Main Exhibit Flow Integration", () => {
       />
     );
 
-    // Verify cabinet is closed with state drawer buttons
-    expect(screen.getAllByText(/New York/i).length).toBeGreaterThanOrEqual(1);
+    // Verify Risograph hero elements
+    expect(screen.getAllByText(/The/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/Bookstore/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/Bookmark/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/Archive/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText(/They saved our place, now there is a place to save them/i)).toBeDefined();
 
-    // Pull open the New York state drawer
-    const nyDrawer = screen.getByRole("button", { name: /open new york/i });
-    fireEvent.click(nyDrawer);
+    // Verify bookmark specimens are rendered in the spread
+    const bookmarkButtons = screen.getAllByRole("button", { name: /inspect/i });
+    expect(bookmarkButtons.length).toBeGreaterThanOrEqual(1);
 
-    // Verify drawer opened with bookmarks rendered
-    const gothamButtons = screen.getAllByRole("button", { name: /gotham book mart/i });
-    expect(gothamButtons.length).toBeGreaterThanOrEqual(1);
-
-    // Click on Gotham bookmark to inspect
-    fireEvent.click(gothamButtons[0]);
+    // Click on the first bookmark to inspect
+    fireEvent.click(bookmarkButtons[0]);
 
     // Verify inspector opened with flip button
     expect(screen.getByRole("button", { name: /flip to verso/i })).toBeDefined();
@@ -43,17 +43,12 @@ describe("Main Exhibit Flow Integration", () => {
     // Verify bookstore page link in inspector
     const bookstoreLink = screen.getByRole("link", { name: /view bookstore page & history/i });
     expect(bookstoreLink).toBeDefined();
-    expect(bookstoreLink.getAttribute("href")).toBe("/bookstores/gotham-book-mart");
 
     // Close inspector
     const closeBtn = screen.getByRole("button", { name: /close inspector/i });
     fireEvent.click(closeBtn);
 
-    // Push drawer back in / close cabinet
-    const pushInBtn = screen.getByRole("button", { name: /push drawer in/i });
-    fireEvent.click(pushInBtn);
-
-    // Verify back in closed cabinet state
-    expect(screen.getByRole("button", { name: /open new york/i })).toBeDefined();
+    // Verify back on the spread
+    expect(screen.getAllByRole("button", { name: /inspect/i }).length).toBeGreaterThanOrEqual(1);
   });
 });

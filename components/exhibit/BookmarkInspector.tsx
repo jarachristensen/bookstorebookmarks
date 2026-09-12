@@ -50,11 +50,11 @@ export function BookmarkInspector({
         : 1 / 3.1);
 
   return (
-    <div className="relative w-full max-w-5xl bg-[#FAF8F3] border border-parchment-border rounded-2xl shadow-2xl overflow-hidden p-4 sm:p-8 lg:p-10">
+    <div className="relative w-full max-w-5xl bg-[#FAF8F5] border border-[#E8E2D5] rounded-2xl shadow-2xl overflow-hidden p-4 sm:p-8 lg:p-10">
       {/* Top Header Bar */}
-      <div className="flex items-center justify-between pb-4 sm:pb-6 border-b border-parchment-border">
+      <div className="flex items-center justify-between pb-4 sm:pb-6 border-b border-[#E8E2D5]">
         <div className="flex items-center gap-2.5 sm:gap-3">
-          <div className="p-1.5 sm:p-2 rounded-lg bg-archival-oxblood/10 text-archival-oxblood border border-archival-oxblood/20">
+          <div className="p-1.5 sm:p-2 rounded-lg bg-[#F43F7A]/10 text-[#F43F7A] border border-[#F43F7A]/20">
             <BookOpen className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
           <div>
@@ -62,19 +62,19 @@ export function BookmarkInspector({
               <Link
                 href={`/bookstores/${store.id}`}
                 onClick={onClose}
-                className="font-serif text-base sm:text-xl font-bold text-ink hover:text-archival-oxblood hover:underline transition-colors line-clamp-1"
+                className="font-serif text-base sm:text-xl font-bold text-stone-900 hover:text-[#2563EB] hover:underline transition-colors line-clamp-1"
               >
                 {store.name}
               </Link>
             ) : (
-              <h2 className="font-serif text-base sm:text-xl font-bold text-ink line-clamp-1">
+              <h2 className="font-serif text-base sm:text-xl font-bold text-stone-900 line-clamp-1">
                 Bookstore Archive
               </h2>
             )}
-            <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs text-ink-muted">
+            <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs text-stone-500">
               {store && (
                 <span className="flex items-center gap-1">
-                  <MapPin className="w-3 h-3 text-archival-oxblood shrink-0" />
+                  <MapPin className="w-3 h-3 text-[#F43F7A] shrink-0" />
                   <span className="truncate">{store.city}, {store.country}</span>
                 </span>
               )}
@@ -92,7 +92,7 @@ export function BookmarkInspector({
           <button
             onClick={onClose}
             aria-label="Close Inspector"
-            className="p-1.5 sm:p-2 rounded-full hover:bg-parchment-muted text-ink-muted hover:text-ink transition-colors cursor-pointer bg-white/60 border border-parchment-border sm:border-transparent"
+            className="p-1.5 sm:p-2 rounded-full hover:bg-stone-200 text-stone-500 hover:text-stone-900 transition-colors cursor-pointer bg-white border border-[#E8E2D5]"
           >
             <X className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
@@ -271,7 +271,7 @@ export function BookmarkInspector({
                       if (onClose) onClose();
                       if (onOpenDossier) onOpenDossier();
                     }}
-                    className="w-full flex items-center justify-center gap-2 font-serif text-xs sm:text-sm py-2.5 sm:py-3 bg-archival-oxblood hover:bg-rose-950 text-white rounded-xl shadow-xs transition-colors cursor-pointer"
+                    className="w-full flex items-center justify-center gap-2 font-serif text-xs sm:text-sm py-2.5 sm:py-3 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-xl shadow-xs transition-colors cursor-pointer"
                   >
                     <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 shrink-0" />
                     <span className="truncate">View Bookstore Page &amp; History →</span>
@@ -449,7 +449,7 @@ export function BookmarkInspector({
                     if (onClose) onClose();
                     if (onOpenDossier) onOpenDossier();
                   }}
-                  className="w-full flex items-center justify-center gap-2 font-serif text-xs sm:text-sm py-2.5 sm:py-3 bg-archival-oxblood hover:bg-rose-950 text-white rounded-xl shadow-xs transition-colors cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 font-serif text-xs sm:text-sm py-2.5 sm:py-3 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-xl shadow-xs transition-colors cursor-pointer"
                 >
                   <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 shrink-0" />
                   <span className="truncate">View Bookstore Page &amp; History →</span>

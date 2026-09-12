@@ -42,34 +42,10 @@ export default async function HomePage() {
   const totalBookstores = new Set(bookmarks.map((b) => b.bookstoreId)).size;
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FBF9F5]">
+    <div className="min-h-screen flex flex-col bg-[#FAF8F5]">
       <Header />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5">
-        {/* Curatorial Archive Stats Strip */}
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-          {/* Stats Boxes */}
-          <div className="flex flex-wrap items-center gap-2.5">
-            <Link
-              href="/bookstores"
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs sm:text-sm rounded-md bg-white border border-parchment-border text-ink-light hover:text-archival-oxblood hover:border-archival-oxblood shadow-2xs font-medium transition-all group"
-              title="Browse all historic bookstores"
-            >
-              <BookOpen className="w-3.5 h-3.5 text-archival-oxblood" />
-              <span>
-                <strong className="text-ink font-semibold group-hover:text-archival-oxblood">{totalBookstores}</strong> Historic Bookstores ↗
-              </span>
-            </Link>
-
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs sm:text-sm rounded-md bg-white border border-parchment-border text-ink-light shadow-2xs font-medium">
-              <Compass className="w-3.5 h-3.5 text-archival-spruce" />
-              <span>
-                <strong className="text-ink font-semibold">{bookmarks.length}</strong> Cataloged Bookmarks
-              </span>
-            </div>
-          </div>
-        </div>
-
+      <main className="flex-1 max-w-[1680px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-4">
         <ExhibitGalleryClient
           initialBookmarks={bookmarks}
           filterOptions={filterOptions}
