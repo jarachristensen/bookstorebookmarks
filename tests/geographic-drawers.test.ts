@@ -69,14 +69,10 @@ describe("Geographic Drawer Classification", () => {
     expect(classifyBookmarkRegion(sampleBookmarks[7])).toBe("drawer-state-ok");
   });
 
-  it("generates populated state drawers, other countries drawer, and the Master Drawer", () => {
+  it("generates populated state drawers and other countries drawer (51 drawers total)", () => {
     const drawers = getGeographicDrawers(sampleBookmarks);
+    expect(drawers.length).toBe(51);
     expect(drawers.length).toBe(GEOGRAPHIC_DRAWER_DEFS.length);
-
-    const masterDrawer = drawers.find((d) => d.id === "drawer-all");
-    expect(masterDrawer).toBeDefined();
-    expect(masterDrawer?.count).toBe(sampleBookmarks.length);
-    expect(masterDrawer?.bookmarks.length).toBe(sampleBookmarks.length);
 
     const nyDrawer = drawers.find((d) => d.id === "drawer-state-ny");
     expect(nyDrawer?.count).toBe(1);

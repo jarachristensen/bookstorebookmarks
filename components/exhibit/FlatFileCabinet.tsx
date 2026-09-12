@@ -6,12 +6,7 @@ import { BookmarkWithDetails } from "@/lib/db/queries";
 import { SpecimenTray } from "./SpecimenTray";
 import { BrassCardPull } from "./BrassCardPull";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  FolderArchive,
-  ChevronLeft,
-  Sparkles,
-  Compass,
-} from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 
 export interface FlatFileCabinetProps {
   drawers: PopulatedDrawer[];
@@ -144,43 +139,7 @@ export function FlatFileCabinet({
           <div className="brass-screw-head" />
         </div>
 
-        {/* Cabinet Top Brass Engraved Header Plaque */}
-        <div className="relative z-10 mb-5 sm:mb-7 pb-3 border-b border-amber-500/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-md bg-amber-950/90 border border-amber-400/70 flex items-center justify-center text-amber-300 shadow-inner">
-              <FolderArchive className="w-4 h-4" />
-            </div>
-            <div>
-              <h2 className="font-serif tracking-widest uppercase text-xs sm:text-sm font-bold text-amber-200 text-shadow">
-                Archival Hardwood Specimen Flat-File Cabinet
-              </h2>
-              <p className="text-[11px] text-amber-200/75 font-serif italic">
-                State by State Specimen Archive · Solid Walnut & Cast Brass Pulls
-              </p>
-            </div>
-          </div>
-
-          {/* Quick status badge / Close button when drawer is pulled */}
-          {!isClosed ? (
-            <button
-              type="button"
-              onClick={() => onSelectDrawer(null)}
-              aria-label="Close Cabinet"
-              className="brass-button px-4 py-1.5 rounded-lg text-xs font-serif font-bold uppercase tracking-wider flex items-center gap-1.5 transition-transform active:scale-95 cursor-pointer shadow-md hover:scale-105"
-              title="Push drawer back into cabinet"
-            >
-              <ChevronLeft className="w-4 h-4 text-amber-950" />
-              <span>Push Drawer In / Close Cabinet</span>
-            </button>
-          ) : (
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-black/50 border border-amber-400/40 text-amber-300 text-xs font-serif italic shadow-inner">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-              <span>{drawers.length} Drawers (4 Rows) Indexed</span>
-            </div>
-          )}
-        </div>
-
-        {/* Closed Cabinet State: 4 Rows of Antique Hardwood Drawer Fronts & Invitation Prompt */}
+        {/* Closed Cabinet State: 4-Column Grid of Antique Hardwood Drawers */}
         <AnimatePresence>
           {isClosed ? (
             <motion.div
@@ -189,22 +148,10 @@ export function FlatFileCabinet({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.25 }}
-              className="space-y-4"
+              className="w-full"
             >
-              {/* Tactile Callout Banner Prompt */}
-              <div className="relative p-3.5 sm:p-4 rounded-xl bg-gradient-to-r from-amber-950/95 via-[#481c08] to-amber-950/95 border border-amber-400/50 text-center shadow-xl">
-                <div className="flex items-center justify-center gap-2 text-amber-300 font-serif font-bold text-sm sm:text-base tracking-wide">
-                  <Compass className="w-4 h-4 text-amber-400 animate-spin-slow" />
-                  <span>✦ Pull Any Brass Drawer to Inspect Specimens ✦</span>
-                  <Compass className="w-4 h-4 text-amber-400 animate-spin-slow" />
-                </div>
-                <p className="mt-1 text-xs text-amber-200/80 font-serif italic">
-                  Select a state drawer below to slide it open and inspect its specimen bookmarks.
-                </p>
-              </div>
-
-              {/* 4 Rows of Realistic Antique Hardwood Drawers (3 Columns = 4 Rows) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-3.5">
+              {/* 4 Columns Wide Antique Hardwood Drawers */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3">
                 {drawers.map((drawer, index) => {
                   const isMaster = drawer.id === "drawer-all";
                   const agingStyle = WOOD_AGING_PROFILES[index % WOOD_AGING_PROFILES.length];
@@ -216,8 +163,8 @@ export function FlatFileCabinet({
                       onHoverEnd={() => setHoveredDrawerId(null)}
                       whileHover={{
                         scale: 1.018,
-                        y: -4,
-                        boxShadow: "0 20px 35px -5px rgba(0, 0, 0, 0.85)",
+                        y: -3,
+                        boxShadow: "0 18px 30px -4px rgba(0, 0, 0, 0.85)",
                         transition: { duration: 0.18 },
                       }}
                       whileTap={{ scale: 0.985 }}
@@ -227,7 +174,7 @@ export function FlatFileCabinet({
                         backgroundPosition: agingStyle.backgroundPosition,
                         backgroundSize: agingStyle.backgroundSize,
                       }}
-                      className={`relative group cursor-pointer rounded-lg py-3 px-2 sm:px-3 drawer-face-plank border ${
+                      className={`relative group cursor-pointer rounded-lg py-2.5 px-2 drawer-face-plank border ${
                         isMaster ? "border-[#874e17]" : "border-[#361605]"
                       } transition-all duration-200 select-none shadow-md flex items-center justify-center`}
                       role="button"
@@ -242,8 +189,7 @@ export function FlatFileCabinet({
                     >
                       {/* 
                         Centered Brass Card-Catalog Pull Handle Fixture 
-                        No exterior text, no side bands — 100% clean solid aged wood plank 
-                        with centered brass label fixture.
+                        50% smaller, delicate, centered on solid aged wood plank.
                       */}
                       <BrassCardPull
                         romanNumeral={drawer.romanNumeral}

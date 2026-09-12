@@ -23,8 +23,7 @@ describe("Main Exhibit Flow Integration", () => {
       />
     );
 
-    // Verify cabinet is closed with the prompt
-    expect(screen.getByText(/✦ Pull Any Brass Drawer to Inspect Specimens ✦/i)).toBeDefined();
+    // Verify cabinet is closed with state drawer buttons
     expect(screen.getAllByText(/New York/i).length).toBeGreaterThanOrEqual(1);
 
     // Pull open the New York state drawer
@@ -55,6 +54,6 @@ describe("Main Exhibit Flow Integration", () => {
     fireEvent.click(pushInBtn);
 
     // Verify back in closed cabinet state
-    expect(screen.getByText(/✦ Pull Any Brass Drawer to Inspect Specimens ✦/i)).toBeDefined();
+    expect(screen.getByRole("button", { name: /open new york/i })).toBeDefined();
   });
 });

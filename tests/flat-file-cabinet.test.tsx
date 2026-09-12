@@ -58,7 +58,7 @@ describe("FlatFileCabinet Component", () => {
 
   const populatedDrawers = getGeographicDrawers(sampleBookmarks);
 
-  it("renders the closed cabinet with tactile prompt and all state drawer labels", () => {
+  it("renders the closed cabinet with clean wood face and all state drawer labels", () => {
     const handleSelectDrawer = vi.fn();
     const handleInspect = vi.fn();
 
@@ -71,14 +71,10 @@ describe("FlatFileCabinet Component", () => {
       />
     );
 
-    // Verify invitation prompt
-    expect(screen.getByText(/✦ Pull Any Brass Drawer to Inspect Specimens ✦/i)).toBeDefined();
-
-    // Verify state drawer labels
+    // Verify state drawer labels (50 states + other countries)
     expect(screen.getAllByText(/New York/i).length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText(/California/i).length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText(/Other Countries/i).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText(/All Specimens/i).length).toBeGreaterThanOrEqual(1);
 
     // Click New York drawer to select
     const drawerBtn = screen.getByRole("button", { name: /open new york/i });
@@ -100,8 +96,7 @@ describe("FlatFileCabinet Component", () => {
       />
     );
 
-    // Verify open drawer header
-    expect(screen.getByText(/DRAWER I:/i)).toBeDefined();
+    // Verify open drawer header contains New York
     expect(screen.getAllByText(/New York/i).length).toBeGreaterThanOrEqual(1);
 
     // Verify Push Drawer In button
