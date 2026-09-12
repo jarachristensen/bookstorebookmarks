@@ -53,7 +53,7 @@ export function RisographHero({
   };
 
   return (
-    <section className="relative w-full py-4 sm:py-6 lg:py-8">
+    <section className="relative w-full pt-1 sm:pt-2 pb-1">
       {/* Embedded SVG Filter for Organic Risograph Ink Micro-Texture */}
       <svg className="sr-only" aria-hidden="true" width="0" height="0">
         <defs>

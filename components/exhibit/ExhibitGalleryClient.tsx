@@ -162,7 +162,7 @@ export function ExhibitGalleryClient({
   }, [inspectingBookmark, dossierBookmark]);
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-1 sm:space-y-2">
       {/* Risograph Split 2-Column Hero Masthead */}
       <RisographHero
         totalBookstores={totalBookstores}

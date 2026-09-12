@@ -51,7 +51,7 @@ export function BookmarkPaperSpread({
   }
 
   return (
-    <div className="w-full py-4 sm:py-6">
+    <div className="w-full pt-1 sm:pt-2 pb-6 sm:pb-8">
       {/* 
         Dense Minimalist Papercraft Specimen Grid
         Responsive: 2 cols on mobile, up to 8 cols on ultrawide monitors
