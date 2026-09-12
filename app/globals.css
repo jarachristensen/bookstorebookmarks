@@ -5,11 +5,13 @@
 @tailwind utilities;
 
 :root {
-  --bg-parchment: #FBF9F5;
+  --bg-parchment: #FAF8F5;
   --bg-parchment-deep: #F3EFE6;
-  --border-parchment: #E2DACB;
-  --ink-main: #1C1917;
-  --ink-muted: #78716C;
+  --border-parchment: #E8E2D5;
+  --ink-main: #18181B;
+  --ink-muted: #52525B;
+  --riso-pink: #F43F7A;
+  --riso-blue: #2563EB;
 }
 
 body {
@@ -17,10 +19,32 @@ body {
   color: var(--ink-main);
   font-family: 'Inter', system-ui, sans-serif;
   background-image: 
-    radial-gradient(rgba(28, 25, 23, 0.03) 1px, transparent 0),
-    linear-gradient(to bottom, rgba(251, 249, 245, 0.8), rgba(243, 239, 230, 0.9));
-  background-size: 24px 24px, 100% 100%;
+    radial-gradient(rgba(24, 24, 27, 0.035) 1px, transparent 0),
+    linear-gradient(to bottom, rgba(250, 248, 245, 0.8), rgba(253, 251, 247, 0.95));
+  background-size: 20px 20px, 100% 100%;
   min-height: 100vh;
+}
+
+/* Risograph Papercraft Styles */
+.riso-paper-bg {
+  background-color: #FAF8F5;
+  background-image: 
+    radial-gradient(rgba(24, 24, 27, 0.035) 1px, transparent 0),
+    linear-gradient(to bottom, rgba(250, 248, 245, 0.8), rgba(253, 251, 247, 0.95));
+  background-size: 20px 20px, 100% 100%;
+}
+
+.paper-shadow-soft {
+  box-shadow: 0 2px 8px -1px rgba(24, 24, 27, 0.06), 0 1px 3px -1px rgba(24, 24, 27, 0.04);
+}
+
+.paper-lift-hover {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.paper-lift-hover:hover {
+  transform: scale(1.03) rotate(-0.5deg);
+  box-shadow: 0 16px 32px -6px rgba(24, 24, 27, 0.14), 0 6px 12px -2px rgba(24, 24, 27, 0.08);
 }
 
 /* Authentic Antique Wooden Tray with Rich Walnut Bevels */

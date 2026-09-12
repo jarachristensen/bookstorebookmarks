@@ -9,6 +9,17 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        riso: {
+          paper: "#FAF8F5",
+          paperWarm: "#FDFBF7",
+          paperBorder: "#E8E2D5",
+          pink: "#F43F7A",
+          blue: "#2563EB",
+          yellow: "#F59E0B",
+          green: "#10B981",
+          ink: "#18181B",
+          inkMuted: "#52525B",
+        },
         parchment: {
           light: "#FDFCF9",
           DEFAULT: "#FBF9F5",
@@ -37,6 +48,8 @@ const config: Config = {
         mono: ["JetBrains Mono", "Geist Mono", "monospace"],
       },
       boxShadow: {
+        "paper-soft": "0 2px 8px -1px rgba(24, 24, 27, 0.06), 0 1px 3px -1px rgba(24, 24, 27, 0.04)",
+        "paper-lift": "0 12px 24px -4px rgba(24, 24, 27, 0.12), 0 4px 8px -2px rgba(24, 24, 27, 0.06)",
         archival: "0 10px 30px -10px rgba(40, 30, 20, 0.12), 0 4px 6px -2px rgba(40, 30, 20, 0.05)",
         "archival-lift": "0 25px 50px -12px rgba(40, 30, 20, 0.25), 0 8px 16px -4px rgba(40, 30, 20, 0.1)",
         "paper-depth": "inset 0 1px 2px rgba(255, 255, 255, 0.6), 0 2px 4px rgba(0, 0, 0, 0.08)",
