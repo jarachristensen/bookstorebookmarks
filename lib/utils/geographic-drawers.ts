@@ -15,87 +15,90 @@ export interface PopulatedDrawer extends GeographicDrawerDef {
 
 export const GEOGRAPHIC_DRAWER_DEFS: GeographicDrawerDef[] = [
   {
-    id: "drawer-east-coast",
+    id: "drawer-state-ny",
     romanNumeral: "DRAWER I",
-    title: "New York & East Coast",
-    subtitle: "Mid-Atlantic & New England Archives",
-    description: "Letterpress and promotional bookmarks from Greenwich Village, Manhattan, Boston, and historic East Coast bookshops.",
+    title: "New York",
+    subtitle: "New York Archive",
+    description: "Bookmarks from Greenwich Village, Manhattan, Brooklyn, and historic New York bookshops.",
   },
   {
-    id: "drawer-west-coast",
+    id: "drawer-state-ca",
     romanNumeral: "DRAWER II",
-    title: "California & West Coast",
-    subtitle: "Pacific & Counterculture Presses",
-    description: "Beat Generation keepsakes, North Beach imprints, and independent bookstore specimens across California and the Pacific Northwest.",
+    title: "California",
+    subtitle: "California Archive",
+    description: "San Francisco, North Beach, Los Angeles, and California independent presses.",
   },
   {
-    id: "drawer-europe",
+    id: "drawer-state-il",
     romanNumeral: "DRAWER III",
-    title: "Paris, UK & European Archive",
-    subtitle: "Continental & Transatlantic Salons",
-    description: "Expatriate stamps, Left Bank Paris bookshops, London antiquarian dealers, and continental European literary institutions.",
+    title: "Illinois",
+    subtitle: "Illinois Archive",
+    description: "Historic Chicago Loop department emporiums, college bookshops, and Midwest imprints.",
   },
   {
-    id: "drawer-midwest",
+    id: "drawer-state-ok",
     romanNumeral: "DRAWER IV",
-    title: "Midwest & Heartland",
-    subtitle: "Great Lakes & Prairie Booksellers",
-    description: "Historic Loop department emporiums, college town bookshops, and Heartland literary archives.",
+    title: "Oklahoma",
+    subtitle: "Oklahoma Archive",
+    description: "Heartland archives, Tulsa, Broken Arrow, and Oklahoma booksellers.",
   },
   {
-    id: "drawer-south",
+    id: "drawer-state-ma",
     romanNumeral: "DRAWER V",
-    title: "American South & Sunbelt",
-    subtitle: "Southern Gothic & Sunbelt Imprints",
-    description: "Venerable French Quarter antiquarians, Southern university presses, and independent bookstores across the South.",
+    title: "Massachusetts",
+    subtitle: "Massachusetts Archive",
+    description: "Boston, Cambridge, and historic New England antiquarian dealers.",
+  },
+  {
+    id: "drawer-state-pa",
+    romanNumeral: "DRAWER VI",
+    title: "Pennsylvania",
+    subtitle: "Pennsylvania Archive",
+    description: "Philadelphia, Pittsburgh, and historic Keystone State bookshops.",
+  },
+  {
+    id: "drawer-state-tx",
+    romanNumeral: "DRAWER VII",
+    title: "Texas",
+    subtitle: "Texas Archive",
+    description: "Austin, San Antonio, Dallas, Houston, and Lone Star State presses.",
+  },
+  {
+    id: "drawer-state-wa-or",
+    romanNumeral: "DRAWER VIII",
+    title: "Washington & Oregon",
+    subtitle: "Pacific Northwest Archive",
+    description: "Seattle, Portland, and Pacific Northwest independent booksellers.",
+  },
+  {
+    id: "drawer-state-la",
+    romanNumeral: "DRAWER IX",
+    title: "Louisiana",
+    subtitle: "Louisiana Archive",
+    description: "French Quarter antiquarians, New Orleans literary salons, and Southern presses.",
+  },
+  {
+    id: "drawer-state-other-us",
+    romanNumeral: "DRAWER X",
+    title: "Other US States",
+    subtitle: "National Collection",
+    description: "Specimens gathered from independent bookshops across all other US states.",
   },
   {
     id: "drawer-international",
-    romanNumeral: "DRAWER VI",
-    title: "International & World Editions",
-    subtitle: "Global Archival Specimens",
-    description: "Bookmarks gathered from independent booksellers and historic book districts around the world.",
+    romanNumeral: "DRAWER XI",
+    title: "Other Countries",
+    subtitle: "International Archive",
+    description: "Bookmarks gathered from France, the UK, Europe, and international booksellers worldwide.",
   },
   {
     id: "drawer-all",
     romanNumeral: "MASTER DRAWER",
-    title: "Complete Archival Collection",
-    subtitle: "All Regions & Specimen Trays",
-    description: "The complete chronological archive of all specimen bookmarks across every region and era.",
+    title: "All Specimens",
+    subtitle: "Complete Archive",
+    description: "The complete chronological archive of all specimen bookmarks across all states and countries.",
   },
 ];
-
-const EAST_COAST_STATES = new Set([
-  "NY", "NEW YORK", "MA", "MASSACHUSETTS", "PA", "PENNSYLVANIA", "NJ", "NEW JERSEY",
-  "CT", "CONNECTICUT", "ME", "MAINE", "NH", "NEW HAMPSHIRE", "VT", "VERMONT",
-  "RI", "RHODE ISLAND", "DC", "DISTRICT OF COLUMBIA", "MD", "MARYLAND", "DE", "DELAWARE"
-]);
-
-const WEST_COAST_STATES = new Set([
-  "CA", "CALIFORNIA", "WA", "WASHINGTON", "OR", "OREGON", "NV", "NEVADA",
-  "HI", "HAWAII", "AK", "ALASKA"
-]);
-
-const MIDWEST_STATES = new Set([
-  "IL", "ILLINOIS", "OH", "OHIO", "MI", "MICHIGAN", "IN", "INDIANA",
-  "WI", "WISCONSIN", "MN", "MINNESOTA", "IA", "IOWA", "MO", "MISSOURI",
-  "KS", "KANSAS", "NE", "NEBRASKA", "ND", "NORTH DAKOTA", "SD", "SOUTH DAKOTA",
-  "OK", "OKLAHOMA"
-]);
-
-const SOUTH_STATES = new Set([
-  "TX", "TEXAS", "GA", "GEORGIA", "FL", "FLORIDA", "NC", "NORTH CAROLINA",
-  "SC", "SOUTH CAROLINA", "TN", "TENNESSEE", "AL", "ALABAMA", "MS", "MISSISSIPPI",
-  "LA", "LOUISIANA", "AR", "ARKANSAS", "VA", "VIRGINIA", "KY", "KENTUCKY", "WV", "WEST VIRGINIA",
-  "AZ", "ARIZONA", "NM", "NEW MEXICO", "CO", "COLORADO", "UT", "UTAH"
-]);
-
-const EUROPE_COUNTRIES = new Set([
-  "FRANCE", "UNITED KINGDOM", "UK", "GREAT BRITAIN", "ENGLAND", "SCOTLAND", "WALES",
-  "IRELAND", "NORTHERN IRELAND", "GERMANY", "ITALY", "SPAIN", "NETHERLANDS", "HOLLAND",
-  "SWITZERLAND", "AUSTRIA", "BELGIUM", "PORTUGAL", "SWEDEN", "NORWAY", "DENMARK",
-  "FINLAND", "GREECE", "POLAND", "CZECH REPUBLIC", "CZECHIA", "HUNGARY", "ICELAND"
-]);
 
 export function classifyBookmarkRegion(bookmark: BookmarkWithDetails): string {
   const store = bookmark.bookstore;
@@ -105,43 +108,120 @@ export function classifyBookmarkRegion(bookmark: BookmarkWithDetails): string {
   const state = (store.stateProvince || "").trim().toUpperCase();
   const city = (store.city || "").trim().toLowerCase();
 
-  // 1. European countries or cities
-  if (EUROPE_COUNTRIES.has(country) || city === "paris" || city === "london" || city === "edinburgh" || city === "dublin" || city === "berlin" || city === "rome" || city === "amsterdam" || city === "madrid") {
-    return "drawer-europe";
-  }
-
-  // 2. Non-US and non-European countries
-  if (country !== "UNITED STATES" && country !== "USA" && country !== "US") {
+  // 1. Non-US and non-European countries or international
+  if (
+    (country !== "UNITED STATES" && country !== "USA" && country !== "US") ||
+    city === "paris" ||
+    city === "london" ||
+    city === "edinburgh" ||
+    city === "dublin" ||
+    city === "berlin" ||
+    city === "rome" ||
+    city === "amsterdam" ||
+    city === "madrid" ||
+    city === "tokyo" ||
+    city === "vancouver" ||
+    city === "toronto"
+  ) {
     return "drawer-international";
   }
 
-  // 3. United States regional classifications
-  // Check West Coast
-  if (WEST_COAST_STATES.has(state) || city === "san francisco" || city === "los angeles" || city === "seattle" || city === "portland" || city === "berkeley" || city === "oakland" || city === "san diego") {
-    return "drawer-west-coast";
+  // 2. Specific US States
+  if (
+    state === "NY" ||
+    state === "NEW YORK" ||
+    city === "new york" ||
+    city === "brooklyn" ||
+    city === "manhattan" ||
+    city === "queens"
+  ) {
+    return "drawer-state-ny";
   }
 
-  // Check East Coast
-  if (EAST_COAST_STATES.has(state) || city === "new york" || city === "brooklyn" || city === "manhattan" || city === "queens" || city === "boston" || city === "philadelphia" || city === "cambridge" || city === "washington") {
-    return "drawer-east-coast";
+  if (
+    state === "CA" ||
+    state === "CALIFORNIA" ||
+    city === "san francisco" ||
+    city === "los angeles" ||
+    city === "berkeley" ||
+    city === "oakland" ||
+    city === "san diego"
+  ) {
+    return "drawer-state-ca";
   }
 
-  // Check Midwest
-  if (MIDWEST_STATES.has(state) || city === "chicago" || city === "minneapolis" || city === "detroit" || city === "cleveland" || city === "indianapolis" || city === "milwaukee" || city === "broken arrow" || city === "tulsa") {
-    return "drawer-midwest";
+  if (
+    state === "IL" ||
+    state === "ILLINOIS" ||
+    city === "chicago" ||
+    city === "evanston"
+  ) {
+    return "drawer-state-il";
   }
 
-  // Check South
-  if (SOUTH_STATES.has(state) || city === "new orleans" || city === "austin" || city === "atlanta" || city === "houston" || city === "dallas" || city === "nashville" || city === "miami") {
-    return "drawer-south";
+  if (
+    state === "OK" ||
+    state === "OKLAHOMA" ||
+    city === "broken arrow" ||
+    city === "tulsa" ||
+    city === "oklahoma city"
+  ) {
+    return "drawer-state-ok";
   }
 
-  // Default fallback for unassigned US states
-  return "drawer-east-coast";
+  if (
+    state === "MA" ||
+    state === "MASSACHUSETTS" ||
+    city === "boston" ||
+    city === "cambridge"
+  ) {
+    return "drawer-state-ma";
+  }
+
+  if (
+    state === "PA" ||
+    state === "PENNSYLVANIA" ||
+    city === "philadelphia" ||
+    city === "pittsburgh"
+  ) {
+    return "drawer-state-pa";
+  }
+
+  if (
+    state === "TX" ||
+    state === "TEXAS" ||
+    city === "austin" ||
+    city === "houston" ||
+    city === "dallas" ||
+    city === "san antonio"
+  ) {
+    return "drawer-state-tx";
+  }
+
+  if (
+    state === "WA" ||
+    state === "WASHINGTON" ||
+    state === "OR" ||
+    state === "OREGON" ||
+    city === "seattle" ||
+    city === "portland"
+  ) {
+    return "drawer-state-wa-or";
+  }
+
+  if (
+    state === "LA" ||
+    state === "LOUISIANA" ||
+    city === "new orleans"
+  ) {
+    return "drawer-state-la";
+  }
+
+  // Fallback for other US states (Ohio, Georgia, Florida, Colorado, etc.)
+  return "drawer-state-other-us";
 }
 
 export function getGeographicDrawers(bookmarks: BookmarkWithDetails[]): PopulatedDrawer[] {
-  // Master collection holds all bookmarks
   const masterDrawerBookmarks = [...bookmarks];
 
   const drawerMap = new Map<string, BookmarkWithDetails[]>();
@@ -157,8 +237,7 @@ export function getGeographicDrawers(bookmarks: BookmarkWithDetails[]): Populate
     if (list) {
       list.push(bm);
     } else {
-      // Fallback
-      drawerMap.get("drawer-east-coast")?.push(bm);
+      drawerMap.get("drawer-state-other-us")?.push(bm);
     }
   }
 

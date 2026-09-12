@@ -58,18 +58,18 @@ describe("Geographic Drawer Classification", () => {
     createMockBookmark("broken-arrow", "Broken Arrow", "OK", "United States"),
   ];
 
-  it("correctly classifies regions for bookmarks based on city, state, and country", () => {
-    expect(classifyBookmarkRegion(sampleBookmarks[0])).toBe("drawer-east-coast");
-    expect(classifyBookmarkRegion(sampleBookmarks[1])).toBe("drawer-west-coast");
-    expect(classifyBookmarkRegion(sampleBookmarks[2])).toBe("drawer-europe");
-    expect(classifyBookmarkRegion(sampleBookmarks[3])).toBe("drawer-midwest");
-    expect(classifyBookmarkRegion(sampleBookmarks[4])).toBe("drawer-south");
-    expect(classifyBookmarkRegion(sampleBookmarks[5])).toBe("drawer-europe");
+  it("correctly classifies regions for bookmarks by US State and Other Countries", () => {
+    expect(classifyBookmarkRegion(sampleBookmarks[0])).toBe("drawer-state-ny");
+    expect(classifyBookmarkRegion(sampleBookmarks[1])).toBe("drawer-state-ca");
+    expect(classifyBookmarkRegion(sampleBookmarks[2])).toBe("drawer-international");
+    expect(classifyBookmarkRegion(sampleBookmarks[3])).toBe("drawer-state-il");
+    expect(classifyBookmarkRegion(sampleBookmarks[4])).toBe("drawer-state-tx");
+    expect(classifyBookmarkRegion(sampleBookmarks[5])).toBe("drawer-international");
     expect(classifyBookmarkRegion(sampleBookmarks[6])).toBe("drawer-international");
-    expect(classifyBookmarkRegion(sampleBookmarks[7])).toBe("drawer-midwest");
+    expect(classifyBookmarkRegion(sampleBookmarks[7])).toBe("drawer-state-ok");
   });
 
-  it("generates populated drawers including the Master Drawer", () => {
+  it("generates populated state drawers, other countries drawer, and the Master Drawer", () => {
     const drawers = getGeographicDrawers(sampleBookmarks);
     expect(drawers.length).toBe(GEOGRAPHIC_DRAWER_DEFS.length);
 
@@ -78,23 +78,20 @@ describe("Geographic Drawer Classification", () => {
     expect(masterDrawer?.count).toBe(sampleBookmarks.length);
     expect(masterDrawer?.bookmarks.length).toBe(sampleBookmarks.length);
 
-    const eastDrawer = drawers.find((d) => d.id === "drawer-east-coast");
-    expect(eastDrawer?.count).toBe(1);
+    const nyDrawer = drawers.find((d) => d.id === "drawer-state-ny");
+    expect(nyDrawer?.count).toBe(1);
 
-    const westDrawer = drawers.find((d) => d.id === "drawer-west-coast");
-    expect(westDrawer?.count).toBe(1);
+    const caDrawer = drawers.find((d) => d.id === "drawer-state-ca");
+    expect(caDrawer?.count).toBe(1);
 
-    const europeDrawer = drawers.find((d) => d.id === "drawer-europe");
-    expect(europeDrawer?.count).toBe(2); // Paris & London
+    const ilDrawer = drawers.find((d) => d.id === "drawer-state-il");
+    expect(ilDrawer?.count).toBe(1);
 
-    const midwestDrawer = drawers.find((d) => d.id === "drawer-midwest");
-    expect(midwestDrawer?.count).toBe(2); // Chicago & Broken Arrow (OK)
-
-    const southDrawer = drawers.find((d) => d.id === "drawer-south");
-    expect(southDrawer?.count).toBe(1); // Austin
+    const okDrawer = drawers.find((d) => d.id === "drawer-state-ok");
+    expect(okDrawer?.count).toBe(1);
 
     const intlDrawer = drawers.find((d) => d.id === "drawer-international");
-    expect(intlDrawer?.count).toBe(1); // Tokyo
+    expect(intlDrawer?.count).toBe(3); // Paris, London, Tokyo
   });
 
   it("handles empty bookmarks array gracefully", () => {

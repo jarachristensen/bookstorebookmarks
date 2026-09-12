@@ -58,7 +58,7 @@ describe("FlatFileCabinet Component", () => {
 
   const populatedDrawers = getGeographicDrawers(sampleBookmarks);
 
-  it("renders the closed cabinet with tactile prompt and all geographic drawer labels", () => {
+  it("renders the closed cabinet with tactile prompt and all state drawer labels", () => {
     const handleSelectDrawer = vi.fn();
     const handleInspect = vi.fn();
 
@@ -74,17 +74,17 @@ describe("FlatFileCabinet Component", () => {
     // Verify invitation prompt
     expect(screen.getByText(/✦ Pull Any Brass Drawer to Inspect Specimens ✦/i)).toBeDefined();
 
-    // Verify geographic drawer labels
-    expect(screen.getByText(/New York & East Coast/i)).toBeDefined();
-    expect(screen.getByText(/California & West Coast/i)).toBeDefined();
-    expect(screen.getByText(/Paris, UK & European Archive/i)).toBeDefined();
-    expect(screen.getByText(/Complete Archival Collection/i)).toBeDefined();
+    // Verify state drawer labels
+    expect(screen.getAllByText(/New York/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/California/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/Other Countries/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/All Specimens/i).length).toBeGreaterThanOrEqual(1);
 
-    // Click a drawer to select
-    const drawerBtn = screen.getByRole("button", { name: /open new york & east coast/i });
+    // Click New York drawer to select
+    const drawerBtn = screen.getByRole("button", { name: /open new york/i });
     fireEvent.click(drawerBtn);
 
-    expect(handleSelectDrawer).toHaveBeenCalledWith("drawer-east-coast");
+    expect(handleSelectDrawer).toHaveBeenCalledWith("drawer-state-ny");
   });
 
   it("renders the open drawer with specimen tray and push in / close button", () => {
@@ -94,7 +94,7 @@ describe("FlatFileCabinet Component", () => {
     render(
       <FlatFileCabinet
         drawers={populatedDrawers}
-        activeDrawerId="drawer-east-coast"
+        activeDrawerId="drawer-state-ny"
         onSelectDrawer={handleSelectDrawer}
         onInspectBookmark={handleInspect}
       />
@@ -102,7 +102,7 @@ describe("FlatFileCabinet Component", () => {
 
     // Verify open drawer header
     expect(screen.getByText(/DRAWER I:/i)).toBeDefined();
-    expect(screen.getByText(/New York & East Coast/i)).toBeDefined();
+    expect(screen.getAllByText(/New York/i).length).toBeGreaterThanOrEqual(1);
 
     // Verify Push Drawer In button
     const pushInBtn = screen.getByRole("button", { name: /push drawer in/i });

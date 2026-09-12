@@ -8,7 +8,6 @@ import { BrassCardPull } from "./BrassCardPull";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FolderArchive,
-  Layers,
   ChevronLeft,
   Sparkles,
   Compass,
@@ -21,6 +20,70 @@ export interface FlatFileCabinetProps {
   onInspectBookmark: (bookmark: BookmarkWithDetails) => void;
   onShuffle?: () => void;
 }
+
+// 12 Distinct Natural Hardwood Aging & Grain Profiles for Individual Drawer Planks
+const WOOD_AGING_PROFILES = [
+  {
+    filter: "brightness(1.02) contrast(1.03) sepia(0.04)",
+    backgroundPosition: "center 15%",
+    backgroundSize: "100% 100%, 100% 100%, 104% auto",
+  },
+  {
+    filter: "brightness(0.96) contrast(1.08) hue-rotate(-3deg)",
+    backgroundPosition: "center 45%",
+    backgroundSize: "100% 100%, 100% 100%, 108% auto",
+  },
+  {
+    filter: "brightness(1.04) contrast(1.02) sepia(0.12) hue-rotate(4deg)",
+    backgroundPosition: "center 75%",
+    backgroundSize: "100% 100%, 100% 100%, 102% auto",
+  },
+  {
+    filter: "brightness(0.98) contrast(1.06) saturate(1.08)",
+    backgroundPosition: "center 30%",
+    backgroundSize: "100% 100%, 100% 100%, 106% auto",
+  },
+  {
+    filter: "brightness(1.01) contrast(1.05) sepia(0.08)",
+    backgroundPosition: "center 60%",
+    backgroundSize: "100% 100%, 100% 100%, 100% auto",
+  },
+  {
+    filter: "brightness(0.94) contrast(1.10) hue-rotate(-5deg)",
+    backgroundPosition: "center 90%",
+    backgroundSize: "100% 100%, 100% 100%, 105% auto",
+  },
+  {
+    filter: "brightness(1.03) contrast(1.04) saturate(1.12) hue-rotate(2deg)",
+    backgroundPosition: "center 20%",
+    backgroundSize: "100% 100%, 100% 100%, 103% auto",
+  },
+  {
+    filter: "brightness(0.97) contrast(1.07) sepia(0.06)",
+    backgroundPosition: "center 50%",
+    backgroundSize: "100% 100%, 100% 100%, 107% auto",
+  },
+  {
+    filter: "brightness(1.02) contrast(1.02) hue-rotate(3deg)",
+    backgroundPosition: "center 80%",
+    backgroundSize: "100% 100%, 100% 100%, 101% auto",
+  },
+  {
+    filter: "brightness(0.95) contrast(1.09) saturate(0.98)",
+    backgroundPosition: "center 35%",
+    backgroundSize: "100% 100%, 100% 100%, 109% auto",
+  },
+  {
+    filter: "brightness(1.05) contrast(1.04) sepia(0.10)",
+    backgroundPosition: "center 65%",
+    backgroundSize: "100% 100%, 100% 100%, 103% auto",
+  },
+  {
+    filter: "brightness(0.99) contrast(1.08) hue-rotate(-2deg)",
+    backgroundPosition: "center 10%",
+    backgroundSize: "100% 100%, 100% 100%, 105% auto",
+  },
+];
 
 export function FlatFileCabinet({
   drawers,
@@ -61,8 +124,8 @@ export function FlatFileCabinet({
   };
 
   return (
-    <div className="w-full max-w-[1240px] mx-auto py-2 sm:py-4 px-2 sm:px-4">
-      {/* Antique Hardwood Flat-File Cabinet Housing */}
+    <div className="w-full max-w-[1680px] mx-auto py-2 sm:py-4 px-2 sm:px-4 lg:px-6">
+      {/* Full-Screen Antique Hardwood Flat-File Cabinet Housing */}
       <div className="relative w-full rounded-2xl cabinet-antique-housing p-3 sm:p-6 lg:p-8 border-[10px] sm:border-[18px] border-[#381605] shadow-[0_45px_90px_-15px_rgba(0,0,0,0.95)] overflow-hidden">
         {/* Mitered Brass Corner Protectors with Slotted Rivets */}
         <div className="absolute top-2.5 left-2.5 w-7 h-7 border-t-2 border-l-2 border-amber-400/90 pointer-events-none flex items-start justify-start p-0.5">
@@ -86,10 +149,10 @@ export function FlatFileCabinet({
             </div>
             <div>
               <h2 className="font-serif tracking-widest uppercase text-xs sm:text-sm font-bold text-amber-200 text-shadow">
-                Archival Hardwood Specimen Flat-File
+                Archival Hardwood Specimen Flat-File Cabinet
               </h2>
               <p className="text-[11px] text-amber-200/75 font-serif italic">
-                Antique Library Card Catalog · Solid Walnut & Cast Brass Fixtures
+                State by State Specimen Archive · Solid Walnut & Cast Brass Pulls
               </p>
             </div>
           </div>
@@ -109,12 +172,12 @@ export function FlatFileCabinet({
           ) : (
             <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-black/50 border border-amber-400/40 text-amber-300 text-xs font-serif italic shadow-inner">
               <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-              <span>7 Regional Drawers Indexed</span>
+              <span>{drawers.length} Drawers (4 Rows) Indexed</span>
             </div>
           )}
         </div>
 
-        {/* Closed Cabinet State: Stacked Hardwood Drawer Fronts & Invitation Prompt */}
+        {/* Closed Cabinet State: 4 Rows of Antique Hardwood Drawer Fronts & Invitation Prompt */}
         <AnimatePresence>
           {isClosed ? (
             <motion.div
@@ -133,28 +196,34 @@ export function FlatFileCabinet({
                   <Compass className="w-4 h-4 text-amber-400 animate-spin-slow" />
                 </div>
                 <p className="mt-1 text-xs text-amber-200/80 font-serif italic">
-                  Select a regional drawer below to slide it open and view its velvet-lined specimen tray.
+                  Select a state drawer below to slide it open and inspect its specimen bookmarks.
                 </p>
               </div>
 
-              {/* Stack of Realistic Antique Hardwood Drawer Planks */}
-              <div className="grid grid-cols-1 gap-2.5 sm:gap-3">
-                {drawers.map((drawer) => {
+              {/* 4 Rows of Realistic Antique Hardwood Drawers (3 Columns = 4 Rows) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-3.5">
+                {drawers.map((drawer, index) => {
                   const isMaster = drawer.id === "drawer-all";
+                  const agingStyle = WOOD_AGING_PROFILES[index % WOOD_AGING_PROFILES.length];
 
                   return (
                     <motion.div
                       key={drawer.id}
                       onHoverStart={() => setHoveredDrawerId(drawer.id)}
                       onHoverEnd={() => setHoveredDrawerId(null)}
-                      whileHover={{ scale: 1.006, y: -1 }}
-                      whileTap={{ scale: 0.994 }}
+                      whileHover={{ scale: 1.008, y: -2 }}
+                      whileTap={{ scale: 0.992 }}
                       onClick={() => onSelectDrawer(drawer.id)}
-                      className={`relative group cursor-pointer rounded-lg p-2.5 sm:p-3.5 drawer-face-plank border ${
+                      style={{
+                        filter: agingStyle.filter,
+                        backgroundPosition: agingStyle.backgroundPosition,
+                        backgroundSize: agingStyle.backgroundSize,
+                      }}
+                      className={`relative group cursor-pointer rounded-lg py-3 px-2 sm:px-3 drawer-face-plank border ${
                         isMaster
                           ? "border-amber-400/80 ring-1 ring-amber-400/30"
                           : "border-[#613014]/80"
-                      } transition-all duration-200 select-none shadow-md`}
+                      } transition-all duration-200 select-none shadow-md flex items-center justify-center`}
                       role="button"
                       tabIndex={0}
                       aria-label={`Open ${drawer.title}`}
@@ -165,40 +234,18 @@ export function FlatFileCabinet({
                         }
                       }}
                     >
-                      {/* Realistic Wooden Joinery Shadow Channels (Left & Right) */}
-                      <div className="absolute left-2 top-2 bottom-2 w-1.5 rounded-sm bg-black/60 border-r border-amber-300/10 pointer-events-none" />
-                      <div className="absolute right-2 top-2 bottom-2 w-1.5 rounded-sm bg-black/60 border-l border-amber-300/10 pointer-events-none" />
-
-                      {/* 3-Column Symmetrical Layout: Left Detail, Centered Brass Hardware, Right Pill */}
-                      <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 items-center justify-between gap-3 px-2 sm:px-5">
-                        {/* Left Wing: Regional Reference & Subtitle */}
-                        <div className="hidden md:block text-left">
-                          <span className="text-[10px] font-mono uppercase tracking-widest text-amber-400/90 block">
-                            {isMaster ? "MASTER CATALOG" : `SECTION · ${drawer.romanNumeral.replace("DRAWER ", "REG-")}`}
-                          </span>
-                          <span className="text-xs text-amber-200/75 font-serif italic line-clamp-1">
-                            {drawer.subtitle}
-                          </span>
-                        </div>
-
-                        {/* Center Column: PHOTO-REALISTIC BRASS CARD PULL (EVEN & IN THE MIDDLE) */}
-                        <div className="flex items-center justify-center mx-auto w-full">
-                          <BrassCardPull
-                            romanNumeral={drawer.romanNumeral}
-                            title={drawer.title}
-                            subtitle={drawer.subtitle}
-                            isMaster={isMaster}
-                          />
-                        </div>
-
-                        {/* Right Wing: Specimen Counter Pill Badge */}
-                        <div className="flex items-center justify-center md:justify-end gap-2 text-right">
-                          <div className="px-3.5 py-1.5 rounded-full bg-black/70 border border-amber-400/40 text-amber-200 text-xs font-mono font-medium flex items-center gap-1.5 shadow-inner">
-                            <Layers className="w-3.5 h-3.5 text-amber-400" />
-                            <span>{drawer.count} {drawer.count === 1 ? "Specimen" : "Specimens"}</span>
-                          </div>
-                        </div>
-                      </div>
+                      {/* 
+                        Centered Brass Card-Catalog Pull Handle Fixture 
+                        No exterior text, no side bands — 100% clean solid aged wood plank 
+                        with centered brass label fixture.
+                      */}
+                      <BrassCardPull
+                        romanNumeral={drawer.romanNumeral}
+                        title={drawer.title}
+                        subtitle={drawer.subtitle}
+                        count={drawer.count}
+                        isMaster={isMaster}
+                      />
                     </motion.div>
                   );
                 })}
@@ -259,7 +306,7 @@ export function FlatFileCabinet({
                         }`}
                         title={d.title}
                       >
-                        {d.romanNumeral.replace("DRAWER ", "DR. ")} ({d.count})
+                        {d.title} ({d.count})
                       </button>
                     );
                   })}

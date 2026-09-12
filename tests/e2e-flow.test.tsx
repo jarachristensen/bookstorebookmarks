@@ -25,10 +25,10 @@ describe("Main Exhibit Flow Integration", () => {
 
     // Verify cabinet is closed with the prompt
     expect(screen.getByText(/✦ Pull Any Brass Drawer to Inspect Specimens ✦/i)).toBeDefined();
-    expect(screen.getByText(/New York & East Coast/i)).toBeDefined();
+    expect(screen.getAllByText(/New York/i).length).toBeGreaterThanOrEqual(1);
 
-    // Pull open the New York & East Coast drawer
-    const nyDrawer = screen.getByRole("button", { name: /open new york & east coast/i });
+    // Pull open the New York state drawer
+    const nyDrawer = screen.getByRole("button", { name: /open new york/i });
     fireEvent.click(nyDrawer);
 
     // Verify drawer opened with bookmarks rendered
