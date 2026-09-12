@@ -239,10 +239,7 @@ export function RisographHero({
             whileHover={{ y: -8, scale: 1.03, rotate: -17, transition: { duration: 0.25 } }}
             className="relative w-full max-w-[270px] xs:max-w-[340px] sm:max-w-[380px] lg:max-w-[430px] xl:max-w-[500px] flex items-center justify-center select-none"
           >
-            {/* Subtle Risograph Ambient Glow behind artwork */}
-            <div className="absolute inset-2 bg-gradient-to-tr from-[#F43F7A]/20 via-[#F59E0B]/15 to-[#2563EB]/20 rounded-full blur-3xl pointer-events-none -z-10" />
-
-            <div className="relative w-full aspect-[674/708] drop-shadow-[0_16px_36px_rgba(24,24,27,0.16)]">
+            <div className="relative w-full aspect-[674/708]">
               <Image
                 src="/images/risograph-hero.png"
                 alt="The Bookstore Bookmark Archive — Illustrated hand fanning colorful bookmarks"
