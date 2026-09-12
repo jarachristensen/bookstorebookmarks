@@ -29,10 +29,8 @@ describe("RisographHero Component", () => {
       />
     );
 
-    expect(screen.getAllByText(/The/i).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText(/Bookstore/i).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText(/Bookmark/i).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText(/Archive/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByRole("heading", { level: 1, name: /The Bookstore Bookmark Archive/i })).toBeDefined();
+    expect(screen.getAllByAltText(/The Bookstore Bookmark Archive/i).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText(/They saved our place, now there is a place to save them/i)).toBeDefined();
     expect(screen.getByText(/Permanently Closed/i)).toBeDefined();
 

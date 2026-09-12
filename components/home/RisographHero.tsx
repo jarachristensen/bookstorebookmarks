@@ -70,15 +70,18 @@ export function RisographHero({
         {/* Left Column: Bold Duotone Typography, Tagline & Search/Filter Controls */}
         <div className="lg:col-span-7 xl:col-span-7 flex flex-col justify-center space-y-4 sm:space-y-5">
           
-          {/* Duotone Masthead Heading with Risograph Print Texture */}
+          {/* Risograph Title Artwork */}
           <div className="space-y-1.5 sm:space-y-2">
-            <h1 className="font-serif font-black text-3xl sm:text-5xl md:text-6xl tracking-tight leading-[1.08] select-none riso-title-texture">
-              <span className="riso-ink-magenta">The</span>{" "}
-              <span className="riso-ink-blue">Bookstore</span>{" "}
-              <br className="hidden sm:inline" />
-              <span className="riso-ink-magenta">Bookmark</span>{" "}
-              <span className="riso-ink-blue">Archive</span>
-            </h1>
+            <h1 className="sr-only">The Bookstore Bookmark Archive</h1>
+            <div className="relative w-[240px] xs:w-[280px] sm:w-[340px] md:w-[390px] aspect-[264/217] select-none">
+              <Image
+                src="/images/risograph-title.png"
+                alt="The Bookstore Bookmark Archive"
+                fill
+                priority
+                className="object-contain object-left"
+              />
+            </div>
 
             <p className="font-serif text-base sm:text-lg md:text-xl text-[#2563EB] max-w-xl font-medium pt-1">
               They saved our place, now there is a place to save them.
