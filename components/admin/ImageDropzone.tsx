@@ -402,12 +402,11 @@ export function ImageDropzone({
     }
     return "aspect-[16/10] w-full";
   };
-
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <label className="block text-xs font-mono font-medium text-ink-light">
-          {label} {required && <span className="text-archival-oxblood">*</span>}
+        <label className="block text-xs font-mono font-medium text-stone-700">
+          {label} {required && <span className="text-[#F43F7A]">*</span>}
         </label>
         <div className="flex items-center gap-2">
           {displayUrl && (
@@ -416,10 +415,10 @@ export function ImageDropzone({
                 type="button"
                 onClick={handleAutoTrim}
                 disabled={uploading}
-                className="text-[11px] text-archival-oxblood hover:underline font-serif flex items-center gap-1 cursor-pointer bg-white/80 px-2 py-0.5 rounded border border-parchment-border hover:bg-white transition-colors"
+                className="text-[11px] text-[#F43F7A] hover:underline font-serif flex items-center gap-1 cursor-pointer bg-white/90 px-2 py-0.5 rounded border border-[#E8E2D5] hover:bg-white transition-colors"
                 title="Auto-detect and crop white scanner margins"
               >
-                <Scissors className="w-3 h-3 text-archival-oxblood" />
+                <Scissors className="w-3 h-3 text-[#F43F7A]" />
                 <span>Auto-Trim</span>
               </button>
 
@@ -427,10 +426,10 @@ export function ImageDropzone({
                 type="button"
                 onClick={handleRotate90}
                 disabled={uploading}
-                className="text-[11px] text-archival-oxblood hover:underline font-serif flex items-center gap-1 cursor-pointer bg-white/80 px-2 py-0.5 rounded border border-parchment-border hover:bg-white transition-colors"
+                className="text-[11px] text-[#2563EB] hover:underline font-serif flex items-center gap-1 cursor-pointer bg-white/90 px-2 py-0.5 rounded border border-[#E8E2D5] hover:bg-white transition-colors"
                 title="Rotate scan 90° Clockwise"
               >
-                <RotateCw className="w-3 h-3 text-archival-amber" />
+                <RotateCw className="w-3 h-3 text-[#F59E0B]" />
                 <span>Rotate 90°</span>
               </button>
             </>
@@ -440,7 +439,7 @@ export function ImageDropzone({
             <button
               type="button"
               onClick={() => setShowUrlInput(!showUrlInput)}
-              className="text-[11px] text-archival-oxblood hover:underline font-serif flex items-center gap-1 cursor-pointer"
+              className="text-[11px] text-[#2563EB] hover:underline font-serif flex items-center gap-1 cursor-pointer"
             >
               <LinkIcon className="w-3 h-3" />
               <span>{showUrlInput ? "Drop file instead" : "Paste URL"}</span>
@@ -451,7 +450,7 @@ export function ImageDropzone({
             <button
               type="button"
               onClick={handleRemove}
-              className="text-[11px] text-archival-oxblood hover:underline font-serif flex items-center gap-1 cursor-pointer"
+              className="text-[11px] text-[#F43F7A] hover:underline font-serif flex items-center gap-1 cursor-pointer"
             >
               <X className="w-3 h-3" />
               <span>Remove</span>
@@ -467,7 +466,7 @@ export function ImageDropzone({
             value={customUrl}
             onChange={(e) => setCustomUrl(e.target.value)}
             placeholder="https://photos.smugmug.com/... or https://..."
-            className="flex-1 px-3 py-1.5 text-xs bg-white border border-parchment-border rounded-lg text-ink font-serif focus:outline-none"
+            className="flex-1 px-3 py-1.5 text-xs bg-white border border-[#E8E2D5] rounded-lg text-stone-900 font-serif focus:outline-none focus:border-[#2563EB]"
             autoFocus
           />
           <Button type="submit" variant="secondary" size="sm" className="text-xs font-serif">
@@ -478,7 +477,7 @@ export function ImageDropzone({
 
       {displayUrl ? (
         <div
-          className={`relative rounded-xl overflow-hidden border-2 border-parchment-border bg-stone-100 dark:bg-stone-900/40 shadow-xs flex items-center justify-center ${getAspectClasses()}`}
+          className={`relative rounded-xl overflow-hidden border-2 border-[#E8E2D5] bg-[#FAF8F5] shadow-xs flex items-center justify-center ${getAspectClasses()}`}
         >
           {/* Subtle archival paper checkerboard background for transparent scans */}
           <div
@@ -502,7 +501,7 @@ export function ImageDropzone({
                 variant="outline"
                 size="sm"
                 onClick={() => fileInputRef.current?.click()}
-                className="text-[11px] font-serif bg-white text-ink"
+                className="text-[11px] font-serif bg-white text-stone-900 border-[#E8E2D5]"
               >
                 Choose New Scan
               </Button>
@@ -540,10 +539,10 @@ export function ImageDropzone({
                 variant="outline"
                 size="sm"
                 onClick={handleAutoTrim}
-                className="text-xs font-serif bg-white/95 text-ink flex items-center gap-1.5 shadow-sm hover:bg-white"
+                className="text-xs font-serif bg-white/95 text-stone-900 flex items-center gap-1.5 shadow-sm hover:bg-white border-[#E8E2D5]"
                 title="Auto-detect and crop white scanner margins"
               >
-                <Scissors className="w-3.5 h-3.5 text-archival-oxblood" />
+                <Scissors className="w-3.5 h-3.5 text-[#F43F7A]" />
                 <span>Auto-Trim</span>
               </Button>
               <Button
@@ -551,9 +550,9 @@ export function ImageDropzone({
                 variant="outline"
                 size="sm"
                 onClick={handleRotate90}
-                className="text-xs font-serif bg-white/95 text-ink flex items-center gap-1.5 shadow-sm hover:bg-white"
+                className="text-xs font-serif bg-white/95 text-stone-900 flex items-center gap-1.5 shadow-sm hover:bg-white border-[#E8E2D5]"
               >
-                <RotateCw className="w-3.5 h-3.5 text-archival-amber" />
+                <RotateCw className="w-3.5 h-3.5 text-[#F59E0B]" />
                 <span>Rotate 90°</span>
               </Button>
               <Button
@@ -561,7 +560,7 @@ export function ImageDropzone({
                 variant="outline"
                 size="sm"
                 onClick={() => fileInputRef.current?.click()}
-                className="text-xs font-serif bg-white/95 text-ink shadow-sm hover:bg-white"
+                className="text-xs font-serif bg-white/95 text-stone-900 shadow-sm hover:bg-white border-[#E8E2D5]"
               >
                 Replace Scan
               </Button>
@@ -574,7 +573,7 @@ export function ImageDropzone({
             onDragOver={(e) => e.preventDefault()}
             onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
-            className={`border-2 border-dashed border-parchment-border hover:border-archival-amber rounded-xl p-6 text-center cursor-pointer bg-parchment-light hover:bg-parchment-muted/50 transition-colors flex flex-col items-center justify-center gap-2 ${
+            className={`border-2 border-dashed border-[#E8E2D5] hover:border-[#2563EB] rounded-xl p-6 text-center cursor-pointer bg-[#FAF8F5] hover:bg-[#FAF8F5]/80 transition-colors flex flex-col items-center justify-center gap-2 ${
               aspectRatio === "bookmark"
                 ? "aspect-[1/2.8] max-w-[200px] mx-auto"
                 : aspectRatio === "landscape"
@@ -582,18 +581,18 @@ export function ImageDropzone({
                 : "aspect-[16/10] w-full"
             }`}
           >
-            <div className="w-10 h-10 rounded-full bg-parchment-muted flex items-center justify-center text-ink-muted">
+            <div className="w-10 h-10 rounded-full bg-[#E8E2D5]/50 flex items-center justify-center text-stone-500">
               {uploading ? (
-                <Loader2 className="w-5 h-5 animate-spin text-archival-oxblood" />
+                <Loader2 className="w-5 h-5 animate-spin text-[#F43F7A]" />
               ) : (
                 <Upload className="w-5 h-5" />
               )}
             </div>
             <div className="space-y-1">
-              <p className="text-xs font-serif font-semibold text-ink">
-                {uploading ? (uploadProgress || "Uploading scan...") : "Click or drop scan here"}
+              <p className="text-xs font-serif font-semibold text-stone-900">
+                {uploadProgress || "Click or drop scan here"}
               </p>
-              <p className="text-[10px] font-mono text-ink-muted">
+              <p className="text-[10px] font-mono text-stone-500">
                 {aspectRatio === "landscape"
                   ? "Horizontal landscape scan"
                   : "High-res scans (PNG, JPG, WEBP, TIFF)"}

@@ -63,7 +63,7 @@ export function BookmarkCard({ packedItem, bookmark: propBookmark, onInspect }: 
             priority={false}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center p-2 text-center text-xs font-serif text-ink-muted bg-parchment/60 rounded">
+          <div className="w-full h-full flex items-center justify-center p-2 text-center text-xs font-serif text-stone-600 bg-[#FAF8F5] border border-[#E8E2D5] rounded">
             {bookmark.title}
           </div>
         )}

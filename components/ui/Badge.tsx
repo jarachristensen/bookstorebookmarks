@@ -15,13 +15,13 @@ export function Badge({
   ...props
 }: BadgeProps) {
   const variantStyles = {
-    default: "bg-parchment-muted text-ink-light border border-parchment-border",
-    oxblood: "bg-rose-900/10 text-archival-oxblood border border-rose-900/20 font-medium",
-    spruce: "bg-emerald-900/10 text-archival-spruce border border-emerald-900/20 font-medium",
-    amber: "bg-amber-700/10 text-archival-amber border border-amber-700/20 font-medium",
-    navy: "bg-slate-900/10 text-archival-navy border border-slate-900/20 font-medium",
+    default: "bg-white text-stone-700 border border-[#E8E2D5] shadow-2xs",
+    oxblood: "bg-[#F43F7A]/10 text-[#F43F7A] border border-[#F43F7A]/25 font-medium",
+    spruce: "bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/25 font-medium",
+    amber: "bg-[#F59E0B]/10 text-[#F59E0B] border border-[#F59E0B]/25 font-medium",
+    navy: "bg-[#2563EB]/10 text-[#2563EB] border border-[#2563EB]/25 font-medium",
     mono: "bg-stone-900 text-stone-100 font-mono text-xs border border-stone-800 tracking-wider",
-    outline: "bg-transparent text-ink-muted border border-parchment-border hover:border-ink-muted",
+    outline: "bg-transparent text-stone-600 border border-[#E8E2D5] hover:border-stone-400",
   };
 
   const sizeStyles = {

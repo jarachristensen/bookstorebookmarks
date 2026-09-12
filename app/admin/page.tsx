@@ -40,23 +40,23 @@ export default async function AdminDashboardPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#FBF9F5] pb-16">
+    <div className="min-h-screen bg-[#FAF8F5] pb-16">
       {/* Header */}
-      <header className="border-b border-parchment-border bg-white/90 backdrop-blur-md sticky top-0 z-30">
+      <header className="border-b border-[#E8E2D5] bg-white/90 backdrop-blur-md sticky top-0 z-30 shadow-2xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-archival-oxblood text-parchment-light flex items-center justify-center shadow-md">
-                <Lock className="w-5 h-5 text-amber-300" />
+              <div className="w-10 h-10 rounded-xl bg-[#F43F7A] text-white flex items-center justify-center shadow-md">
+                <Lock className="w-5 h-5 text-amber-200" />
               </div>
               <div>
-                <h1 className="font-serif text-xl sm:text-2xl font-bold text-ink flex items-center gap-2">
+                <h1 className="font-serif text-xl sm:text-2xl font-bold text-stone-900 flex items-center gap-2">
                   <span>Curator's Cabinet</span>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-archival-oxblood/10 text-archival-oxblood border border-archival-oxblood/20 font-bold">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-[#F43F7A]/10 text-[#F43F7A] border border-[#F43F7A]/20 font-bold">
                     ADMIN CMS
                   </span>
                 </h1>
-                <p className="text-xs text-ink-muted font-serif italic hidden sm:block">
+                <p className="text-xs text-stone-500 font-serif italic hidden sm:block">
                   Catalog management, image scanner, and research dossier editor
                 </p>
               </div>
@@ -64,7 +64,7 @@ export default async function AdminDashboardPage() {
 
             <div className="flex items-center gap-3">
               <Link href="/">
-                <Button variant="outline" size="sm" className="text-xs font-serif">
+                <Button variant="outline" size="sm" className="text-xs font-serif bg-white border-[#E8E2D5]">
                   Public Exhibit ↗
                 </Button>
               </Link>
@@ -72,7 +72,7 @@ export default async function AdminDashboardPage() {
               <form action="/api/auth/logout" method="POST">
                 <button
                   type="submit"
-                  className="p-2 rounded-lg text-ink-muted hover:text-archival-oxblood hover:bg-parchment-muted transition-colors"
+                  className="p-2 rounded-lg text-stone-500 hover:text-[#F43F7A] hover:bg-stone-100 transition-colors cursor-pointer"
                   title="Log out of curator session"
                 >
                   <LogOut className="w-4 h-4" />
@@ -87,63 +87,63 @@ export default async function AdminDashboardPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-8">
         {/* Stats Row & Quick Actions */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="p-5 rounded-2xl bg-white border border-parchment-border shadow-xs flex items-center justify-between">
+          <div className="p-5 rounded-2xl bg-white border border-[#E8E2D5] shadow-xs flex items-center justify-between">
             <div>
-              <p className="text-xs font-mono text-ink-muted uppercase">Cataloged Bookmarks</p>
-              <h3 className="font-serif text-3xl font-bold text-ink mt-1">{bookmarks.length}</h3>
+              <p className="text-xs font-mono text-stone-500 uppercase">Cataloged Bookmarks</p>
+              <h3 className="font-serif text-3xl font-bold text-stone-900 mt-1">{bookmarks.length}</h3>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-archival-amber flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-[#F59E0B]/10 text-[#F59E0B] border border-[#F59E0B]/20 flex items-center justify-center">
               <Sparkles className="w-5 h-5" />
             </div>
           </div>
 
-          <div className="p-5 rounded-2xl bg-white border border-parchment-border shadow-xs flex items-center justify-between">
+          <div className="p-5 rounded-2xl bg-white border border-[#E8E2D5] shadow-xs flex items-center justify-between">
             <div>
-              <p className="text-xs font-mono text-ink-muted uppercase">Historic Bookstores</p>
-              <h3 className="font-serif text-3xl font-bold text-ink mt-1">{totalBookstores}</h3>
+              <p className="text-xs font-mono text-stone-500 uppercase">Historic Bookstores</p>
+              <h3 className="font-serif text-3xl font-bold text-stone-900 mt-1">{totalBookstores}</h3>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-archival-spruce flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20 flex items-center justify-center">
               <BookOpen className="w-5 h-5" />
             </div>
           </div>
 
-          <div className="p-5 rounded-2xl bg-white border border-parchment-border shadow-xs flex items-center justify-between">
+          <div className="p-5 rounded-2xl bg-white border border-[#E8E2D5] shadow-xs flex items-center justify-between">
             <div>
-              <p className="text-xs font-mono text-ink-muted uppercase">Archival Press Clippings</p>
-              <h3 className="font-serif text-3xl font-bold text-ink mt-1">{totalClippings}</h3>
+              <p className="text-xs font-mono text-stone-500 uppercase">Archival Press Clippings</p>
+              <h3 className="font-serif text-3xl font-bold text-stone-900 mt-1">{totalClippings}</h3>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-rose-500/10 text-archival-oxblood flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-[#F43F7A]/10 text-[#F43F7A] border border-[#F43F7A]/20 flex items-center justify-center">
               <Lock className="w-5 h-5" />
             </div>
           </div>
         </div>
 
         {/* Action Bar */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl bg-white border border-parchment-border shadow-xs">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl bg-white border border-[#E8E2D5] shadow-xs">
           <div>
-            <h2 className="font-serif text-lg font-bold text-ink">Archive Collection Index</h2>
-            <p className="text-xs text-ink-muted font-serif italic">
+            <h2 className="font-serif text-lg font-bold text-stone-900">Archive Collection Index</h2>
+            <p className="text-xs text-stone-500 font-serif italic">
               Manage your collection of bookmarks, historic bookstore dossiers, and multi-location timelines.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
             <a href="/api/export" download>
-              <Button variant="outline" size="sm" className="text-xs font-serif flex items-center gap-1.5 bg-white">
+              <Button variant="outline" size="sm" className="text-xs font-serif flex items-center gap-1.5 bg-white border-[#E8E2D5]">
                 <Download className="w-3.5 h-3.5" />
                 <span>Export (JSON)</span>
               </Button>
             </a>
 
             <Link href="/admin/bookstores/new">
-              <Button variant="outline" size="sm" className="text-xs font-serif flex items-center gap-1.5 bg-white">
-                <Building2 className="w-3.5 h-3.5 text-archival-spruce" />
+              <Button variant="outline" size="sm" className="text-xs font-serif flex items-center gap-1.5 bg-white border-[#E8E2D5]">
+                <Building2 className="w-3.5 h-3.5 text-[#10B981]" />
                 <span>Add Bookstore</span>
               </Button>
             </Link>
 
             <Link href="/admin/new">
-              <Button variant="oxblood" size="sm" className="text-xs font-serif flex items-center gap-1.5">
+              <Button variant="oxblood" size="sm" className="text-xs font-serif flex items-center gap-1.5 bg-[#F43F7A] hover:bg-[#E11D48] text-white">
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add Bookmark</span>
               </Button>

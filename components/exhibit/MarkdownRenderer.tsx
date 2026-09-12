@@ -19,7 +19,7 @@ export function MarkdownRenderer({ content, className = "" }: MarkdownRendererPr
 
   return (
     <div
-      className={`prose prose-stone max-w-none font-serif text-ink-light leading-relaxed prose-headings:font-serif prose-headings:text-ink prose-headings:font-bold prose-h3:text-xl prose-h3:mt-6 prose-h3:mb-3 prose-h4:text-base prose-h4:mt-4 prose-h4:mb-2 prose-p:my-3 prose-p:leading-relaxed prose-strong:text-ink prose-blockquote:border-l-2 prose-blockquote:border-archival-oxblood prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-ink/90 ${className}`}
+      className={`prose prose-stone max-w-none font-serif text-stone-700 leading-relaxed prose-headings:font-serif prose-headings:text-stone-900 prose-headings:font-bold prose-h3:text-xl prose-h3:mt-6 prose-h3:mb-3 prose-h4:text-base prose-h4:mt-4 prose-h4:mb-2 prose-p:my-3 prose-p:leading-relaxed prose-strong:text-stone-900 prose-blockquote:border-l-2 prose-blockquote:border-[#F43F7A] prose-blockquote:pl-4 prose-blockquote:text-stone-800 ${className}`}
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );

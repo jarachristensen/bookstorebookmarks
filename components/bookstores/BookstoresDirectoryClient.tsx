@@ -75,7 +75,7 @@ export function BookstoresDirectoryClient({ bookstores }: BookstoresDirectoryCli
   return (
     <div className="space-y-8">
       {/* Search and Filters Bar */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-white border border-parchment-border shadow-xs flex flex-col md:flex-row items-center gap-4">
+      <div className="p-4 sm:p-5 rounded-2xl bg-white border border-[#E8E2D5] shadow-xs flex flex-col md:flex-row items-center gap-4">
         {/* Search Input */}
         <div className="relative w-full md:flex-1">
           <input
@@ -83,7 +83,7 @@ export function BookstoresDirectoryClient({ bookstores }: BookstoresDirectoryCli
             placeholder="Search bookstores by name, city, country, founders, or history..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full px-4 py-2 text-sm bg-parchment-light border border-parchment-border rounded-xl text-ink font-serif focus:outline-none focus:border-archival-oxblood placeholder:text-ink-muted/70"
+            className="w-full px-4 py-2.5 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-xl text-stone-900 font-sans focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 placeholder:text-stone-400 transition-all"
           />
         </div>
 
@@ -97,7 +97,7 @@ export function BookstoresDirectoryClient({ bookstores }: BookstoresDirectoryCli
                 setSelectedCountry(e.target.value);
                 setSelectedCity("all");
               }}
-              className="px-3 py-2 text-xs font-serif bg-white border border-parchment-border rounded-xl text-ink focus:outline-none"
+              className="px-3 py-2 text-xs font-sans bg-white border border-[#E8E2D5] rounded-xl text-stone-700 focus:outline-none focus:border-[#2563EB] cursor-pointer hover:border-stone-400"
             >
               <option value="all">All Countries</option>
               {countries.map((country) => (
@@ -112,7 +112,7 @@ export function BookstoresDirectoryClient({ bookstores }: BookstoresDirectoryCli
           <select
             value={selectedCity}
             onChange={(e) => setSelectedCity(e.target.value)}
-            className="px-3 py-2 text-xs font-serif bg-white border border-parchment-border rounded-xl text-ink focus:outline-none"
+            className="px-3 py-2 text-xs font-sans bg-white border border-[#E8E2D5] rounded-xl text-stone-700 focus:outline-none focus:border-[#2563EB] cursor-pointer hover:border-stone-400"
           >
             <option value="all">All Cities</option>
             {cities.map((city) => (
@@ -126,22 +126,22 @@ export function BookstoresDirectoryClient({ bookstores }: BookstoresDirectoryCli
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className="px-3 py-2 text-xs font-serif bg-white border border-parchment-border rounded-xl text-ink focus:outline-none"
+            className="px-3 py-2 text-xs font-sans bg-white border border-[#E8E2D5] rounded-xl text-stone-700 focus:outline-none focus:border-[#2563EB] cursor-pointer hover:border-stone-400"
           >
             <option value="all">All Statuses</option>
-            <option value="open">Operating</option>
-            <option value="historic">Closed Bookstores</option>
+            <option value="open">Still Operating</option>
+            <option value="historic">Permanently Closed</option>
           </select>
         </div>
       </div>
 
       {/* Grid of Bookstore Cards */}
       {filteredBookstores.length === 0 ? (
-        <div className="p-12 text-center bg-white rounded-2xl border border-parchment-border space-y-3">
-          <Building2 className="w-10 h-10 text-ink-muted/50 mx-auto" />
-          <h3 className="font-serif text-lg font-bold text-ink">No historic bookstores found</h3>
-          <p className="font-serif text-xs text-ink-muted">
-            Try adjusting your search terms or clearing your city filter.
+        <div className="p-12 text-center bg-white rounded-2xl border border-[#E8E2D5] space-y-3">
+          <Building2 className="w-10 h-10 text-stone-400 mx-auto" />
+          <h3 className="font-serif text-lg font-bold text-stone-900">No historic bookstores found</h3>
+          <p className="font-sans text-xs text-stone-600">
+            Try adjusting your search terms or clearing your filters.
           </p>
         </div>
       ) : (
@@ -164,10 +164,10 @@ export function BookstoresDirectoryClient({ bookstores }: BookstoresDirectoryCli
               <Link
                 key={store.id}
                 href={`/bookstores/${store.id}`}
-                className="group flex flex-col rounded-2xl bg-white border border-parchment-border hover:border-archival-amber overflow-hidden shadow-2xs hover:shadow-md transition-all duration-200"
+                className="group flex flex-col rounded-2xl bg-white border border-[#E8E2D5] hover:border-[#F43F7A]/60 overflow-hidden shadow-xs hover:shadow-md transition-all duration-200"
               >
                 {/* Storefront Hero Thumbnail Banner */}
-                <div className="relative w-full aspect-[16/9] bg-stone-100 overflow-hidden border-b border-parchment-border">
+                <div className="relative w-full aspect-[16/9] bg-stone-100 overflow-hidden border-b border-[#E8E2D5]">
                   <Image
                     src={heroImage}
                     alt={store.name}
@@ -180,11 +180,11 @@ export function BookstoresDirectoryClient({ bookstores }: BookstoresDirectoryCli
                   {/* Badges on Hero Banner */}
                   <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
                     {store.isStillOperating ? (
-                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-600 text-white shadow-xs">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#10B981] text-white shadow-xs">
                         STILL OPERATING
                       </span>
                     ) : (
-                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-stone-900/90 text-stone-200 shadow-xs">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#F43F7A] text-white shadow-xs">
                         {store.yearClosed ? `CLOSED (${store.yearClosed})` : "CLOSED"}
                       </span>
                     )}
@@ -194,8 +194,8 @@ export function BookstoresDirectoryClient({ bookstores }: BookstoresDirectoryCli
                     <h3 className="font-serif text-lg font-bold truncate drop-shadow-sm group-hover:text-amber-200 transition-colors">
                       {store.name}
                     </h3>
-                    <p className="text-xs font-serif flex items-center gap-1 text-stone-200 drop-shadow-xs">
-                      <MapPin className="w-3 h-3 text-amber-400" />
+                    <p className="text-xs font-sans flex items-center gap-1 text-stone-200 drop-shadow-xs">
+                      <MapPin className="w-3 h-3 text-[#F59E0B]" />
                       <span>
                         {store.city}
                         {store.stateProvince ? `, ${store.stateProvince}` : ""},{" "}
@@ -209,9 +209,9 @@ export function BookstoresDirectoryClient({ bookstores }: BookstoresDirectoryCli
                 <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                   {/* Years and Metrics */}
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between text-xs font-serif text-ink-muted">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-3.5 h-3.5 text-archival-oxblood" />
+                    <div className="flex items-center justify-between text-xs font-sans text-stone-600">
+                      <span className="flex items-center gap-1 font-serif">
+                        <Calendar className="w-3.5 h-3.5 text-[#F43F7A]" />
                         <span>
                           {store.yearOpened}–{store.isStillOperating ? "Present" : store.yearClosed || "Closed"}
                         </span>
@@ -219,7 +219,7 @@ export function BookstoresDirectoryClient({ bookstores }: BookstoresDirectoryCli
 
                       <div className="flex items-center gap-2">
                         <span
-                          className="inline-flex items-center gap-1 text-[11px] font-mono text-archival-oxblood bg-rose-50 px-2 py-0.5 rounded border border-rose-200"
+                          className="inline-flex items-center gap-1 text-[11px] font-mono text-[#F43F7A] bg-[#F43F7A]/10 px-2 py-0.5 rounded border border-[#F43F7A]/20"
                           title="Cataloged Bookmarks"
                         >
                           <Bookmark className="w-3 h-3" />
@@ -228,7 +228,7 @@ export function BookstoresDirectoryClient({ bookstores }: BookstoresDirectoryCli
 
                         {store.archivalMedia.length > 0 && (
                           <span
-                            className="inline-flex items-center gap-1 text-[11px] font-mono text-archival-spruce bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200"
+                            className="inline-flex items-center gap-1 text-[11px] font-mono text-[#2563EB] bg-[#2563EB]/10 px-2 py-0.5 rounded border border-[#2563EB]/20"
                             title="Archival Photos & Press Clippings"
                           >
                             <Newspaper className="w-3 h-3" />
@@ -239,25 +239,25 @@ export function BookstoresDirectoryClient({ bookstores }: BookstoresDirectoryCli
                     </div>
 
                     {/* Blurb Snippet */}
-                    <p className="font-serif text-xs text-ink-light line-clamp-3 leading-relaxed">
+                    <p className="font-sans text-xs text-stone-600 line-clamp-3 leading-relaxed">
                       {store.historicalBlurb.replace(/^#+\s+/gm, "").slice(0, 140)}...
                     </p>
                   </div>
 
                   {/* Footer Specialties & CTA */}
-                  <div className="pt-3 border-t border-parchment-border/60 flex items-center justify-between">
+                  <div className="pt-3 border-t border-[#E8E2D5]/70 flex items-center justify-between">
                     <div className="flex flex-wrap gap-1">
                       {parsedSpecialties.slice(0, 2).map((s) => (
                         <span
                           key={s}
-                          className="text-[10px] font-serif bg-parchment-light text-ink-light px-2 py-0.5 rounded border border-parchment-border"
+                          className="text-[10px] font-sans bg-[#FAF8F5] text-stone-700 px-2 py-0.5 rounded border border-[#E8E2D5]"
                         >
                           {s}
                         </span>
                       ))}
                     </div>
 
-                    <span className="inline-flex items-center gap-1 text-xs font-serif font-bold text-archival-oxblood group-hover:underline shrink-0">
+                    <span className="inline-flex items-center gap-1 text-xs font-serif font-bold text-[#F43F7A] group-hover:underline shrink-0">
                       <span>View Dossier</span>
                       <ArrowUpRight className="w-3.5 h-3.5" />
                     </span>

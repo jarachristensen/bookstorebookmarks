@@ -223,10 +223,10 @@ export function BookstoreDetailEditor({
   return (
     <form onSubmit={handleSubmit} className="space-y-8 max-w-5xl mx-auto pb-16">
       {/* Header Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-parchment-border">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E8E2D5]">
         <Link
           href="/admin"
-          className="inline-flex items-center gap-1.5 text-xs font-serif text-ink-muted hover:text-ink transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-serif text-stone-500 hover:text-[#2563EB] transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Curator Dashboard</span>
@@ -238,9 +238,9 @@ export function BookstoreDetailEditor({
             variant="oxblood"
             size="md"
             disabled={loading}
-            className="font-serif flex items-center gap-2"
+            className="font-serif flex items-center gap-2 bg-[#F43F7A] hover:bg-[#E11D48] text-white"
           >
-            <Save className="w-4 h-4 text-amber-300" />
+            <Save className="w-4 h-4 text-amber-200" />
             <span>
               {loading
                 ? "Saving Dossier..."
@@ -259,15 +259,15 @@ export function BookstoreDetailEditor({
       )}
 
       {/* 1. Bookstore Identity & Core Information */}
-      <section className="p-6 sm:p-8 rounded-2xl bg-white border border-parchment-border shadow-xs space-y-6">
-        <div className="flex items-center gap-2 pb-3 border-b border-parchment-border text-sm font-mono font-bold text-archival-oxblood uppercase tracking-wider">
+      <section className="p-6 sm:p-8 rounded-2xl bg-white border border-[#E8E2D5] shadow-xs space-y-6">
+        <div className="flex items-center gap-2 pb-3 border-b border-[#E8E2D5] text-sm font-mono font-bold text-[#F43F7A] uppercase tracking-wider">
           <Building2 className="w-4 h-4" />
           <span>1. Bookstore Identity &amp; Overview</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="sm:col-span-2">
-            <label className="block text-xs font-mono text-ink-light mb-1">
+            <label className="block text-xs font-mono text-stone-600 mb-1">
               BOOKSTORE NAME *
             </label>
             <input
@@ -276,12 +276,12 @@ export function BookstoreDetailEditor({
               placeholder="e.g. Gotham Book Mart"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-serif"
+              className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-mono text-ink-light mb-1">
+            <label className="block text-xs font-mono text-stone-600 mb-1">
               PRIMARY CITY *
             </label>
             <input
@@ -290,12 +290,12 @@ export function BookstoreDetailEditor({
               placeholder="e.g. New York"
               value={formData.city}
               onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-              className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-serif"
+              className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-mono text-ink-light mb-1">
+            <label className="block text-xs font-mono text-stone-600 mb-1">
               STATE / PROVINCE
             </label>
             <input
@@ -303,12 +303,12 @@ export function BookstoreDetailEditor({
               placeholder="e.g. NY or Île-de-France"
               value={formData.stateProvince}
               onChange={(e) => setFormData({ ...formData, stateProvince: e.target.value })}
-              className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-serif"
+              className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-mono text-ink-light mb-1">
+            <label className="block text-xs font-mono text-stone-600 mb-1">
               COUNTRY *
             </label>
             <input
@@ -318,7 +318,7 @@ export function BookstoreDetailEditor({
               placeholder="e.g. United States, United Kingdom, France"
               value={formData.country}
               onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-              className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-serif"
+              className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif"
             />
             <datalist id="country-suggestions">
               <option value="United States" />
@@ -350,7 +350,7 @@ export function BookstoreDetailEditor({
           </div>
 
           <div>
-            <label className="block text-xs font-mono text-ink-light mb-1">
+            <label className="block text-xs font-mono text-stone-600 mb-1">
               YEAR OPENED (ESTABLISHED) *
             </label>
             <input
@@ -359,12 +359,12 @@ export function BookstoreDetailEditor({
               placeholder="e.g. 1920"
               value={formData.yearOpened}
               onChange={(e) => setFormData({ ...formData, yearOpened: e.target.value })}
-              className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-mono"
+              className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-mono"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-mono text-ink-light mb-1">
+            <label className="block text-xs font-mono text-stone-600 mb-1">
               YEAR CLOSED (LEAVE BLANK IF OPERATING)
             </label>
             <input
@@ -373,7 +373,7 @@ export function BookstoreDetailEditor({
               value={formData.yearClosed}
               disabled={formData.isStillOperating}
               onChange={(e) => setFormData({ ...formData, yearClosed: e.target.value })}
-              className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-mono disabled:opacity-50"
+              className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-mono disabled:opacity-50"
             />
           </div>
 
@@ -389,11 +389,11 @@ export function BookstoreDetailEditor({
                   yearClosed: e.target.checked ? "" : formData.yearClosed,
                 })
               }
-              className="w-4 h-4 rounded text-archival-oxblood border-parchment-border focus:ring-amber-700/30"
+              className="w-4 h-4 rounded text-[#10B981] border-[#E8E2D5] focus:ring-[#10B981]/30 cursor-pointer"
             />
             <label
               htmlFor="isStillOperatingStore"
-              className="text-xs font-serif font-semibold text-ink cursor-pointer"
+              className="text-xs font-serif font-semibold text-stone-900 cursor-pointer"
             >
               Bookstore is Still Operating Today
             </label>
@@ -402,14 +402,14 @@ export function BookstoreDetailEditor({
       </section>
 
       {/* 2. Multi-Location & Relocation History Manager */}
-      <section className="p-6 sm:p-8 rounded-2xl bg-white border border-parchment-border shadow-xs space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-parchment-border">
+      <section className="p-6 sm:p-8 rounded-2xl bg-white border border-[#E8E2D5] shadow-xs space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E8E2D5]">
           <div>
-            <h2 className="font-serif text-sm font-mono font-bold text-archival-oxblood uppercase tracking-wider flex items-center gap-2">
+            <h2 className="font-serif text-sm font-mono font-bold text-[#F43F7A] uppercase tracking-wider flex items-center gap-2">
               <Navigation className="w-4 h-4" />
               <span>2. Multi-Location &amp; Relocation History</span>
             </h2>
-            <p className="text-xs font-serif text-ink-muted italic pt-0.5">
+            <p className="text-xs font-serif text-stone-500 italic pt-0.5">
               Record physical addresses across time, tag sequence (1st, 2nd, 3rd location), mark relocations, or add concurrent branches.
             </p>
           </div>
@@ -420,9 +420,9 @@ export function BookstoreDetailEditor({
               variant="outline"
               size="sm"
               onClick={() => addLocation(false)}
-              className="text-xs font-serif flex items-center gap-1 bg-white"
+              className="text-xs font-serif flex items-center gap-1 bg-white border-[#E8E2D5]"
             >
-              <Plus className="w-3.5 h-3.5 text-archival-oxblood" />
+              <Plus className="w-3.5 h-3.5 text-[#F43F7A]" />
               <span>Add Relocation</span>
             </Button>
 
@@ -431,9 +431,9 @@ export function BookstoreDetailEditor({
               variant="outline"
               size="sm"
               onClick={() => addLocation(true)}
-              className="text-xs font-serif flex items-center gap-1 bg-amber-50/60 border-amber-300 text-ink"
+              className="text-xs font-serif flex items-center gap-1 bg-[#F59E0B]/10 border-[#F59E0B]/30 text-stone-900"
             >
-              <Plus className="w-3.5 h-3.5 text-amber-700" />
+              <Plus className="w-3.5 h-3.5 text-[#F59E0B]" />
               <span>Add Concurrent Branch</span>
             </Button>
           </div>
@@ -444,11 +444,11 @@ export function BookstoreDetailEditor({
           {locations.map((loc, index) => (
             <div
               key={loc.id || `loc-${index}`}
-              className="p-5 rounded-xl border border-parchment-border bg-parchment/35 space-y-4 shadow-2xs"
+              className="p-5 rounded-xl border border-[#E8E2D5] bg-[#FAF8F5]/60 space-y-4 shadow-2xs"
             >
-              <div className="flex items-center justify-between border-b border-parchment-border pb-2">
+              <div className="flex items-center justify-between border-b border-[#E8E2D5] pb-2">
                 <div className="flex items-center gap-2.5">
-                  <span className="text-xs font-mono font-bold text-archival-oxblood">
+                  <span className="text-xs font-mono font-bold text-[#F43F7A]">
                     #{index + 1}
                   </span>
 
@@ -456,7 +456,7 @@ export function BookstoreDetailEditor({
                   <select
                     value={loc.label}
                     onChange={(e) => updateLocation(index, { label: e.target.value })}
-                    className="text-xs font-serif font-bold bg-white border border-parchment-border rounded px-2.5 py-1 text-ink focus:outline-none"
+                    className="text-xs font-serif font-bold bg-white border border-[#E8E2D5] rounded px-2.5 py-1 text-stone-900 focus:outline-none"
                   >
                     <option value="1st Location">1st Location (Original)</option>
                     <option value="2nd Location">2nd Location</option>
@@ -467,14 +467,14 @@ export function BookstoreDetailEditor({
                   </select>
 
                   {/* Moved Checkbox */}
-                  <label className="inline-flex items-center gap-1.5 text-xs font-serif text-ink-light cursor-pointer pl-2">
+                  <label className="inline-flex items-center gap-1.5 text-xs font-serif text-stone-600 cursor-pointer pl-2">
                     <input
                       type="checkbox"
                       checked={loc.isMovedFrom || false}
                       onChange={(e) => updateLocation(index, { isMovedFrom: e.target.checked })}
-                      className="w-3.5 h-3.5 rounded text-rose-700 border-parchment-border focus:ring-rose-700/30"
+                      className="w-3.5 h-3.5 rounded text-rose-700 border-[#E8E2D5] focus:ring-rose-700/30 cursor-pointer"
                     />
-                    <span className={loc.isMovedFrom ? "font-bold text-rose-800" : ""}>
+                    <span className={loc.isMovedFrom ? "font-bold text-rose-700" : ""}>
                       Relocated / Moved from this address
                     </span>
                   </label>
@@ -484,7 +484,7 @@ export function BookstoreDetailEditor({
                   <button
                     type="button"
                     onClick={() => removeLocation(index)}
-                    className="text-ink-muted hover:text-rose-700 transition-colors p-1"
+                    className="text-stone-400 hover:text-rose-700 transition-colors p-1 cursor-pointer"
                     title="Remove Location"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -494,7 +494,7 @@ export function BookstoreDetailEditor({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 <div className="sm:col-span-2">
-                  <label className="block text-[11px] font-mono text-ink-light mb-1">
+                  <label className="block text-[11px] font-mono text-stone-600 mb-1">
                     STREET ADDRESS *
                   </label>
                   <input
@@ -503,12 +503,12 @@ export function BookstoreDetailEditor({
                     placeholder="e.g. 123 Fake Street or 41 West 47th Street"
                     value={loc.streetAddress}
                     onChange={(e) => updateLocation(index, { streetAddress: e.target.value })}
-                    className="w-full px-3 py-1.5 text-xs bg-white border border-parchment-border rounded-lg text-ink focus:outline-none font-serif"
+                    className="w-full px-3 py-1.5 text-xs bg-white border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none font-serif"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-mono text-ink-light mb-1">
+                  <label className="block text-[11px] font-mono text-stone-600 mb-1">
                     YEARS ACTIVE AT THIS ADDRESS
                   </label>
                   <input
@@ -516,12 +516,12 @@ export function BookstoreDetailEditor({
                     placeholder="e.g. 1950–1955"
                     value={loc.yearsActive || ""}
                     onChange={(e) => updateLocation(index, { yearsActive: e.target.value })}
-                    className="w-full px-3 py-1.5 text-xs bg-white border border-parchment-border rounded-lg text-ink focus:outline-none font-mono"
+                    className="w-full px-3 py-1.5 text-xs bg-white border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none font-mono"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-mono text-ink-light mb-1">
+                  <label className="block text-[11px] font-mono text-stone-600 mb-1">
                     CITY
                   </label>
                   <input
@@ -529,12 +529,12 @@ export function BookstoreDetailEditor({
                     placeholder="e.g. New York"
                     value={loc.city || formData.city}
                     onChange={(e) => updateLocation(index, { city: e.target.value })}
-                    className="w-full px-3 py-1.5 text-xs bg-white border border-parchment-border rounded-lg text-ink focus:outline-none font-serif"
+                    className="w-full px-3 py-1.5 text-xs bg-white border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none font-serif"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-mono text-ink-light mb-1">
+                  <label className="block text-[11px] font-mono text-stone-600 mb-1">
                     STATE / PROVINCE
                   </label>
                   <input
@@ -542,12 +542,12 @@ export function BookstoreDetailEditor({
                     placeholder="e.g. NY"
                     value={loc.stateProvince || formData.stateProvince}
                     onChange={(e) => updateLocation(index, { stateProvince: e.target.value })}
-                    className="w-full px-3 py-1.5 text-xs bg-white border border-parchment-border rounded-lg text-ink focus:outline-none font-serif"
+                    className="w-full px-3 py-1.5 text-xs bg-white border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none font-serif"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-mono text-ink-light mb-1">
+                  <label className="block text-[11px] font-mono text-stone-600 mb-1">
                     COUNTRY
                   </label>
                   <input
@@ -555,7 +555,7 @@ export function BookstoreDetailEditor({
                     placeholder="e.g. United States"
                     value={loc.country || formData.country}
                     onChange={(e) => updateLocation(index, { country: e.target.value })}
-                    className="w-full px-3 py-1.5 text-xs bg-white border border-parchment-border rounded-lg text-ink focus:outline-none font-serif"
+                    className="w-full px-3 py-1.5 text-xs bg-white border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none font-serif"
                   />
                 </div>
               </div>
@@ -565,9 +565,9 @@ export function BookstoreDetailEditor({
       </section>
 
       {/* 3. Archival Photos, Storefront Hero & Press Clippings */}
-      <section className="p-6 sm:p-8 rounded-2xl bg-white border border-parchment-border shadow-xs space-y-6">
-        <div className="flex items-center gap-2 pb-3 border-b border-parchment-border text-sm font-mono font-bold text-archival-oxblood uppercase tracking-wider">
-          <Sparkles className="w-4 h-4" />
+      <section className="p-6 sm:p-8 rounded-2xl bg-white border border-[#E8E2D5] shadow-xs space-y-6">
+        <div className="flex items-center gap-2 pb-3 border-b border-[#E8E2D5] text-sm font-mono font-bold text-[#F43F7A] uppercase tracking-wider">
+          <Sparkles className="w-4 h-4 text-[#F59E0B]" />
           <span>3. Storefront Imagery &amp; Archival Press Media</span>
         </div>
 
@@ -578,36 +578,36 @@ export function BookstoreDetailEditor({
       </section>
 
       {/* 4. Historical Dossier Blurb & Curatorial Lore */}
-      <section className="p-6 sm:p-8 rounded-2xl bg-white border border-parchment-border shadow-xs space-y-6">
-        <div className="flex items-center justify-between pb-3 border-b border-parchment-border">
-          <div className="flex items-center gap-2 text-sm font-mono font-bold text-archival-oxblood uppercase tracking-wider">
+      <section className="p-6 sm:p-8 rounded-2xl bg-white border border-[#E8E2D5] shadow-xs space-y-6">
+        <div className="flex items-center justify-between pb-3 border-b border-[#E8E2D5]">
+          <div className="flex items-center gap-2 text-sm font-mono font-bold text-[#F43F7A] uppercase tracking-wider">
             <FileText className="w-4 h-4" />
             <span>4. Historical Narrative &amp; Cultural Lore</span>
           </div>
 
-          <div className="inline-flex rounded-lg border border-parchment-border p-0.5 bg-parchment-muted text-xs font-serif">
+          <div className="inline-flex rounded-lg border border-[#E8E2D5] p-0.5 bg-[#FAF8F5] text-xs font-serif">
             <button
               type="button"
               onClick={() => setBlurbTab("edit")}
-              className={`px-3 py-1 rounded-md flex items-center gap-1.5 transition-all ${
+              className={`px-3 py-1 rounded-md flex items-center gap-1.5 transition-all cursor-pointer ${
                 blurbTab === "edit"
-                  ? "bg-white text-ink font-semibold shadow-xs"
-                  : "text-ink-muted hover:text-ink"
+                  ? "bg-white text-stone-900 font-semibold shadow-xs border border-[#E8E2D5]"
+                  : "text-stone-500 hover:text-stone-900"
               }`}
             >
-              <Edit3 className="w-3.5 h-3.5" />
+              <Edit3 className="w-3.5 h-3.5 text-[#2563EB]" />
               <span>Edit Markdown</span>
             </button>
             <button
               type="button"
               onClick={() => setBlurbTab("preview")}
-              className={`px-3 py-1 rounded-md flex items-center gap-1.5 transition-all ${
+              className={`px-3 py-1 rounded-md flex items-center gap-1.5 transition-all cursor-pointer ${
                 blurbTab === "preview"
-                  ? "bg-white text-ink font-semibold shadow-xs"
-                  : "text-ink-muted hover:text-ink"
+                  ? "bg-white text-stone-900 font-semibold shadow-xs border border-[#E8E2D5]"
+                  : "text-stone-500 hover:text-stone-900"
               }`}
             >
-              <Eye className="w-3.5 h-3.5" />
+              <Eye className="w-3.5 h-3.5 text-[#F59E0B]" />
               <span>Live Preview</span>
             </button>
           </div>
@@ -620,12 +620,12 @@ export function BookstoreDetailEditor({
               required
               value={formData.historicalBlurb}
               onChange={(e) => setFormData({ ...formData, historicalBlurb: e.target.value })}
-              className="w-full px-4 py-3 text-sm bg-parchment-light border border-parchment-border rounded-xl text-ink font-mono focus:outline-none"
+              className="w-full px-4 py-3 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-xl text-stone-900 font-mono focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 leading-relaxed"
             />
           </div>
         ) : (
           <div
-            className="p-6 rounded-xl bg-parchment-light border border-parchment-border font-serif text-sm text-ink leading-relaxed prose prose-stone max-w-none"
+            className="p-6 rounded-xl bg-[#FAF8F5] border border-[#E8E2D5] font-serif text-sm text-stone-900 leading-relaxed prose prose-stone max-w-none"
             dangerouslySetInnerHTML={{
               __html: marked.parse(formData.historicalBlurb || "") as string,
             }}
@@ -634,7 +634,7 @@ export function BookstoreDetailEditor({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
           <div>
-            <label className="block text-xs font-mono text-ink-light mb-1">
+            <label className="block text-xs font-mono text-stone-600 mb-1">
               FOUNDERS &amp; PROPRIETORS
             </label>
             <input
@@ -642,12 +642,12 @@ export function BookstoreDetailEditor({
               placeholder="e.g. Frances Steloff"
               value={formData.founders}
               onChange={(e) => setFormData({ ...formData, founders: e.target.value })}
-              className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-serif"
+              className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-mono text-ink-light mb-1">
+            <label className="block text-xs font-mono text-stone-600 mb-1">
               OFFICIAL WEBSITE OR ARCHIVE LINK
             </label>
             <input
@@ -655,12 +655,12 @@ export function BookstoreDetailEditor({
               placeholder="https://..."
               value={formData.websiteUrl}
               onChange={(e) => setFormData({ ...formData, websiteUrl: e.target.value })}
-              className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-serif"
+              className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-mono text-ink-light mb-1">
+            <label className="block text-xs font-mono text-stone-600 mb-1">
               SPECIALTIES (COMMA SEPARATED)
             </label>
             <input
@@ -668,12 +668,12 @@ export function BookstoreDetailEditor({
               placeholder="e.g. Modernist Poetry, Radical Literature, Small Press"
               value={formData.specialties}
               onChange={(e) => setFormData({ ...formData, specialties: e.target.value })}
-              className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-serif"
+              className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-mono text-ink-light mb-1">
+            <label className="block text-xs font-mono text-stone-600 mb-1">
               NOTABLE PATRONS &amp; TRIVIA (ONE PER LINE)
             </label>
             <textarea
@@ -683,7 +683,7 @@ export function BookstoreDetailEditor({
               onChange={(e) =>
                 setFormData({ ...formData, notablePatronsTrivia: e.target.value })
               }
-              className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-serif"
+              className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif"
             />
           </div>
         </div>

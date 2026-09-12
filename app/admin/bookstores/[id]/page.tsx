@@ -21,7 +21,7 @@ export default async function EditBookstorePage({
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FBF9F5]">
+    <div className="min-h-screen flex flex-col bg-[#FAF8F5]">
       <Header />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">

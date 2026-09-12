@@ -261,7 +261,7 @@ export function BookstoreHorizontalTimeline({
     `${bookstore.city}, ${bookstore.country}`;
 
   return (
-    <div className="p-6 sm:p-8 rounded-2xl bg-white border border-parchment-border shadow-xs overflow-hidden">
+    <div className="p-6 sm:p-8 rounded-2xl bg-white border border-[#E8E2D5] shadow-xs overflow-hidden">
       <div className="overflow-x-auto pb-4 pt-2">
         <div className="min-w-[760px] flex items-center gap-6 py-6 px-4">
           {/* Left Anchor: Grand Opening Stamp */}
@@ -270,25 +270,25 @@ export function BookstoreHorizontalTimeline({
               type="button"
               onClick={() => onSelectMedia(storefrontMedia)}
               title="Click to view storefront photo & clipping"
-              className="shrink-0 group flex flex-col items-center justify-center text-center p-4 rounded-xl border-2 border-dashed border-stone-800 hover:border-archival-oxblood bg-[#FAF7F0] hover:bg-amber-50/70 shadow-xs hover:shadow-md rotate-[-2.5deg] hover:rotate-0 transition-all duration-200 cursor-pointer max-w-[185px]"
+              className="shrink-0 group flex flex-col items-center justify-center text-center p-4 rounded-xl border-2 border-dashed border-stone-800 hover:border-[#F43F7A] bg-[#FAF8F5] hover:bg-rose-50/50 shadow-xs hover:shadow-md rotate-[-2.5deg] hover:rotate-0 transition-all duration-200 cursor-pointer max-w-[185px]"
             >
-              <div className="font-serif font-black text-xs sm:text-sm tracking-wider uppercase text-archival-oxblood group-hover:text-rose-900 border-b border-stone-400 group-hover:border-archival-oxblood pb-1 w-full flex items-center justify-center gap-1">
+              <div className="font-serif font-black text-xs sm:text-sm tracking-wider uppercase text-[#F43F7A] group-hover:text-[#E11D48] border-b border-stone-400 group-hover:border-[#F43F7A] pb-1 w-full flex items-center justify-center gap-1">
                 <span>GRAND OPENING!</span>
               </div>
-              <div className="font-serif font-bold text-2xl text-stone-900 group-hover:text-archival-oxblood mt-1">
+              <div className="font-serif font-bold text-2xl text-stone-900 group-hover:text-[#F43F7A] mt-1">
                 {bookstore.yearOpened}
               </div>
               <p className="font-serif text-[11px] text-stone-700 leading-tight mt-1 line-clamp-2">
                 {grandOpeningAddress}
               </p>
-              <span className="inline-flex items-center gap-1 text-[10px] font-mono text-archival-oxblood font-bold mt-2 pt-1 border-t border-stone-300 w-full justify-center group-hover:underline">
+              <span className="inline-flex items-center gap-1 text-[10px] font-mono text-[#F43F7A] font-bold mt-2 pt-1 border-t border-stone-300 w-full justify-center group-hover:underline">
                 <Camera className="w-3 h-3" />
                 <span>View Photo ↗</span>
               </span>
             </button>
           ) : (
-            <div className="shrink-0 flex flex-col items-center justify-center text-center p-4 rounded-xl border-2 border-dashed border-stone-800 bg-[#FAF7F0] shadow-xs rotate-[-2.5deg] max-w-[175px]">
-              <div className="font-serif font-black text-xs sm:text-sm tracking-wider uppercase text-archival-oxblood border-b border-stone-400 pb-1 w-full">
+            <div className="shrink-0 flex flex-col items-center justify-center text-center p-4 rounded-xl border-2 border-dashed border-stone-800 bg-[#FAF8F5] shadow-xs rotate-[-2.5deg] max-w-[175px]">
+              <div className="font-serif font-black text-xs sm:text-sm tracking-wider uppercase text-[#F43F7A] border-b border-stone-400 pb-1 w-full">
                 GRAND OPENING!
               </div>
               <div className="font-serif font-bold text-2xl text-stone-900 mt-1">
@@ -330,7 +330,7 @@ export function BookstoreHorizontalTimeline({
                                 <button
                                   type="button"
                                   onClick={() => onEditEvent(ev)}
-                                  className="p-1 rounded bg-stone-100 hover:bg-stone-200 text-stone-700 hover:text-archival-oxblood transition-colors cursor-pointer"
+                                  className="p-1 rounded bg-stone-100 hover:bg-stone-200 text-stone-700 hover:text-[#F43F7A] transition-colors cursor-pointer"
                                   title="Edit Event"
                                 >
                                   <Pencil className="w-2.5 h-2.5" />
@@ -340,7 +340,7 @@ export function BookstoreHorizontalTimeline({
                                 <button
                                   type="button"
                                   onClick={() => onDeleteEvent(ev.id)}
-                                  className="p-1 rounded bg-stone-100 hover:bg-rose-100 text-stone-700 hover:text-rose-700 transition-colors cursor-pointer"
+                                  className="p-1 rounded bg-stone-100 hover:bg-rose-100 text-stone-700 hover:text-[#F43F7A] transition-colors cursor-pointer"
                                   title="Delete Event"
                                 >
                                   <Trash2 className="w-2.5 h-2.5" />
@@ -355,10 +355,10 @@ export function BookstoreHorizontalTimeline({
                             title={`Click to view clipping/photo: ${ev.description || ev.label}`}
                             className="group flex flex-col items-center cursor-pointer focus:outline-none"
                           >
-                            <p className="font-serif text-[11px] text-stone-900 group-hover:text-archival-oxblood font-bold leading-tight line-clamp-2 group-hover:underline transition-colors">
+                            <p className="font-serif text-[11px] text-stone-900 group-hover:text-[#F43F7A] font-bold leading-tight line-clamp-2 group-hover:underline transition-colors">
                               {ev.description || ev.label}
                             </p>
-                            <span className="inline-flex items-center gap-0.5 text-[9px] font-mono text-archival-oxblood mt-0.5 opacity-80 group-hover:opacity-100 font-semibold">
+                            <span className="inline-flex items-center gap-0.5 text-[9px] font-mono text-[#F43F7A] mt-0.5 opacity-80 group-hover:opacity-100 font-semibold">
                               {ev.media?.mediaType === "newspaper" ? (
                                 <>
                                   <Newspaper className="w-2.5 h-2.5" />
@@ -393,8 +393,8 @@ export function BookstoreHorizontalTimeline({
                           title="Click to edit milestone"
                           className="group focus:outline-none flex flex-col items-center cursor-pointer"
                         >
-                          <div className="w-4 h-4 rounded-full bg-stone-900 group-hover:bg-archival-oxblood group-hover:scale-125 border-2 border-white shadow-xs transition-transform duration-150" />
-                          <span className="font-serif font-bold text-xs text-stone-900 group-hover:text-archival-oxblood mt-1 tracking-tight underline transition-colors">
+                          <div className="w-4 h-4 rounded-full bg-stone-900 group-hover:bg-[#F43F7A] group-hover:scale-125 border-2 border-white shadow-xs transition-transform duration-150" />
+                          <span className="font-serif font-bold text-xs text-stone-900 group-hover:text-[#F43F7A] mt-1 tracking-tight underline transition-colors">
                             {ev.year}
                           </span>
                         </button>
@@ -405,8 +405,8 @@ export function BookstoreHorizontalTimeline({
                           title="View attached archival clipping/photo"
                           className="group focus:outline-none flex flex-col items-center cursor-pointer"
                         >
-                          <div className="w-4 h-4 rounded-full bg-stone-900 group-hover:bg-archival-oxblood group-hover:scale-125 border-2 border-white shadow-xs transition-transform duration-150" />
-                          <span className="font-serif font-bold text-xs text-stone-900 group-hover:text-archival-oxblood mt-1 tracking-tight group-hover:underline transition-colors">
+                          <div className="w-4 h-4 rounded-full bg-stone-900 group-hover:bg-[#F43F7A] group-hover:scale-125 border-2 border-white shadow-xs transition-transform duration-150" />
+                          <span className="font-serif font-bold text-xs text-stone-900 group-hover:text-[#F43F7A] mt-1 tracking-tight group-hover:underline transition-colors">
                             {ev.year}
                           </span>
                         </button>
@@ -435,7 +435,7 @@ export function BookstoreHorizontalTimeline({
                                 <button
                                   type="button"
                                   onClick={() => onEditEvent(ev)}
-                                  className="p-1 rounded bg-stone-100 hover:bg-stone-200 text-stone-700 hover:text-archival-oxblood transition-colors cursor-pointer"
+                                  className="p-1 rounded bg-stone-100 hover:bg-stone-200 text-stone-700 hover:text-[#F43F7A] transition-colors cursor-pointer"
                                   title="Edit Event"
                                 >
                                   <Pencil className="w-2.5 h-2.5" />
@@ -460,10 +460,10 @@ export function BookstoreHorizontalTimeline({
                             title={`Click to view clipping/photo: ${ev.description || ev.label}`}
                             className="group flex flex-col items-center cursor-pointer focus:outline-none"
                           >
-                            <p className="font-serif text-[11px] text-stone-900 group-hover:text-archival-oxblood font-bold leading-tight line-clamp-2 group-hover:underline transition-colors">
+                            <p className="font-serif text-[11px] text-stone-900 group-hover:text-[#F43F7A] font-bold leading-tight line-clamp-2 group-hover:underline transition-colors">
                               {ev.description || ev.label}
                             </p>
-                            <span className="inline-flex items-center gap-0.5 text-[9px] font-mono text-archival-oxblood mt-0.5 opacity-80 group-hover:opacity-100 font-semibold">
+                            <span className="inline-flex items-center gap-0.5 text-[9px] font-mono text-[#F43F7A] mt-0.5 opacity-80 group-hover:opacity-100 font-semibold">
                               {ev.media?.mediaType === "newspaper" ? (
                                 <>
                                   <Newspaper className="w-2.5 h-2.5" />

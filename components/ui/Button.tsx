@@ -16,16 +16,16 @@ export function Button({
 }: ButtonProps) {
   const variantStyles = {
     primary:
-      "bg-ink text-parchment-light hover:bg-ink-light shadow-sm active:translate-y-0.5 border border-ink",
+      "bg-stone-900 text-white hover:bg-stone-800 shadow-xs active:translate-y-0.5 border border-stone-900",
     secondary:
-      "bg-parchment-muted text-ink hover:bg-parchment-dark border border-parchment-border shadow-sm active:translate-y-0.5",
+      "bg-white text-stone-800 hover:bg-[#FAF8F5] border border-[#E8E2D5] shadow-xs active:translate-y-0.5",
     outline:
-      "bg-white/80 backdrop-blur-sm text-ink border border-parchment-border hover:bg-parchment-muted hover:border-ink-muted shadow-sm",
-    ghost: "bg-transparent text-ink hover:bg-parchment-muted",
+      "bg-white text-stone-700 border border-[#E8E2D5] hover:border-[#2563EB] hover:text-[#2563EB] shadow-xs",
+    ghost: "bg-transparent text-stone-700 hover:bg-stone-100 hover:text-stone-900",
     oxblood:
-      "bg-archival-oxblood text-white hover:bg-rose-950 border border-archival-oxblood shadow-sm active:translate-y-0.5",
+      "bg-[#F43F7A] text-white hover:bg-[#E11D48] border border-[#F43F7A] shadow-xs active:translate-y-0.5",
     spruce:
-      "bg-archival-spruce text-white hover:bg-emerald-950 border border-archival-spruce shadow-sm active:translate-y-0.5",
+      "bg-[#10B981] text-white hover:bg-[#059669] border border-[#10B981] shadow-xs active:translate-y-0.5",
   };
 
   const sizeStyles = {

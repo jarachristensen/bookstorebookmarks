@@ -170,10 +170,10 @@ export function BookmarkInspector({
                         sizes="(max-width: 640px) 300px, 760px"
                       />
                     ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center p-4 sm:p-6 text-center text-ink-muted bg-[#F5EFE6] rounded-[6px] border border-parchment-border shadow-inner">
-                        <Layers className="w-6 h-6 sm:w-8 sm:h-8 opacity-40 mb-1.5 sm:mb-2 text-archival-oxblood" />
-                        <p className="font-serif italic text-xs sm:text-sm text-ink">Blank Verso (Plain Back)</p>
-                        <p className="text-[11px] text-ink-muted mt-1 font-serif hidden xs:block">Original blank paper stock without advertising imprint.</p>
+                      <div className="w-full h-full flex flex-col items-center justify-center p-4 sm:p-6 text-center text-stone-500 bg-[#FAF8F5] rounded-[6px] border border-[#E8E2D5] shadow-inner">
+                        <Layers className="w-6 h-6 sm:w-8 sm:h-8 opacity-40 mb-1.5 sm:mb-2 text-[#F43F7A]" />
+                        <p className="font-serif italic text-xs sm:text-sm text-stone-800">Blank Verso (Plain Back)</p>
+                        <p className="text-[11px] text-stone-500 mt-1 font-serif hidden xs:block">Original blank paper stock without advertising imprint.</p>
                       </div>
                     )}
                     <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 px-1.5 py-0.5 rounded bg-black/65 backdrop-blur-xs text-[9px] sm:text-[10px] font-mono text-white shadow-sm z-20">
@@ -190,32 +190,32 @@ export function BookmarkInspector({
                 variant="outline"
                 size="sm"
                 onClick={() => setIsFlipped(!isFlipped)}
-                className="flex items-center gap-2 font-serif text-xs bg-white py-1.5 px-3"
+                className="flex items-center gap-2 font-serif text-xs bg-white py-1.5 px-3 border-[#E8E2D5]"
               >
-                <RotateCw className="w-3.5 h-3.5 text-archival-amber transition-transform group-hover:rotate-180" />
+                <RotateCw className="w-3.5 h-3.5 text-[#F59E0B] transition-transform group-hover:rotate-180" />
                 <span>{isFlipped ? "Flip to Recto (Front)" : "Flip to Verso (Back)"}</span>
               </Button>
-              <span className="text-[11px] font-mono text-ink-muted hidden xs:inline">
+              <span className="text-[11px] font-mono text-stone-500 hidden xs:inline">
                 (or tap bookmark)
               </span>
             </div>
           </div>
 
           {/* Divider */}
-          <hr className="border-parchment-border" />
+          <hr className="border-[#E8E2D5]" />
 
           {/* Bottom: Information Grid */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
             {/* Left Sub-Column: Title, Bookstore, and Provenance */}
             <div className="md:col-span-5 space-y-2.5 text-center md:text-left">
-              <h2 className="font-serif text-xl sm:text-2xl font-bold text-ink tracking-tight">
+              <h2 className="font-serif text-xl sm:text-2xl font-bold text-stone-900 tracking-tight">
                 {bookmark.title}
               </h2>
               {store && (
                 <Link
                   href={`/bookstores/${store.id}`}
                   onClick={onClose}
-                  className="inline-flex items-center gap-1.5 font-serif text-xs sm:text-sm text-archival-oxblood hover:underline font-semibold"
+                  className="inline-flex items-center gap-1.5 font-serif text-xs sm:text-sm text-[#F43F7A] hover:underline font-semibold"
                 >
                   <span>{store.name}</span>
                   <span>·</span>
@@ -223,8 +223,8 @@ export function BookmarkInspector({
                 </Link>
               )}
               {bookmark.acquisitionNotes && (
-                <div className="pt-2 text-xs font-serif text-ink-light bg-white/70 p-3 rounded-lg border border-parchment-border/60 text-left">
-                  <span className="text-ink-muted block text-[10px] font-mono mb-0.5 uppercase tracking-wider">
+                <div className="pt-2 text-xs font-serif text-stone-600 bg-white/70 p-3 rounded-lg border border-[#E8E2D5] text-left">
+                  <span className="text-stone-500 block text-[10px] font-mono mb-0.5 uppercase tracking-wider">
                     Curator's Provenance
                   </span>
                   <p className="italic">"{bookmark.acquisitionNotes}"</p>
@@ -234,28 +234,28 @@ export function BookmarkInspector({
 
             {/* Right Sub-Column: Physical Specimen Specifications Card & View Bookstore Page Button */}
             <div className="md:col-span-7 space-y-4">
-              <div className="bg-white/80 p-4 sm:p-5 rounded-xl border border-parchment-border shadow-xs space-y-2.5 sm:space-y-3">
-                <h4 className="font-mono text-[11px] sm:text-xs font-bold text-archival-amber uppercase tracking-wider flex items-center gap-1.5">
+              <div className="bg-white/80 p-4 sm:p-5 rounded-xl border border-[#E8E2D5] shadow-xs space-y-2.5 sm:space-y-3">
+                <h4 className="font-mono text-[11px] sm:text-xs font-bold text-[#F59E0B] uppercase tracking-wider flex items-center gap-1.5">
                   <Layers className="w-3.5 h-3.5" />
                   <span>Physical Specimen Specifications</span>
                 </h4>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-y-2 sm:gap-y-3 gap-x-3 sm:gap-x-4 text-xs font-serif pt-1">
                   <div>
-                    <span className="text-ink-muted block text-[10px] sm:text-[11px] font-mono">DIMENSIONS</span>
-                    <span className="font-bold text-ink">{bookmark.dimensions}</span>
+                    <span className="text-stone-500 block text-[10px] sm:text-[11px] font-mono">DIMENSIONS</span>
+                    <span className="font-bold text-stone-900">{bookmark.dimensions}</span>
                   </div>
                   <div>
-                    <span className="text-ink-muted block text-[10px] sm:text-[11px] font-mono">MATERIAL</span>
-                    <span className="font-bold text-ink">{bookmark.material}</span>
+                    <span className="text-stone-500 block text-[10px] sm:text-[11px] font-mono">MATERIAL</span>
+                    <span className="font-bold text-stone-900">{bookmark.material}</span>
                   </div>
                   <div>
-                    <span className="text-ink-muted block text-[10px] sm:text-[11px] font-mono">CONDITION</span>
-                    <span className="font-bold text-ink">{bookmark.condition}</span>
+                    <span className="text-stone-500 block text-[10px] sm:text-[11px] font-mono">CONDITION</span>
+                    <span className="font-bold text-stone-900">{bookmark.condition}</span>
                   </div>
                   <div>
-                    <span className="text-ink-muted block text-[10px] sm:text-[11px] font-mono">ESTIMATED ERA</span>
-                    <span className="font-bold text-ink">
+                    <span className="text-stone-500 block text-[10px] sm:text-[11px] font-mono">ESTIMATED ERA</span>
+                    <span className="font-bold text-stone-900">
                       {bookmark.yearProduced ? `c. ${bookmark.yearProduced}` : "Mid 20th Century"}
                     </span>
                   </div>
@@ -352,10 +352,10 @@ export function BookmarkInspector({
                         sizes="(max-width: 640px) 240px, 400px"
                       />
                     ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center p-4 sm:p-6 text-center text-ink-muted bg-[#F5EFE6] rounded-[6px] border border-parchment-border shadow-inner">
-                        <Layers className="w-6 h-6 sm:w-8 sm:h-8 opacity-40 mb-1.5 sm:mb-2 text-archival-oxblood" />
-                        <p className="font-serif italic text-xs sm:text-sm text-ink">Blank Verso (Plain Back)</p>
-                        <p className="text-[11px] text-ink-muted mt-1 font-serif hidden xs:block">Original blank paper stock without advertising imprint.</p>
+                      <div className="w-full h-full flex flex-col items-center justify-center p-4 sm:p-6 text-center text-stone-500 bg-[#FAF8F5] rounded-[6px] border border-[#E8E2D5] shadow-inner">
+                        <Layers className="w-6 h-6 sm:w-8 sm:h-8 opacity-40 mb-1.5 sm:mb-2 text-[#F43F7A]" />
+                        <p className="font-serif italic text-xs sm:text-sm text-stone-800">Blank Verso (Plain Back)</p>
+                        <p className="text-[11px] text-stone-500 mt-1 font-serif hidden xs:block">Original blank paper stock without advertising imprint.</p>
                       </div>
                     )}
                     <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 px-1.5 py-0.5 rounded bg-black/65 backdrop-blur-xs text-[9px] sm:text-[10px] font-mono text-white shadow-sm z-20">
@@ -372,12 +372,12 @@ export function BookmarkInspector({
                 variant="outline"
                 size="sm"
                 onClick={() => setIsFlipped(!isFlipped)}
-                className="flex items-center gap-2 font-serif text-xs bg-white py-1.5 px-3"
+                className="flex items-center gap-2 font-serif text-xs bg-white py-1.5 px-3 border-[#E8E2D5]"
               >
-                <RotateCw className="w-3.5 h-3.5 text-archival-amber transition-transform group-hover:rotate-180" />
+                <RotateCw className="w-3.5 h-3.5 text-[#F59E0B] transition-transform group-hover:rotate-180" />
                 <span>{isFlipped ? "Flip to Recto (Front)" : "Flip to Verso (Back)"}</span>
               </Button>
-              <span className="text-[11px] font-mono text-ink-muted hidden xs:inline">
+              <span className="text-[11px] font-mono text-stone-500 hidden xs:inline">
                 (or tap paper)
               </span>
             </div>
@@ -386,14 +386,14 @@ export function BookmarkInspector({
           {/* Physical Specimen Details (Right Column) */}
           <div className="lg:col-span-5 space-y-4 sm:space-y-6">
             <div className="space-y-1 sm:space-y-2 text-center lg:text-left">
-              <h2 className="font-serif text-xl sm:text-2xl lg:text-3xl font-bold text-ink tracking-tight">
+              <h2 className="font-serif text-xl sm:text-2xl lg:text-3xl font-bold text-stone-900 tracking-tight">
                 {bookmark.title}
               </h2>
               {store && (
                 <Link
                   href={`/bookstores/${store.id}`}
                   onClick={onClose}
-                  className="inline-flex items-center gap-1.5 font-serif text-xs sm:text-sm text-archival-oxblood hover:underline font-semibold"
+                  className="inline-flex items-center gap-1.5 font-serif text-xs sm:text-sm text-[#F43F7A] hover:underline font-semibold"
                 >
                   <span>{store.name}</span>
                   <span>·</span>
@@ -403,36 +403,36 @@ export function BookmarkInspector({
             </div>
 
             {/* Physical Specimen Properties Card */}
-            <div className="bg-white/80 p-4 sm:p-5 rounded-xl border border-parchment-border shadow-xs space-y-2.5 sm:space-y-3">
-              <h4 className="font-mono text-[11px] sm:text-xs font-bold text-archival-amber uppercase tracking-wider flex items-center gap-1.5">
+            <div className="bg-white/80 p-4 sm:p-5 rounded-xl border border-[#E8E2D5] shadow-xs space-y-2.5 sm:space-y-3">
+              <h4 className="font-mono text-[11px] sm:text-xs font-bold text-[#F59E0B] uppercase tracking-wider flex items-center gap-1.5">
                 <Layers className="w-3.5 h-3.5" />
                 <span>Physical Specimen Specifications</span>
               </h4>
 
               <div className="grid grid-cols-2 gap-y-2 sm:gap-y-3 gap-x-3 sm:gap-x-4 text-xs font-serif pt-1">
                 <div>
-                  <span className="text-ink-muted block text-[10px] sm:text-[11px] font-mono">DIMENSIONS</span>
-                  <span className="font-bold text-ink">{bookmark.dimensions}</span>
+                  <span className="text-stone-500 block text-[10px] sm:text-[11px] font-mono">DIMENSIONS</span>
+                  <span className="font-bold text-stone-900">{bookmark.dimensions}</span>
                 </div>
                 <div>
-                  <span className="text-ink-muted block text-[10px] sm:text-[11px] font-mono">MATERIAL STOCK</span>
-                  <span className="font-bold text-ink">{bookmark.material}</span>
+                  <span className="text-stone-500 block text-[10px] sm:text-[11px] font-mono">MATERIAL STOCK</span>
+                  <span className="font-bold text-stone-900">{bookmark.material}</span>
                 </div>
                 <div>
-                  <span className="text-ink-muted block text-[10px] sm:text-[11px] font-mono">CONDITION</span>
-                  <span className="font-bold text-ink">{bookmark.condition}</span>
+                  <span className="text-stone-500 block text-[10px] sm:text-[11px] font-mono">CONDITION</span>
+                  <span className="font-bold text-stone-900">{bookmark.condition}</span>
                 </div>
                 <div>
-                  <span className="text-ink-muted block text-[10px] sm:text-[11px] font-mono">ESTIMATED ERA</span>
-                  <span className="font-bold text-ink">
+                  <span className="text-stone-500 block text-[10px] sm:text-[11px] font-mono">ESTIMATED ERA</span>
+                  <span className="font-bold text-stone-900">
                     {bookmark.yearProduced ? `c. ${bookmark.yearProduced}` : "Mid 20th Century"}
                   </span>
                 </div>
               </div>
 
               {bookmark.acquisitionNotes && (
-                <div className="pt-2 sm:pt-3 border-t border-parchment-border/60 text-xs font-serif text-ink-light">
-                  <span className="text-ink-muted block text-[10px] sm:text-[11px] font-mono mb-0.5">
+                <div className="pt-2 sm:pt-3 border-t border-[#E8E2D5] text-xs font-serif text-stone-600">
+                  <span className="text-stone-500 block text-[10px] sm:text-[11px] font-mono mb-0.5">
                     CURATOR'S PROVENANCE
                   </span>
                   <p className="italic">"{bookmark.acquisitionNotes}"</p>

@@ -30,23 +30,23 @@ export function ClippingLightbox({ media, onClose }: ClippingLightboxProps) {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="relative w-full max-w-5xl max-h-[90vh] bg-[#FBF9F5] border border-parchment-border rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+        className="relative w-full max-w-5xl max-h-[90vh] bg-[#FAF8F5] border border-[#E8E2D5] rounded-2xl shadow-2xl overflow-hidden flex flex-col"
       >
         {/* Header Bar */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-parchment-border bg-parchment-muted/80">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#E8E2D5] bg-white">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-white border border-parchment-border text-archival-oxblood shadow-xs">
+            <div className="p-2 rounded-lg bg-[#FAF8F5] border border-[#E8E2D5] text-[#F43F7A] shadow-xs">
               <Newspaper className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-serif text-lg font-bold text-ink">{media.caption}</h3>
-              <div className="flex items-center gap-3 text-xs text-ink-muted">
+              <h3 className="font-serif text-lg font-bold text-stone-900">{media.caption}</h3>
+              <div className="flex items-center gap-3 text-xs text-stone-600">
                 {media.sourcePublication && (
-                  <span className="font-medium text-ink">{media.sourcePublication}</span>
+                  <span className="font-medium text-stone-900">{media.sourcePublication}</span>
                 )}
                 {media.publicationDate && (
                   <span className="flex items-center gap-1 font-mono">
-                    <Calendar className="w-3 h-3 text-archival-amber" />
+                    <Calendar className="w-3 h-3 text-[#2563EB]" />
                     <span>{media.publicationDate}</span>
                   </span>
                 )}
@@ -72,7 +72,7 @@ export function ClippingLightbox({ media, onClose }: ClippingLightboxProps) {
                 onClick={() => setShowTranscription(!showTranscription)}
                 className="text-xs flex items-center gap-1"
               >
-                <FileText className="w-3.5 h-3.5 text-archival-oxblood" />
+                <FileText className="w-3.5 h-3.5 text-[#F43F7A]" />
                 <span>Transcription</span>
               </Button>
             )}
@@ -80,7 +80,7 @@ export function ClippingLightbox({ media, onClose }: ClippingLightboxProps) {
             <button
               onClick={onClose}
               aria-label="Close Lightbox"
-              className="p-2 rounded-full hover:bg-parchment-dark text-ink-muted hover:text-ink transition-colors cursor-pointer ml-2"
+              className="p-2 rounded-full hover:bg-stone-100 text-stone-500 hover:text-stone-900 transition-colors cursor-pointer ml-2"
             >
               <X className="w-5 h-5" />
             </button>
@@ -98,7 +98,7 @@ export function ClippingLightbox({ media, onClose }: ClippingLightboxProps) {
             } flex flex-col items-center justify-center`}
           >
             <div
-              className={`relative w-full rounded-xl overflow-hidden bg-stone-900 border-2 border-parchment-border shadow-inner cursor-zoom-in transition-all ${
+              className={`relative w-full rounded-xl overflow-hidden bg-stone-900 border-2 border-[#E8E2D5] shadow-inner cursor-zoom-in transition-all ${
                 isZoomed ? "scale-110 sm:scale-125 my-8" : ""
               }`}
               onClick={() => setIsZoomed(!isZoomed)}
@@ -114,24 +114,24 @@ export function ClippingLightbox({ media, onClose }: ClippingLightboxProps) {
                 />
               </div>
             </div>
-            <p className="mt-2 text-center text-xs font-mono text-ink-muted">
+            <p className="mt-2 text-center text-xs font-mono text-stone-500">
               {isZoomed ? "Click image again to zoom out" : "Click image to examine print details"}
             </p>
           </div>
 
           {/* Transcription & Research Sidebar */}
           {showTranscription && media.transcriptionText && (
-            <div className="lg:col-span-5 bg-white/80 p-5 rounded-xl border border-parchment-border shadow-sm space-y-4">
-              <div className="flex items-center gap-2 pb-2 border-b border-parchment-border text-xs font-mono font-bold text-archival-oxblood uppercase tracking-wider">
+            <div className="lg:col-span-5 bg-white p-5 rounded-xl border border-[#E8E2D5] shadow-xs space-y-4">
+              <div className="flex items-center gap-2 pb-2 border-b border-[#E8E2D5] text-xs font-mono font-bold text-[#F43F7A] uppercase tracking-wider">
                 <Quote className="w-3.5 h-3.5" />
                 <span>Archival Transcription</span>
               </div>
 
-              <div className="font-serif text-sm text-ink-light leading-relaxed italic whitespace-pre-wrap bg-parchment-light p-4 rounded-lg border border-parchment-border/60 shadow-xs">
+              <div className="font-serif text-sm text-stone-800 leading-relaxed whitespace-pre-wrap bg-[#FAF8F5] p-4 rounded-lg border border-[#E8E2D5]/80 shadow-xs">
                 {media.transcriptionText}
               </div>
 
-              <div className="pt-2 text-[11px] font-mono text-ink-muted flex items-center justify-between">
+              <div className="pt-2 text-[11px] font-mono text-stone-500 flex items-center justify-between">
                 <span>HISTORICAL PRESS ARCHIVE</span>
                 <span>ORIGINAL CITATION VERIFIED</span>
               </div>

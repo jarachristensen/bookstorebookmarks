@@ -565,11 +565,11 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-24">
       {/* 1. Top Action & Navigation Bar */}
-      <div className="sticky top-2 z-30 flex items-center justify-between p-3.5 bg-white/95 backdrop-blur-md border border-parchment-border rounded-2xl shadow-md">
+      <div className="sticky top-2 z-30 flex items-center justify-between p-3.5 bg-white/95 backdrop-blur-md border border-[#E8E2D5] rounded-2xl shadow-md">
         <div className="flex items-center gap-3">
           <Link
             href="/admin"
-            className="inline-flex items-center gap-1.5 text-xs font-serif text-ink-muted hover:text-ink transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-serif text-stone-600 hover:text-stone-900 transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Curator's Cabinet</span>
@@ -578,7 +578,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
           <Link
             href={`/bookstores/${initialData.id}`}
             target="_blank"
-            className="inline-flex items-center gap-1 text-xs font-serif text-archival-oxblood hover:underline font-semibold"
+            className="inline-flex items-center gap-1 text-xs font-serif text-[#F43F7A] hover:underline font-semibold"
           >
             <span>View Public Page</span>
             <ExternalLink className="w-3 h-3" />
@@ -587,8 +587,8 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
 
         <div className="flex items-center gap-3">
           {saveSuccess && (
-            <span className="inline-flex items-center gap-1.5 text-xs font-serif font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200 animate-fade-in">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <span className="inline-flex items-center gap-1.5 text-xs font-serif font-bold text-[#10B981] bg-[#10B981]/10 px-3 py-1.5 rounded-xl border border-[#10B981]/30 animate-fade-in">
+              <CheckCircle2 className="w-4 h-4 text-[#10B981]" />
               <span>Dossier Saved!</span>
             </span>
           )}
@@ -602,7 +602,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
           <Button
             onClick={handleSaveAll}
             disabled={isSaving}
-            className="bg-archival-oxblood hover:bg-rose-950 text-white shadow-sm gap-1.5"
+            className="bg-[#F43F7A] hover:bg-[#F43F7A]/90 text-white shadow-sm gap-1.5"
             size="sm"
           >
             {isSaving ? (
@@ -621,12 +621,12 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
       </div>
 
       {/* 2. Editable Bookstore Masthead Header */}
-      <div className="p-6 sm:p-8 rounded-2xl bg-white border border-parchment-border shadow-xs space-y-6">
+      <div className="p-6 sm:p-8 rounded-2xl bg-white border border-[#E8E2D5] shadow-xs space-y-6">
         <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
           {/* Bookstore Name & Status */}
           <div className="flex-1 space-y-3">
             <div>
-              <label className="block text-[11px] font-mono uppercase tracking-wider text-ink-muted mb-1">
+              <label className="block text-[11px] font-mono uppercase tracking-wider text-stone-500 mb-1">
                 Bookstore Name
               </label>
               <input
@@ -634,21 +634,21 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Bookstore Name"
-                className="font-serif text-2xl sm:text-3xl font-bold text-ink w-full px-3 py-1.5 bg-parchment-light border border-parchment-border rounded-xl focus:outline-none focus:border-archival-oxblood"
+                className="font-serif text-2xl sm:text-3xl font-bold text-stone-900 w-full px-3 py-1.5 bg-[#FAF8F5] border border-[#E8E2D5] rounded-xl focus:outline-none focus:border-[#2563EB]"
               />
             </div>
 
             {/* Operating Status Toggle */}
             <div className="flex items-center gap-3 pt-1">
-              <span className="text-xs font-mono uppercase tracking-wider text-ink-muted">Status:</span>
-              <div className="inline-flex rounded-xl bg-parchment-light p-1 border border-parchment-border">
+              <span className="text-xs font-mono uppercase tracking-wider text-stone-500">Status:</span>
+              <div className="inline-flex rounded-xl bg-[#FAF8F5] p-1 border border-[#E8E2D5]">
                 <button
                   type="button"
                   onClick={() => setIsStillOperating(true)}
                   className={`px-3 py-1 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer ${
                     isStillOperating
-                      ? "bg-[#0f766e] text-white shadow-xs"
-                      : "text-ink-muted hover:text-ink"
+                      ? "bg-[#10B981] text-white shadow-xs"
+                      : "text-stone-500 hover:text-stone-900"
                   }`}
                 >
                   STILL OPERATING
@@ -658,8 +658,8 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                   onClick={() => setIsStillOperating(false)}
                   className={`px-3 py-1 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer ${
                     !isStillOperating
-                      ? "bg-stone-900 text-stone-200 shadow-xs"
-                      : "text-ink-muted hover:text-ink"
+                      ? "bg-[#F43F7A] text-white shadow-xs"
+                      : "text-stone-500 hover:text-stone-900"
                   }`}
                 >
                   CLOSED
@@ -668,13 +668,13 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
 
               {!isStillOperating && (
                 <div className="flex items-center gap-1.5 ml-2">
-                  <span className="text-xs font-mono text-ink-muted">Closed Year:</span>
+                  <span className="text-xs font-mono text-stone-500">Closed Year:</span>
                   <input
                     type="number"
                     value={yearClosed}
                     onChange={(e) => setYearClosed(e.target.value)}
                     placeholder="e.g. 2007"
-                    className="w-24 px-2.5 py-1 text-xs font-mono bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none focus:border-archival-oxblood"
+                    className="w-24 px-2.5 py-1 text-xs font-mono bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:border-[#2563EB]"
                   />
                 </div>
               )}
@@ -684,7 +684,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
           {/* Core Metadata Fields */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 shrink-0 lg:max-w-md">
             <div>
-              <label className="block text-[10px] font-mono uppercase tracking-wider text-ink-muted mb-1">
+              <label className="block text-[10px] font-mono uppercase tracking-wider text-stone-500 mb-1">
                 Year Opened *
               </label>
               <input
@@ -692,12 +692,12 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                 value={yearOpened}
                 onChange={(e) => setYearOpened(e.target.value)}
                 placeholder="1920"
-                className="w-full px-3 py-1.5 text-xs font-mono bg-parchment-light border border-parchment-border rounded-xl text-ink focus:outline-none focus:border-archival-oxblood"
+                className="w-full px-3 py-1.5 text-xs font-mono bg-[#FAF8F5] border border-[#E8E2D5] rounded-xl text-stone-900 focus:outline-none focus:border-[#2563EB]"
               />
             </div>
 
             <div>
-              <label className="block text-[10px] font-mono uppercase tracking-wider text-ink-muted mb-1">
+              <label className="block text-[10px] font-mono uppercase tracking-wider text-stone-500 mb-1">
                 Website URL
               </label>
               <input
@@ -705,7 +705,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                 value={websiteUrl}
                 onChange={(e) => setWebsiteUrl(e.target.value)}
                 placeholder="https://..."
-                className="w-full px-3 py-1.5 text-xs font-mono bg-parchment-light border border-parchment-border rounded-xl text-ink focus:outline-none focus:border-archival-oxblood"
+                className="w-full px-3 py-1.5 text-xs font-mono bg-[#FAF8F5] border border-[#E8E2D5] rounded-xl text-stone-900 focus:outline-none focus:border-[#2563EB]"
               />
             </div>
           </div>
@@ -713,14 +713,14 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
       </div>
 
       {/* 2.5 Historic Locations & Relocations Editor */}
-      <section className="p-6 sm:p-8 rounded-2xl bg-white border border-parchment-border shadow-xs space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-parchment-border pb-4">
+      <section className="p-6 sm:p-8 rounded-2xl bg-white border border-[#E8E2D5] shadow-xs space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E8E2D5] pb-4">
           <div className="space-y-1">
-            <h2 className="font-serif text-lg font-bold text-ink flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-archival-oxblood" />
+            <h2 className="font-serif text-lg font-bold text-stone-900 flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-[#F43F7A]" />
               <span>Historic Locations &amp; Relocation Journey</span>
             </h2>
-            <p className="text-xs font-serif text-ink-muted italic">
+            <p className="text-xs font-serif text-stone-500">
               Model the original founding address, relocations over the decades, or secondary branch storefronts.
             </p>
           </div>
@@ -731,7 +731,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
               variant="outline"
               size="sm"
               onClick={() => addLocation(false)}
-              className="gap-1.5 text-xs border-archival-oxblood/30 text-archival-oxblood hover:bg-rose-50"
+              className="gap-1.5 text-xs border-[#F43F7A]/30 text-[#F43F7A] hover:bg-[#F43F7A]/10"
             >
               <PlusCircle className="w-3.5 h-3.5" />
               <span>+ Add Relocated Address</span>
@@ -741,7 +741,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
               variant="outline"
               size="sm"
               onClick={() => addLocation(true)}
-              className="gap-1.5 text-xs text-ink-light hover:text-ink"
+              className="gap-1.5 text-xs text-stone-700 hover:text-stone-900 border-[#E8E2D5]"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>+ Add Branch Location</span>
@@ -754,11 +754,11 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
           {locations.map((loc, idx) => (
             <div
               key={loc.id || idx}
-              className="p-5 rounded-xl border border-parchment-border bg-parchment/20 space-y-4 relative"
+              className="p-5 rounded-xl border border-[#E8E2D5] bg-[#FAF8F5] space-y-4 relative"
             >
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-parchment-border/60 pb-3">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#E8E2D5]/80 pb-3">
                 <div className="flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-archival-oxblood/10 text-archival-oxblood flex items-center justify-center font-mono text-xs font-bold">
+                  <span className="w-6 h-6 rounded-full bg-[#F43F7A]/10 text-[#F43F7A] flex items-center justify-center font-mono text-xs font-bold">
                     {idx + 1}
                   </span>
                   <input
@@ -766,15 +766,15 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                     value={loc.label}
                     onChange={(e) => updateLocation(idx, { label: e.target.value })}
                     placeholder="e.g. 1st Location (Original)"
-                    className="font-serif font-bold text-sm text-ink bg-white px-2.5 py-1 border border-parchment-border rounded-lg"
+                    className="font-serif font-bold text-sm text-stone-900 bg-white px-2.5 py-1 border border-[#E8E2D5] rounded-lg"
                   />
                   {loc.isMovedFrom && (
-                    <span className="text-[10px] font-mono font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded-full border border-amber-300">
+                    <span className="text-[10px] font-mono font-bold bg-[#F59E0B]/20 text-[#F59E0B] px-2 py-0.5 rounded-full border border-[#F59E0B]/40">
                       RELOCATED
                     </span>
                   )}
                   {loc.isCurrent && (
-                    <span className="text-[10px] font-mono font-bold bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded-full border border-emerald-300">
+                    <span className="text-[10px] font-mono font-bold bg-[#10B981]/20 text-[#10B981] px-2 py-0.5 rounded-full border border-[#10B981]/40">
                       CURRENT / OPERATING
                     </span>
                   )}
@@ -794,7 +794,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="sm:col-span-2">
-                  <label className="block text-[10px] font-mono uppercase tracking-wider text-ink-muted mb-1">
+                  <label className="block text-[10px] font-mono uppercase tracking-wider text-stone-500 mb-1">
                     Street Address *
                   </label>
                   <input
@@ -802,12 +802,12 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                     value={loc.streetAddress}
                     onChange={(e) => updateLocation(idx, { streetAddress: e.target.value })}
                     placeholder="e.g. 261 Columbus Avenue"
-                    className="w-full px-3 py-1.5 text-xs font-serif bg-white border border-parchment-border rounded-lg text-ink focus:outline-none focus:border-archival-oxblood"
+                    className="w-full px-3 py-1.5 text-xs font-serif bg-white border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:border-[#2563EB]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-mono uppercase tracking-wider text-ink-muted mb-1">
+                  <label className="block text-[10px] font-mono uppercase tracking-wider text-stone-500 mb-1">
                     City *
                   </label>
                   <input
@@ -815,12 +815,12 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                     value={loc.city}
                     onChange={(e) => updateLocation(idx, { city: e.target.value })}
                     placeholder="San Francisco"
-                    className="w-full px-3 py-1.5 text-xs font-serif bg-white border border-parchment-border rounded-lg text-ink focus:outline-none focus:border-archival-oxblood"
+                    className="w-full px-3 py-1.5 text-xs font-serif bg-white border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:border-[#2563EB]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-mono uppercase tracking-wider text-ink-muted mb-1">
+                  <label className="block text-[10px] font-mono uppercase tracking-wider text-stone-500 mb-1">
                     State / Province
                   </label>
                   <input
@@ -828,12 +828,12 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                     value={loc.stateProvince || ""}
                     onChange={(e) => updateLocation(idx, { stateProvince: e.target.value })}
                     placeholder="CA"
-                    className="w-full px-3 py-1.5 text-xs font-serif bg-white border border-parchment-border rounded-lg text-ink focus:outline-none focus:border-archival-oxblood"
+                    className="w-full px-3 py-1.5 text-xs font-serif bg-white border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:border-[#2563EB]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-mono uppercase tracking-wider text-ink-muted mb-1">
+                  <label className="block text-[10px] font-mono uppercase tracking-wider text-stone-500 mb-1">
                     Country
                   </label>
                   <input
@@ -842,7 +842,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                     value={loc.country || "United States"}
                     onChange={(e) => updateLocation(idx, { country: e.target.value })}
                     placeholder="United States"
-                    className="w-full px-3 py-1.5 text-xs font-serif bg-white border border-parchment-border rounded-lg text-ink focus:outline-none focus:border-archival-oxblood"
+                    className="w-full px-3 py-1.5 text-xs font-serif bg-white border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:border-[#2563EB]"
                   />
                   <datalist id="country-suggestions">
                     <option value="United States" />
@@ -874,7 +874,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-mono uppercase tracking-wider text-ink-muted mb-1">
+                  <label className="block text-[10px] font-mono uppercase tracking-wider text-stone-500 mb-1">
                     Years at this Address
                   </label>
                   <input
@@ -882,27 +882,27 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                     value={loc.yearsActive || ""}
                     onChange={(e) => updateLocation(idx, { yearsActive: e.target.value })}
                     placeholder="e.g. 1953–1970 or Present"
-                    className="w-full px-3 py-1.5 text-xs font-mono bg-white border border-parchment-border rounded-lg text-ink focus:outline-none focus:border-archival-oxblood"
+                    className="w-full px-3 py-1.5 text-xs font-mono bg-white border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:border-[#2563EB]"
                   />
                 </div>
 
                 <div className="sm:col-span-2 flex flex-wrap items-center gap-4 pt-4">
-                  <label className="inline-flex items-center gap-2 cursor-pointer text-xs font-serif text-ink">
+                  <label className="inline-flex items-center gap-2 cursor-pointer text-xs font-serif text-stone-900">
                     <input
                       type="checkbox"
                       checked={Boolean(loc.isMovedFrom)}
                       onChange={(e) => updateLocation(idx, { isMovedFrom: e.target.checked })}
-                      className="rounded text-archival-oxblood focus:ring-archival-oxblood"
+                      className="rounded text-[#F43F7A] focus:ring-[#2563EB]"
                     />
                     <span>Relocated from this location (Moved)</span>
                   </label>
 
-                  <label className="inline-flex items-center gap-2 cursor-pointer text-xs font-serif text-ink">
+                  <label className="inline-flex items-center gap-2 cursor-pointer text-xs font-serif text-stone-900">
                     <input
                       type="checkbox"
                       checked={Boolean(loc.isCurrent)}
                       onChange={(e) => updateLocation(idx, { isCurrent: e.target.checked })}
-                      className="rounded text-archival-oxblood focus:ring-archival-oxblood"
+                      className="rounded text-[#10B981] focus:ring-[#2563EB]"
                     />
                     <span>Currently operating at this location</span>
                   </label>
@@ -917,7 +917,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left Column: Storefront Photo & Storefront Management */}
         <div className="lg:col-span-7 flex flex-col items-center space-y-3">
-          <div className="relative w-full rounded-2xl bg-stone-900 border border-parchment-border overflow-hidden shadow-xs flex items-center justify-center p-2 sm:p-3">
+          <div className="relative w-full rounded-2xl bg-stone-900 border border-[#E8E2D5] overflow-hidden shadow-xs flex items-center justify-center p-2 sm:p-3">
             {currentPhoto ? (
               <div className="relative w-full h-[320px] sm:h-[400px] flex items-center justify-center">
                 <Image
@@ -970,7 +970,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                 </button>
               </div>
             ) : (
-              <div className="w-full h-72 flex flex-col items-center justify-center text-xs font-serif text-stone-400 italic gap-2">
+              <div className="w-full h-72 flex flex-col items-center justify-center text-xs font-serif text-stone-400 gap-2">
                 <Camera className="w-8 h-8 text-stone-500" />
                 <span>No storefront or inside photos attached yet</span>
               </div>
@@ -978,32 +978,32 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
           </div>
 
           {/* Storefront Details (Year & Caption) & Add Storefront Button */}
-          <div className="w-full p-4 rounded-xl bg-white border border-parchment-border shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="w-full p-4 rounded-xl bg-white border border-[#E8E2D5] shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
             {currentPhoto ? (
               <div className="flex flex-1 items-center gap-2 w-full">
                 <div className="w-28">
-                  <label className="block text-[9px] font-mono text-ink-muted uppercase">Photo Year</label>
+                  <label className="block text-[9px] font-mono text-stone-500 uppercase">Photo Year</label>
                   <input
                     type="text"
                     value={currentPhoto.publicationDate || ""}
                     onChange={(e) => updateCurrentStorefrontMeta("publicationDate", e.target.value)}
                     placeholder="e.g. 1950"
-                    className="w-full px-2 py-1 text-xs font-mono bg-parchment-light border border-parchment-border rounded-lg"
+                    className="w-full px-2 py-1 text-xs font-mono bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900"
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="block text-[9px] font-mono text-ink-muted uppercase">Caption / Note</label>
+                  <label className="block text-[9px] font-mono text-stone-500 uppercase">Caption / Note</label>
                   <input
                     type="text"
                     value={currentPhoto.caption || ""}
                     onChange={(e) => updateCurrentStorefrontMeta("caption", e.target.value)}
                     placeholder="Storefront exterior"
-                    className="w-full px-2 py-1 text-xs font-serif bg-parchment-light border border-parchment-border rounded-lg"
+                    className="w-full px-2 py-1 text-xs font-serif bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900"
                   />
                 </div>
               </div>
             ) : (
-              <span className="text-xs font-serif text-ink-muted italic">Add a storefront or interior photo to showcase on the dossier.</span>
+              <span className="text-xs font-serif text-stone-500">Add a storefront or interior photo to showcase on the dossier.</span>
             )}
 
             <Button
@@ -1011,7 +1011,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
               variant="outline"
               size="sm"
               onClick={() => setIsPhotoModalOpen(true)}
-              className="gap-1.5 shrink-0 border-archival-oxblood/30 text-archival-oxblood hover:bg-rose-50"
+              className="gap-1.5 shrink-0 border-[#F43F7A]/30 text-[#F43F7A] hover:bg-[#F43F7A]/10"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Add Storefront / Inside Photo</span>
@@ -1021,18 +1021,18 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
 
         {/* Right Column: Cataloged Bookmarks (~42%) */}
         <div className="lg:col-span-5 space-y-4">
-          <div className="flex items-center justify-between border-b border-parchment-border pb-2">
-            <h2 className="font-serif text-lg font-bold text-ink flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-archival-oxblood" />
+          <div className="flex items-center justify-between border-b border-[#E8E2D5] pb-2">
+            <h2 className="font-serif text-lg font-bold text-stone-900 flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-[#F43F7A]" />
               <span>Cataloged Bookmarks</span>
             </h2>
-            <span className="text-xs font-mono text-ink-muted">
+            <span className="text-xs font-mono text-stone-500">
               {initialData.bookmarks.length} {initialData.bookmarks.length === 1 ? "Specimen" : "Specimens"}
             </span>
           </div>
 
           {initialData.bookmarks.length === 0 ? (
-            <div className="p-8 text-center rounded-xl bg-white border border-parchment-border text-xs font-serif text-ink-muted italic">
+            <div className="p-8 text-center rounded-xl bg-white border border-[#E8E2D5] text-xs font-serif text-stone-500">
               No bookmark specimens cataloged yet for this bookstore. Upload bookmarks via the main uploader.
             </div>
           ) : (
@@ -1042,7 +1042,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                   key={bm.id}
                   type="button"
                   onClick={() => setSelectedBookmark({ ...bm, bookstore: initialData })}
-                  className="group flex flex-col items-center text-center cursor-pointer p-2 rounded-xl bg-white hover:bg-parchment/60 border border-parchment-border hover:border-archival-oxblood/40 shadow-2xs hover:shadow-sm transition-all"
+                  className="group flex flex-col items-center text-center cursor-pointer p-2 rounded-xl bg-white hover:bg-[#FAF8F5] border border-[#E8E2D5] hover:border-[#F43F7A]/40 shadow-2xs hover:shadow-sm transition-all"
                 >
                   <div className="relative w-full h-44 sm:h-52 mb-2 flex items-center justify-center overflow-hidden">
                     <Image
@@ -1053,10 +1053,10 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                       className="object-contain object-center group-hover:scale-105 transition-transform duration-200"
                     />
                   </div>
-                  <h4 className="font-serif text-xs font-bold text-ink group-hover:text-archival-oxblood transition-colors line-clamp-1 w-full">
+                  <h4 className="font-serif text-xs font-bold text-stone-900 group-hover:text-[#F43F7A] transition-colors line-clamp-1 w-full">
                     {bm.title}
                   </h4>
-                  <span className="font-mono text-[11px] text-ink-muted mt-0.5">
+                  <span className="font-mono text-[11px] text-stone-500 mt-0.5">
                     {bm.dimensions}
                   </span>
                 </button>
@@ -1070,10 +1070,10 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h2 className="font-serif text-sm font-mono font-bold uppercase tracking-wider text-archival-oxblood">
+            <h2 className="font-serif text-sm font-mono font-bold uppercase tracking-wider text-[#F43F7A]">
               Timeline
             </h2>
-            <span className="text-xs font-serif text-ink-muted italic hidden sm:inline">
+            <span className="text-xs font-serif text-stone-500 hidden sm:inline">
               Edit milestones directly or click "+ Add an Event"
             </span>
           </div>
@@ -1083,7 +1083,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
             size="sm"
             variant="outline"
             onClick={openAddEventModal}
-            className="gap-1.5 border-archival-oxblood/40 text-archival-oxblood hover:bg-rose-50"
+            className="gap-1.5 border-[#F43F7A]/40 text-[#F43F7A] hover:bg-[#F43F7A]/10"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Add an Event</span>
@@ -1103,17 +1103,17 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left Column: Bookstore History Narrative */}
         <div className="lg:col-span-7 space-y-4">
-          <section className="p-6 sm:p-8 rounded-2xl bg-white border border-parchment-border shadow-xs space-y-4">
-            <div className="flex items-center justify-between border-b border-parchment-border pb-3">
-              <h2 className="font-serif text-xl font-bold text-ink flex items-center gap-2">
-                <FileText className="w-5 h-5 text-archival-oxblood" />
+          <section className="p-6 sm:p-8 rounded-2xl bg-white border border-[#E8E2D5] shadow-xs space-y-4">
+            <div className="flex items-center justify-between border-b border-[#E8E2D5] pb-3">
+              <h2 className="font-serif text-xl font-bold text-stone-900 flex items-center gap-2">
+                <FileText className="w-5 h-5 text-[#F43F7A]" />
                 <span>Bookstore History</span>
               </h2>
 
               <button
                 type="button"
                 onClick={() => setIsEditingBlurb(!isEditingBlurb)}
-                className="inline-flex items-center gap-1.5 text-xs font-serif font-bold text-archival-oxblood hover:underline cursor-pointer"
+                className="inline-flex items-center gap-1.5 text-xs font-serif font-bold text-[#F43F7A] hover:underline cursor-pointer"
               >
                 {isEditingBlurb ? (
                   <>
@@ -1136,15 +1136,15 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                   onChange={(e) => setHistoricalBlurb(e.target.value)}
                   rows={12}
                   placeholder="Write the historical narrative and cultural background of the bookstore (Markdown supported)..."
-                  className="w-full p-4 text-sm font-serif bg-parchment-light border border-parchment-border rounded-xl text-ink focus:outline-none focus:border-archival-oxblood leading-relaxed"
+                  className="w-full p-4 text-sm font-serif bg-[#FAF8F5] border border-[#E8E2D5] rounded-xl text-stone-900 focus:outline-none focus:border-[#2563EB] leading-relaxed"
                 />
-                <p className="text-[11px] font-mono text-ink-muted">
+                <p className="text-[11px] font-mono text-stone-500">
                   Supports Markdown headings (`###`), bold (`**bold**`), italics, and blockquotes.
                 </p>
               </div>
             ) : (
               <div
-                className="font-serif text-sm sm:text-base text-ink-light leading-relaxed prose prose-stone max-w-none"
+                className="font-serif text-sm sm:text-base text-stone-700 leading-relaxed prose prose-stone max-w-none"
                 dangerouslySetInnerHTML={{
                   __html: marked.parse(historicalBlurb || "*No historical narrative provided yet. Click 'Edit History Text' to add one.*") as string,
                 }}
@@ -1155,17 +1155,17 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
 
         {/* Right Column: Archival Media Section (Separate Newspaper Clippings & Photos Tabs) */}
         <div className="lg:col-span-5 space-y-4">
-          <section className="p-6 rounded-2xl bg-white border border-parchment-border shadow-xs space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-parchment-border pb-3">
+          <section className="p-6 rounded-2xl bg-white border border-[#E8E2D5] shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E8E2D5] pb-3">
               {/* Tab Selector */}
-              <div className="flex items-center gap-1.5 p-0.5 rounded-lg bg-parchment-muted text-xs font-serif">
+              <div className="flex items-center gap-1.5 p-0.5 rounded-lg bg-[#FAF8F5] border border-[#E8E2D5] text-xs font-serif">
                 <button
                   type="button"
                   onClick={() => setActiveMediaTab("clippings")}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-all cursor-pointer ${
                     activeMediaTab === "clippings"
-                      ? "bg-white font-bold text-archival-oxblood shadow-xs"
-                      : "text-ink-muted hover:text-ink"
+                      ? "bg-white font-bold text-[#F43F7A] shadow-xs"
+                      : "text-stone-500 hover:text-stone-900"
                   }`}
                 >
                   <Newspaper className="w-3.5 h-3.5" />
@@ -1176,8 +1176,8 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                   onClick={() => setActiveMediaTab("photos")}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-all cursor-pointer ${
                     activeMediaTab === "photos"
-                      ? "bg-white font-bold text-archival-oxblood shadow-xs"
-                      : "text-ink-muted hover:text-ink"
+                      ? "bg-white font-bold text-[#F43F7A] shadow-xs"
+                      : "text-stone-500 hover:text-stone-900"
                   }`}
                 >
                   <Camera className="w-3.5 h-3.5" />
@@ -1203,7 +1203,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                     variant="outline"
                     onClick={() => bulkInputRef.current?.click()}
                     disabled={isBulkUploading}
-                    className="gap-1 text-xs border-archival-oxblood/30 text-archival-oxblood hover:bg-rose-50"
+                    className="gap-1 text-xs border-[#F43F7A]/30 text-[#F43F7A] hover:bg-[#F43F7A]/10"
                   >
                     {isBulkUploading ? (
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -1223,7 +1223,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                     setPhotoTagType("storefront");
                     setPhotoIsCarousel(true);
                   }}
-                  className="gap-1 text-xs border-archival-oxblood/30 text-archival-oxblood hover:bg-rose-50"
+                  className="gap-1 text-xs border-[#F43F7A]/30 text-[#F43F7A] hover:bg-[#F43F7A]/10"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Add Photo</span>
@@ -1242,7 +1242,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
             {activeMediaTab === "clippings" && (
               <div>
                 {newspaperClippings.length === 0 ? (
-                  <div className="p-6 text-center rounded-xl bg-parchment-light border border-dashed border-parchment-border text-xs font-serif text-ink-muted italic">
+                  <div className="p-6 text-center rounded-xl bg-[#FAF8F5] border border-dashed border-[#E8E2D5] text-xs font-serif text-stone-500">
                     No newspaper clippings attached yet. Click "Scan Clippings" to upload historical articles.
                   </div>
                 ) : (
@@ -1250,10 +1250,10 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                     {newspaperClippings.map((media) => (
                       <div
                         key={media.id}
-                        className="p-3 rounded-xl border border-parchment-border bg-parchment/30 space-y-2.5"
+                        className="p-3 rounded-xl border border-[#E8E2D5] bg-[#FAF8F5] space-y-2.5"
                       >
                         <div className="flex items-start gap-3">
-                          <div className="relative w-16 h-16 rounded bg-stone-100 overflow-hidden shrink-0 border border-parchment-border">
+                          <div className="relative w-16 h-16 rounded bg-white overflow-hidden shrink-0 border border-[#E8E2D5]">
                             <Image
                               src={media.imageUrl}
                               alt={media.caption}
@@ -1274,7 +1274,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                                 );
                               }}
                               placeholder="Article Headline / Caption"
-                              className="w-full px-2 py-1 text-xs font-serif font-bold text-ink bg-white border border-parchment-border rounded-lg"
+                              className="w-full px-2 py-1 text-xs font-serif font-bold text-stone-900 bg-white border border-[#E8E2D5] rounded-lg"
                             />
 
                             <div className="grid grid-cols-2 gap-1.5">
@@ -1288,7 +1288,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                                   );
                                 }}
                                 placeholder="Newspaper / Publication"
-                                className="px-2 py-0.5 text-[11px] font-serif bg-white border border-parchment-border rounded-lg"
+                                className="px-2 py-0.5 text-[11px] font-serif bg-white border border-[#E8E2D5] rounded-lg"
                               />
                               <input
                                 type="text"
@@ -1300,7 +1300,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                                   );
                                 }}
                                 placeholder="Date (e.g. Oct 14, 1968)"
-                                className="px-2 py-0.5 text-[11px] font-mono bg-white border border-parchment-border rounded-lg"
+                                className="px-2 py-0.5 text-[11px] font-mono bg-white border border-[#E8E2D5] rounded-lg"
                               />
                             </div>
 
@@ -1314,7 +1314,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                                 );
                               }}
                               placeholder="Article transcription or excerpt notes..."
-                              className="w-full px-2 py-1 text-[11px] font-serif bg-white border border-parchment-border rounded-lg"
+                              className="w-full px-2 py-1 text-[11px] font-serif bg-white border border-[#E8E2D5] rounded-lg"
                             />
                           </div>
 
@@ -1338,7 +1338,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
             {activeMediaTab === "photos" && (
               <div>
                 {photosList.length === 0 ? (
-                  <div className="p-6 text-center rounded-xl bg-parchment-light border border-dashed border-parchment-border text-xs font-serif text-ink-muted italic">
+                  <div className="p-6 text-center rounded-xl bg-[#FAF8F5] border border-dashed border-[#E8E2D5] text-xs font-serif text-stone-500">
                     No archival photos cataloged yet. Click "Add Photo" to manually add storefront, interior, or historical photos.
                   </div>
                 ) : (
@@ -1351,10 +1351,10 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                       return (
                         <div
                           key={media.id}
-                          className="p-3 rounded-xl border border-parchment-border bg-parchment/30 space-y-2.5"
+                          className="p-3 rounded-xl border border-[#E8E2D5] bg-[#FAF8F5] space-y-2.5"
                         >
                           <div className="flex items-start gap-3">
-                            <div className="relative w-16 h-16 rounded bg-stone-100 overflow-hidden shrink-0 border border-parchment-border">
+                            <div className="relative w-16 h-16 rounded bg-white overflow-hidden shrink-0 border border-[#E8E2D5]">
                               <Image
                                 src={media.imageUrl}
                                 alt={media.caption}
@@ -1375,7 +1375,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                                   );
                                 }}
                                 placeholder="Photo Title"
-                                className="w-full px-2 py-1 text-xs font-serif font-bold text-ink bg-white border border-parchment-border rounded-lg"
+                                className="w-full px-2 py-1 text-xs font-serif font-bold text-stone-900 bg-white border border-[#E8E2D5] rounded-lg"
                               />
 
                               <div className="grid grid-cols-2 gap-1.5">
@@ -1389,7 +1389,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                                     );
                                   }}
                                   placeholder="Date / Year (e.g. 1954)"
-                                  className="px-2 py-0.5 text-[11px] font-mono bg-white border border-parchment-border rounded-lg"
+                                  className="px-2 py-0.5 text-[11px] font-mono bg-white border border-[#E8E2D5] rounded-lg"
                                 />
                                 <input
                                   type="text"
@@ -1401,7 +1401,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                                     );
                                   }}
                                   placeholder="Source / Photo Credit"
-                                  className="px-2 py-0.5 text-[11px] font-serif bg-white border border-parchment-border rounded-lg"
+                                  className="px-2 py-0.5 text-[11px] font-serif bg-white border border-[#E8E2D5] rounded-lg"
                                 />
                               </div>
 
@@ -1415,7 +1415,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                                   );
                                 }}
                                 placeholder="Information & context notes..."
-                                className="w-full px-2 py-0.5 text-[11px] font-serif bg-white border border-parchment-border rounded-lg"
+                                className="w-full px-2 py-0.5 text-[11px] font-serif bg-white border border-[#E8E2D5] rounded-lg"
                               />
                             </div>
 
@@ -1430,8 +1430,8 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                           </div>
 
                           {/* Top Carousel Placement Controls */}
-                          <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-parchment-border/40 text-[11px] font-serif">
-                            <label className="inline-flex items-center gap-1.5 cursor-pointer font-medium text-ink">
+                          <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-[#E8E2D5] text-[11px] font-serif">
+                            <label className="inline-flex items-center gap-1.5 cursor-pointer font-medium text-stone-900">
                               <input
                                 type="checkbox"
                                 checked={isCarouselPhoto}
@@ -1450,7 +1450,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                                     )
                                   );
                                 }}
-                                className="rounded text-archival-oxblood focus:ring-archival-oxblood"
+                                className="rounded text-[#F43F7A] focus:ring-[#2563EB]"
                               />
                               <span>Show in Top Photo Carousel</span>
                             </label>
@@ -1473,7 +1473,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                                     )
                                   );
                                 }}
-                                className="text-[10px] font-mono px-2 py-0.5 bg-white border border-parchment-border rounded text-ink"
+                                className="text-[10px] font-mono px-2 py-0.5 bg-white border border-[#E8E2D5] rounded text-stone-900"
                               >
                                 <option value="storefront">Storefront / Exterior</option>
                                 <option value="interior">Inside / Interior</option>
@@ -1494,16 +1494,16 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
       {/* --- MODAL: Add Archival / Storefront / Inside Photo (Manual Metadata Entry) --- */}
       {isPhotoModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
-          <div className="relative w-full max-w-lg bg-white border border-parchment-border rounded-2xl shadow-2xl p-6 space-y-5 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-parchment-border pb-3">
-              <h3 className="font-serif text-lg font-bold text-ink flex items-center gap-2">
-                <Camera className="w-5 h-5 text-archival-oxblood" />
+          <div className="relative w-full max-w-lg bg-white border border-[#E8E2D5] rounded-2xl shadow-2xl p-6 space-y-5 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-[#E8E2D5] pb-3">
+              <h3 className="font-serif text-lg font-bold text-stone-900 flex items-center gap-2">
+                <Camera className="w-5 h-5 text-[#F43F7A]" />
                 <span>Add Photograph</span>
               </h3>
               <button
                 type="button"
                 onClick={() => setIsPhotoModalOpen(false)}
-                className="p-1 rounded-full text-stone-400 hover:text-ink cursor-pointer"
+                className="p-1 rounded-full text-stone-400 hover:text-stone-900 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1511,7 +1511,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
 
             <div className="space-y-4">
               {photoPreviewUrl ? (
-                <div className="relative w-full h-48 rounded-xl bg-stone-900 overflow-hidden border border-parchment-border flex items-center justify-center">
+                <div className="relative w-full h-48 rounded-xl bg-stone-900 overflow-hidden border border-[#E8E2D5] flex items-center justify-center">
                   <Image
                     src={photoPreviewUrl}
                     alt="Preview"
@@ -1531,10 +1531,10 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                   </button>
                 </div>
               ) : (
-                <label className="border-2 border-dashed border-parchment-border hover:border-archival-oxblood rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer bg-parchment-light/50 hover:bg-parchment-light transition-all">
-                  <UploadCloud className="w-8 h-8 text-archival-oxblood mb-2" />
-                  <span className="font-serif text-sm font-bold text-ink">Choose Photo Image</span>
-                  <span className="text-xs text-ink-muted font-mono mt-1">PNG, JPG, or WebP</span>
+                <label className="border-2 border-dashed border-[#E8E2D5] hover:border-[#2563EB] rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer bg-[#FAF8F5] hover:bg-[#FAF8F5]/80 transition-all">
+                  <UploadCloud className="w-8 h-8 text-[#F43F7A] mb-2" />
+                  <span className="font-serif text-sm font-bold text-stone-900">Choose Photo Image</span>
+                  <span className="text-xs text-stone-500 font-mono mt-1">PNG, JPG, or WebP</span>
                   <input
                     type="file"
                     accept="image/*"
@@ -1546,7 +1546,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
 
               {/* Title / Caption */}
               <div>
-                <label className="block text-xs font-mono text-ink-muted uppercase mb-1">
+                <label className="block text-xs font-mono text-stone-500 uppercase mb-1">
                   Title / Caption *
                 </label>
                 <input
@@ -1554,14 +1554,14 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                   value={photoTitle}
                   onChange={(e) => setPhotoTitle(e.target.value)}
                   placeholder="e.g. Storefront on 47th Street or Main Reading Room"
-                  className="w-full px-3 py-1.5 text-xs font-serif bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none focus:border-archival-oxblood"
+                  className="w-full px-3 py-1.5 text-xs font-serif bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:border-[#2563EB]"
                 />
               </div>
 
               {/* Date & Source Row */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-mono text-ink-muted uppercase mb-1">
+                  <label className="block text-xs font-mono text-stone-500 uppercase mb-1">
                     Date / Year
                   </label>
                   <input
@@ -1569,12 +1569,12 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                     value={photoDate}
                     onChange={(e) => setPhotoDate(e.target.value)}
                     placeholder="e.g. 1954 or c. 1960"
-                    className="w-full px-3 py-1.5 text-xs font-mono bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none focus:border-archival-oxblood"
+                    className="w-full px-3 py-1.5 text-xs font-mono bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:border-[#2563EB]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono text-ink-muted uppercase mb-1">
+                  <label className="block text-xs font-mono text-stone-500 uppercase mb-1">
                     Source / Credit
                   </label>
                   <input
@@ -1582,14 +1582,14 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                     value={photoSource}
                     onChange={(e) => setPhotoSource(e.target.value)}
                     placeholder="e.g. NYPL Archival Collection"
-                    className="w-full px-3 py-1.5 text-xs font-serif bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none focus:border-archival-oxblood"
+                    className="w-full px-3 py-1.5 text-xs font-serif bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:border-[#2563EB]"
                   />
                 </div>
               </div>
 
               {/* Information / Notes */}
               <div>
-                <label className="block text-xs font-mono text-ink-muted uppercase mb-1">
+                <label className="block text-xs font-mono text-stone-500 uppercase mb-1">
                   Information / Description Notes
                 </label>
                 <textarea
@@ -1597,31 +1597,31 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                   value={photoInfo}
                   onChange={(e) => setPhotoInfo(e.target.value)}
                   placeholder="Additional context or notes about this photograph..."
-                  className="w-full px-3 py-1.5 text-xs font-serif bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none focus:border-archival-oxblood"
+                  className="w-full px-3 py-1.5 text-xs font-serif bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:border-[#2563EB]"
                 />
               </div>
 
               {/* Placement Options */}
-              <div className="p-3 rounded-xl bg-parchment-muted/60 border border-parchment-border space-y-2">
-                <label className="flex items-center gap-2 cursor-pointer font-serif text-xs font-medium text-ink">
+              <div className="p-3 rounded-xl bg-[#FAF8F5] border border-[#E8E2D5] space-y-2">
+                <label className="flex items-center gap-2 cursor-pointer font-serif text-xs font-medium text-stone-900">
                   <input
                     type="checkbox"
                     checked={photoIsCarousel}
                     onChange={(e) => setPhotoIsCarousel(e.target.checked)}
-                    className="rounded text-archival-oxblood focus:ring-archival-oxblood"
+                    className="rounded text-[#F43F7A] focus:ring-[#2563EB]"
                   />
                   <span>Show in Top Hero Carousel</span>
                 </label>
 
                 {photoIsCarousel && (
                   <div>
-                    <label className="block text-[10px] font-mono text-ink-muted uppercase mb-1">
+                    <label className="block text-[10px] font-mono text-stone-500 uppercase mb-1">
                       Carousel Placement Tag
                     </label>
                     <select
                       value={photoTagType}
                       onChange={(e) => setPhotoTagType(e.target.value as any)}
-                      className="w-full px-3 py-1.5 text-xs font-serif bg-white border border-parchment-border rounded-lg text-ink"
+                      className="w-full px-3 py-1.5 text-xs font-serif bg-white border border-[#E8E2D5] rounded-lg text-stone-900"
                     >
                       <option value="storefront">Storefront / Exterior View</option>
                       <option value="interior">Inside / Interior View</option>
@@ -1632,12 +1632,13 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-parchment-border">
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#E8E2D5]">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={() => setIsPhotoModalOpen(false)}
+                className="border-[#E8E2D5]"
               >
                 Cancel
               </Button>
@@ -1646,7 +1647,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                 size="sm"
                 onClick={handleUploadPhoto}
                 disabled={isUploadingPhoto || (!photoUploadFile && !photoPreviewUrl)}
-                className="bg-archival-oxblood text-white hover:bg-rose-950"
+                className="bg-[#F43F7A] text-white hover:bg-[#F43F7A]/90"
               >
                 {isUploadingPhoto ? (
                   <>
@@ -1665,16 +1666,16 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
       {/* --- MODAL: Add / Edit Timeline Event --- */}
       {eventModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
-          <div className="relative w-full max-w-lg bg-white border border-parchment-border rounded-2xl shadow-2xl p-6 space-y-5">
-            <div className="flex items-center justify-between border-b border-parchment-border pb-3">
-              <h3 className="font-serif text-lg font-bold text-ink flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-archival-oxblood" />
+          <div className="relative w-full max-w-lg bg-white border border-[#E8E2D5] rounded-2xl shadow-2xl p-6 space-y-5">
+            <div className="flex items-center justify-between border-b border-[#E8E2D5] pb-3">
+              <h3 className="font-serif text-lg font-bold text-stone-900 flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-[#F43F7A]" />
                 <span>{editingEventId ? "Edit Timeline Event" : "Add Timeline Event"}</span>
               </h3>
               <button
                 type="button"
                 onClick={() => setEventModalOpen(false)}
-                className="p-1 rounded-full text-stone-400 hover:text-ink cursor-pointer"
+                className="p-1 rounded-full text-stone-400 hover:text-stone-900 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1683,7 +1684,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
             <div className="space-y-4">
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-mono text-ink-muted uppercase mb-1">
+                  <label className="block text-xs font-mono text-stone-500 uppercase mb-1">
                     Event Year *
                   </label>
                   <input
@@ -1692,12 +1693,12 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                     onChange={(e) => setEventYear(e.target.value)}
                     placeholder="1955"
                     required
-                    className="w-full px-3 py-1.5 text-xs font-mono bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none focus:border-archival-oxblood"
+                    className="w-full px-3 py-1.5 text-xs font-mono bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:border-[#2563EB]"
                   />
                 </div>
 
                 <div className="col-span-2">
-                  <label className="block text-xs font-mono text-ink-muted uppercase mb-1">
+                  <label className="block text-xs font-mono text-stone-500 uppercase mb-1">
                     Event Title / Headline
                   </label>
                   <input
@@ -1705,13 +1706,13 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                     value={eventLabel}
                     onChange={(e) => setEventLabel(e.target.value)}
                     placeholder="e.g. Relocated to 41 W 47th St"
-                    className="w-full px-3 py-1.5 text-xs font-serif bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none focus:border-archival-oxblood"
+                    className="w-full px-3 py-1.5 text-xs font-serif bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:border-[#2563EB]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-mono text-ink-muted uppercase mb-1">
+                <label className="block text-xs font-mono text-stone-500 uppercase mb-1">
                   Event Description *
                 </label>
                 <textarea
@@ -1719,18 +1720,18 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                   onChange={(e) => setEventDescription(e.target.value)}
                   rows={3}
                   placeholder="Describe the milestone or relocation event..."
-                  className="w-full px-3 py-2 text-xs font-serif bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none focus:border-archival-oxblood"
+                  className="w-full px-3 py-2 text-xs font-serif bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:border-[#2563EB]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-mono text-ink-muted uppercase mb-1">
+                <label className="block text-xs font-mono text-stone-500 uppercase mb-1">
                   Link to Photo / Press Clipping (Optional)
                 </label>
                 <select
                   value={eventMediaId}
                   onChange={(e) => setEventMediaId(e.target.value)}
-                  className="w-full px-3 py-2 text-xs font-serif bg-white border border-parchment-border rounded-lg text-ink focus:outline-none"
+                  className="w-full px-3 py-2 text-xs font-serif bg-white border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none"
                 >
                   <option value="">-- No Linked Image --</option>
                   {mediaList.map((m) => (
@@ -1740,18 +1741,19 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                     </option>
                   ))}
                 </select>
-                <p className="text-[11px] font-serif text-ink-muted italic mt-1">
+                <p className="text-[11px] font-serif text-stone-500 mt-1">
                   When visitors click this milestone on the timeline, a high-resolution popup of this image will open.
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-parchment-border">
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#E8E2D5]">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={() => setEventModalOpen(false)}
+                className="border-[#E8E2D5]"
               >
                 Cancel
               </Button>
@@ -1759,7 +1761,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                 type="button"
                 size="sm"
                 onClick={handleSaveEvent}
-                className="bg-archival-oxblood text-white hover:bg-rose-950"
+                className="bg-[#F43F7A] text-white hover:bg-[#F43F7A]/90"
               >
                 {editingEventId ? "Update Event" : "Add to Timeline"}
               </Button>

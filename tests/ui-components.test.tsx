@@ -10,7 +10,7 @@ describe("UI Design System Components", () => {
     render(<Badge variant="oxblood">Historic (1920–2007)</Badge>);
     const badge = screen.getByText("Historic (1920–2007)");
     expect(badge).toBeDefined();
-    expect(badge.className).toContain("text-archival-oxblood");
+    expect(badge.className).toContain("text-[#F43F7A]");
   });
 
   it("should render Button with tactile styles and handle click", () => {

@@ -90,11 +90,11 @@ export default async function AdminEditBookmarkPage({
   };
 
   return (
-    <div className="min-h-screen bg-[#FBF9F5] p-4 sm:p-8">
+    <div className="min-h-screen bg-[#FAF8F5] p-4 sm:p-8">
       <div className="max-w-5xl mx-auto space-y-6">
         <div>
-          <h1 className="font-serif text-3xl font-bold text-ink">Edit Archive Record</h1>
-          <p className="text-xs text-ink-muted font-serif italic">
+          <h1 className="font-serif text-3xl font-bold text-stone-900">Edit Archive Record</h1>
+          <p className="text-xs text-stone-500 font-serif italic">
             Updating {bookmark.title}
           </p>
         </div>

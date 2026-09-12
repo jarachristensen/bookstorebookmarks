@@ -264,10 +264,10 @@ export function BookmarkForm({
   return (
     <form onSubmit={handleSubmit} className="max-w-5xl mx-auto space-y-8">
       {/* Top Bar Navigation & Save */}
-      <div className="flex items-center justify-between pb-4 border-b border-parchment-border">
+      <div className="flex items-center justify-between pb-4 border-b border-[#E8E2D5]">
         <Link
           href="/admin"
-          className="inline-flex items-center gap-1.5 text-xs font-serif text-ink-muted hover:text-ink transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-serif text-stone-500 hover:text-[#2563EB] transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Curator Dashboard</span>
@@ -279,9 +279,9 @@ export function BookmarkForm({
             variant="oxblood"
             size="md"
             disabled={loading || isUploadingFront || isUploadingBack}
-            className="font-serif flex items-center gap-2"
+            className="font-serif flex items-center gap-2 bg-[#F43F7A] hover:bg-[#E11D48] text-white"
           >
-            <Save className="w-4 h-4 text-amber-300" />
+            <Save className="w-4 h-4 text-amber-200" />
             <span>
               {isUploadingFront || isUploadingBack
                 ? "Processing Scan..."
@@ -303,8 +303,8 @@ export function BookmarkForm({
       )}
 
       {/* 1. Bookmark Physical Specimen Section */}
-      <div className="p-6 rounded-2xl bg-white border border-parchment-border shadow-xs space-y-6">
-        <div className="flex items-center gap-2 pb-3 border-b border-parchment-border text-sm font-mono font-bold text-archival-oxblood uppercase tracking-wider">
+      <div className="p-6 rounded-2xl bg-white border border-[#E8E2D5] shadow-xs space-y-6">
+        <div className="flex items-center gap-2 pb-3 border-b border-[#E8E2D5] text-sm font-mono font-bold text-[#F43F7A] uppercase tracking-wider">
           <Bookmark className="w-4 h-4" />
           <span>1. Bookmark Specimen &amp; Physical Scans</span>
         </div>
@@ -348,7 +348,7 @@ export function BookmarkForm({
         {/* Bookmark Metadata Fields */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
           <div className="sm:col-span-2">
-            <label className="block text-xs font-mono text-ink-light mb-1">
+            <label className="block text-xs font-mono text-stone-600 mb-1">
               BOOKMARK TITLE / MOTTO *
             </label>
             <input
@@ -362,12 +362,12 @@ export function BookmarkForm({
                   bookmark: { ...formData.bookmark, title: e.target.value },
                 })
               }
-              className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-serif"
+              className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-mono text-ink-light mb-1">
+            <label className="block text-xs font-mono text-stone-600 mb-1">
               YEAR PRODUCED (CIRCA)
             </label>
             <input
@@ -380,18 +380,18 @@ export function BookmarkForm({
                   bookmark: { ...formData.bookmark, yearProduced: e.target.value },
                 })
               }
-              className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-mono"
+              className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-mono"
             />
           </div>
 
           {/* Dynamic Measurements Field with Segmented Orientation Buttons & 1-Click Swap */}
           <div className="space-y-2">
-            <label className="block text-xs font-mono text-ink-light">
+            <label className="block text-xs font-mono text-stone-600">
               SPECIMEN ORIENTATION &amp; PHYSICAL MEASUREMENTS (W × H)
             </label>
 
             {/* Segmented Orientation Selector */}
-            <div className="grid grid-cols-2 gap-2 p-1 bg-parchment-muted rounded-lg border border-parchment-border">
+            <div className="grid grid-cols-2 gap-2 p-1 bg-[#FAF8F5] rounded-lg border border-[#E8E2D5]">
               <button
                 type="button"
                 onClick={() => {
@@ -406,10 +406,10 @@ export function BookmarkForm({
                     },
                   }));
                 }}
-                className={`py-1.5 px-2.5 rounded-md text-xs font-serif flex items-center justify-center gap-1.5 transition-all ${
+                className={`py-1.5 px-2.5 rounded-md text-xs font-serif flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   !parsedDimensions.isLandscape
-                    ? "bg-white text-ink font-bold shadow-xs border border-parchment-border/50"
-                    : "text-ink-muted hover:text-ink"
+                    ? "bg-white text-stone-900 font-bold shadow-xs border border-[#E8E2D5]"
+                    : "text-stone-500 hover:text-stone-900"
                 }`}
               >
                 <span className="text-sm leading-none">▯</span>
@@ -430,10 +430,10 @@ export function BookmarkForm({
                     },
                   }));
                 }}
-                className={`py-1.5 px-2.5 rounded-md text-xs font-serif flex items-center justify-center gap-1.5 transition-all ${
+                className={`py-1.5 px-2.5 rounded-md text-xs font-serif flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   parsedDimensions.isLandscape
-                    ? "bg-white text-archival-oxblood font-bold shadow-xs border border-parchment-border/50"
-                    : "text-ink-muted hover:text-ink"
+                    ? "bg-white text-[#F43F7A] font-bold shadow-xs border border-[#E8E2D5]"
+                    : "text-stone-500 hover:text-stone-900"
                 }`}
               >
                 <span className="text-sm leading-none">▭</span>
@@ -454,7 +454,7 @@ export function BookmarkForm({
                       bookmark: { ...formData.bookmark, dimensions: e.target.value },
                     })
                   }
-                  className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-mono"
+                  className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-mono"
                 />
               </div>
 
@@ -470,20 +470,20 @@ export function BookmarkForm({
                   }));
                 }}
                 title="Swap Width and Height"
-                className="px-3 py-2 text-xs font-serif bg-white border border-parchment-border rounded-lg text-ink-muted hover:text-ink hover:border-archival-amber transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer shrink-0"
+                className="px-3 py-2 text-xs font-serif bg-white border border-[#E8E2D5] rounded-lg text-stone-600 hover:text-[#F43F7A] hover:border-[#F43F7A] transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer shrink-0"
               >
-                <ArrowLeftRight className="w-3.5 h-3.5 text-archival-oxblood" />
+                <ArrowLeftRight className="w-3.5 h-3.5 text-[#F43F7A]" />
                 <span>Swap W ⇄ H</span>
               </button>
             </div>
 
-            <p className="text-[11px] font-mono text-ink-muted">
-              Width: <span className="font-bold text-ink">{parsedDimensions.width}"</span> × Height: <span className="font-bold text-ink">{parsedDimensions.height}"</span> ({parsedDimensions.isLandscape ? "Landscape Mode" : "Portrait Mode"})
+            <p className="text-[11px] font-mono text-stone-500">
+              Width: <span className="font-bold text-stone-900">{parsedDimensions.width}"</span> × Height: <span className="font-bold text-stone-900">{parsedDimensions.height}"</span> ({parsedDimensions.isLandscape ? "Landscape Mode" : "Portrait Mode"})
             </p>
           </div>
 
           <div>
-            <label className="block text-xs font-mono text-ink-light mb-1">
+            <label className="block text-xs font-mono text-stone-600 mb-1">
               MATERIAL &amp; STOCK
             </label>
             <input
@@ -496,12 +496,12 @@ export function BookmarkForm({
                   bookmark: { ...formData.bookmark, material: e.target.value },
                 })
               }
-              className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-serif"
+              className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-mono text-ink-light mb-1">
+            <label className="block text-xs font-mono text-stone-600 mb-1">
               CONDITION GRADE
             </label>
             <input
@@ -514,12 +514,12 @@ export function BookmarkForm({
                   bookmark: { ...formData.bookmark, condition: e.target.value },
                 })
               }
-              className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-serif"
+              className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-mono text-ink-light mb-1">
+            <label className="block text-xs font-mono text-stone-600 mb-1">
               DATE ACQUIRED (OPTIONAL)
             </label>
             <input
@@ -531,7 +531,7 @@ export function BookmarkForm({
                   bookmark: { ...formData.bookmark, acquisitionDate: e.target.value },
                 })
               }
-              className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-mono"
+              className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-mono"
             />
           </div>
 
@@ -546,16 +546,16 @@ export function BookmarkForm({
                   bookmark: { ...formData.bookmark, isFeatured: e.target.checked },
                 })
               }
-              className="w-4 h-4 rounded text-archival-oxblood border-parchment-border focus:ring-amber-700/30"
+              className="w-4 h-4 rounded text-[#F43F7A] border-[#E8E2D5] focus:ring-[#F43F7A]/30 cursor-pointer"
             />
-            <label htmlFor="isFeatured" className="text-xs font-serif font-semibold text-ink cursor-pointer">
+            <label htmlFor="isFeatured" className="text-xs font-serif font-semibold text-stone-900 cursor-pointer">
               Highlight as Featured Key Specimen
             </label>
           </div>
         </div>
 
         <div>
-          <label className="block text-xs font-mono text-ink-light mb-1">
+          <label className="block text-xs font-mono text-stone-600 mb-1">
             CURATOR'S PROVENANCE &amp; ACQUISITION NOTES
           </label>
           <textarea
@@ -568,35 +568,35 @@ export function BookmarkForm({
                 bookmark: { ...formData.bookmark, acquisitionNotes: e.target.value },
               })
             }
-            className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-serif"
+            className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif"
           />
         </div>
       </div>
 
       {/* 2. Associated Bookstore Selection & Dossier */}
-      <div className="p-6 rounded-2xl bg-white border border-parchment-border shadow-xs space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-parchment-border">
-          <div className="flex items-center gap-2 text-sm font-mono font-bold text-archival-oxblood uppercase tracking-wider">
+      <div className="p-6 rounded-2xl bg-white border border-[#E8E2D5] shadow-xs space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-[#E8E2D5]">
+          <div className="flex items-center gap-2 text-sm font-mono font-bold text-[#F43F7A] uppercase tracking-wider">
             <Building2 className="w-4 h-4" />
             <span>2. Associated Bookstore Research Dossier</span>
           </div>
 
           {/* Existing Store Selector vs New Store Toggle */}
           {bookstoresList.length > 0 && !isEditing && (
-            <div className="inline-flex rounded-lg border border-parchment-border p-0.5 bg-parchment-muted text-xs font-serif">
+            <div className="inline-flex rounded-lg border border-[#E8E2D5] p-0.5 bg-[#FAF8F5] text-xs font-serif">
               <button
                 type="button"
                 onClick={() => {
                   setSelectedStoreMode("existing");
                   if (bookstoresList[0]) handleSelectExistingStore(bookstoresList[0].id);
                 }}
-                className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-all ${
+                className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-all cursor-pointer ${
                   selectedStoreMode === "existing"
-                    ? "bg-white text-ink font-semibold shadow-xs"
-                    : "text-ink-muted hover:text-ink"
+                    ? "bg-white text-stone-900 font-semibold shadow-xs border border-[#E8E2D5]"
+                    : "text-stone-500 hover:text-stone-900"
                 }`}
               >
-                <LinkIcon className="w-3.5 h-3.5 text-archival-oxblood" />
+                <LinkIcon className="w-3.5 h-3.5 text-[#2563EB]" />
                 <span>Link to Existing Bookstore</span>
               </button>
               <button
@@ -623,13 +623,13 @@ export function BookmarkForm({
                     },
                   }));
                 }}
-                className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-all ${
+                className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-all cursor-pointer ${
                   selectedStoreMode === "new"
-                    ? "bg-white text-ink font-semibold shadow-xs"
-                    : "text-ink-muted hover:text-ink"
+                    ? "bg-white text-stone-900 font-semibold shadow-xs border border-[#E8E2D5]"
+                    : "text-stone-500 hover:text-stone-900"
                 }`}
               >
-                <PlusCircle className="w-3.5 h-3.5 text-archival-amber" />
+                <PlusCircle className="w-3.5 h-3.5 text-[#F59E0B]" />
                 <span>+ Add New Bookstore</span>
               </button>
             </div>
@@ -638,15 +638,15 @@ export function BookmarkForm({
 
         {/* Existing Store Selector Dropdown */}
         {selectedStoreMode === "existing" && bookstoresList.length > 0 && (
-          <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-600/20 space-y-2">
-            <label className="block text-xs font-mono font-bold text-ink mb-1 flex items-center gap-1.5">
-              <LinkIcon className="w-3.5 h-3.5 text-archival-oxblood" />
+          <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E8E2D5] space-y-2">
+            <label className="block text-xs font-mono font-bold text-stone-800 mb-1 flex items-center gap-1.5">
+              <LinkIcon className="w-3.5 h-3.5 text-[#2563EB]" />
               <span>SELECT EXISTING BOOKSTORE IN YOUR ARCHIVE:</span>
             </label>
             <select
               value={formData.bookstore.id || bookstoresList[0]?.id}
               onChange={(e) => handleSelectExistingStore(e.target.value)}
-              className="w-full px-3 py-2 text-sm bg-white border border-parchment-border rounded-lg text-ink font-serif focus:outline-none focus:ring-2 focus:ring-amber-700/30"
+              className="w-full px-3 py-2 text-sm bg-white border border-[#E8E2D5] rounded-lg text-stone-900 font-serif focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30"
             >
               {bookstoresList.map((store) => (
                 <option key={store.id} value={store.id}>
@@ -654,7 +654,7 @@ export function BookmarkForm({
                 </option>
               ))}
             </select>
-            <p className="text-xs text-ink-muted font-serif italic">
+            <p className="text-xs text-stone-500 font-serif italic">
               This bookmark will be added to this bookstore's collection. You can also view and edit the bookstore research details below.
             </p>
           </div>
@@ -662,7 +662,7 @@ export function BookmarkForm({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="sm:col-span-2">
-            <label className="block text-xs font-mono text-ink-light mb-1">
+            <label className="block text-xs font-mono text-stone-600 mb-1">
               BOOKSTORE NAME *
             </label>
             <input
@@ -676,12 +676,12 @@ export function BookmarkForm({
                   bookstore: { ...formData.bookstore, name: e.target.value },
                 })
               }
-              className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-serif"
+              className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-mono text-ink-light mb-1">
+            <label className="block text-xs font-mono text-stone-600 mb-1">
               CITY *
             </label>
             <input
@@ -695,12 +695,12 @@ export function BookmarkForm({
                   bookstore: { ...formData.bookstore, city: e.target.value },
                 })
               }
-              className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-serif"
+              className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-mono text-ink-light mb-1">
+            <label className="block text-xs font-mono text-stone-600 mb-1">
               STATE / PROVINCE
             </label>
             <input
@@ -713,12 +713,12 @@ export function BookmarkForm({
                   bookstore: { ...formData.bookstore, stateProvince: e.target.value },
                 })
               }
-              className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-serif"
+              className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-mono text-ink-light mb-1">
+            <label className="block text-xs font-mono text-stone-600 mb-1">
               COUNTRY
             </label>
             <input
@@ -732,7 +732,7 @@ export function BookmarkForm({
                   bookstore: { ...formData.bookstore, country: e.target.value },
                 })
               }
-              className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-serif"
+              className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif"
             />
             <datalist id="country-suggestions">
               <option value="United States" />
@@ -764,7 +764,7 @@ export function BookmarkForm({
           </div>
 
           <div>
-            <label className="block text-xs font-mono text-ink-light mb-1">
+            <label className="block text-xs font-mono text-stone-600 mb-1">
               STREET ADDRESS
             </label>
             <input
@@ -777,12 +777,12 @@ export function BookmarkForm({
                   bookstore: { ...formData.bookstore, streetAddress: e.target.value },
                 })
               }
-              className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-serif"
+              className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-mono text-ink-light mb-1">
+            <label className="block text-xs font-mono text-stone-600 mb-1">
               YEAR OPENED
             </label>
             <input
@@ -795,12 +795,12 @@ export function BookmarkForm({
                   bookstore: { ...formData.bookstore, yearOpened: e.target.value },
                 })
               }
-              className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-mono"
+              className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-mono"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-mono text-ink-light mb-1">
+            <label className="block text-xs font-mono text-stone-600 mb-1">
               YEAR CLOSED (OR LEAVE BLANK IF OPERATING)
             </label>
             <input
@@ -813,7 +813,7 @@ export function BookmarkForm({
                   bookstore: { ...formData.bookstore, yearClosed: e.target.value },
                 })
               }
-              className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-mono"
+              className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-mono"
             />
           </div>
 
@@ -828,15 +828,15 @@ export function BookmarkForm({
                   bookstore: { ...formData.bookstore, isStillOperating: e.target.checked },
                 })
               }
-              className="w-4 h-4 rounded text-archival-spruce border-parchment-border focus:ring-emerald-700/30"
+              className="w-4 h-4 rounded text-[#10B981] border-[#E8E2D5] focus:ring-[#10B981]/30 cursor-pointer"
             />
-            <label htmlFor="isStillOperating" className="text-xs font-serif font-semibold text-ink cursor-pointer">
+            <label htmlFor="isStillOperating" className="text-xs font-serif font-semibold text-stone-900 cursor-pointer">
               Bookstore is Still Operating Today
             </label>
           </div>
 
           <div className="sm:col-span-2">
-            <label className="block text-xs font-mono text-ink-light mb-1">
+            <label className="block text-xs font-mono text-stone-600 mb-1">
               FOUNDERS &amp; KEY FIGURES
             </label>
             <input
@@ -849,12 +849,12 @@ export function BookmarkForm({
                   bookstore: { ...formData.bookstore, founders: e.target.value },
                 })
               }
-              className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-serif"
+              className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-mono text-ink-light mb-1">
+            <label className="block text-xs font-mono text-stone-600 mb-1">
               SPECIALTIES (COMMA SEPARATED)
             </label>
             <input
@@ -867,7 +867,7 @@ export function BookmarkForm({
                   bookstore: { ...formData.bookstore, specialties: e.target.value },
                 })
               }
-              className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-serif"
+              className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif"
             />
           </div>
         </div>
@@ -875,32 +875,32 @@ export function BookmarkForm({
         {/* Markdown Research Blurb with Live Preview */}
         <div className="space-y-2 pt-2">
           <div className="flex items-center justify-between">
-            <label className="block text-xs font-mono text-ink-light">
+            <label className="block text-xs font-mono text-stone-600">
               RESEARCH NARRATIVE BLURB &amp; HISTORICAL ESSAY (MARKDOWN)
             </label>
-            <div className="inline-flex rounded-lg border border-parchment-border p-0.5 bg-parchment-muted text-xs font-serif">
+            <div className="inline-flex rounded-lg border border-[#E8E2D5] p-0.5 bg-[#FAF8F5] text-xs font-serif">
               <button
                 type="button"
                 onClick={() => setBlurbTab("edit")}
-                className={`px-2.5 py-1 rounded-md flex items-center gap-1 transition-all ${
+                className={`px-2.5 py-1 rounded-md flex items-center gap-1 transition-all cursor-pointer ${
                   blurbTab === "edit"
-                    ? "bg-white text-ink font-semibold shadow-xs"
-                    : "text-ink-muted hover:text-ink"
+                    ? "bg-white text-stone-900 font-semibold shadow-xs border border-[#E8E2D5]"
+                    : "text-stone-500 hover:text-stone-900"
                 }`}
               >
-                <FileEdit className="w-3 h-3" />
+                <FileEdit className="w-3 h-3 text-[#2563EB]" />
                 <span>Write</span>
               </button>
               <button
                 type="button"
                 onClick={() => setBlurbTab("preview")}
-                className={`px-2.5 py-1 rounded-md flex items-center gap-1 transition-all ${
+                className={`px-2.5 py-1 rounded-md flex items-center gap-1 transition-all cursor-pointer ${
                   blurbTab === "preview"
-                    ? "bg-white text-ink font-semibold shadow-xs"
-                    : "text-ink-muted hover:text-ink"
+                    ? "bg-white text-stone-900 font-semibold shadow-xs border border-[#E8E2D5]"
+                    : "text-stone-500 hover:text-stone-900"
                 }`}
               >
-                <Eye className="w-3 h-3" />
+                <Eye className="w-3 h-3 text-[#F59E0B]" />
                 <span>Preview</span>
               </button>
             </div>
@@ -917,10 +917,10 @@ export function BookmarkForm({
                 })
               }
               placeholder="Write your research essay on the bookstore's origins, literary significance, and history..."
-              className="w-full p-4 text-sm bg-parchment-light border border-parchment-border rounded-xl text-ink focus:outline-none font-serif leading-relaxed"
+              className="w-full p-4 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-xl text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif leading-relaxed"
             />
           ) : (
-            <div className="p-6 bg-parchment-light border border-parchment-border rounded-xl min-h-[200px]">
+            <div className="p-6 bg-[#FAF8F5] border border-[#E8E2D5] rounded-xl min-h-[200px]">
               <MarkdownRenderer content={formData.bookstore.historicalBlurb} />
             </div>
           )}
@@ -928,7 +928,7 @@ export function BookmarkForm({
 
         {/* Trivia / Anecdotes */}
         <div>
-          <label className="block text-xs font-mono text-ink-light mb-1">
+          <label className="block text-xs font-mono text-stone-600 mb-1">
             NOTABLE PATRONS &amp; ANECDOTES / TRIVIA (ONE PER LINE)
           </label>
           <textarea
@@ -941,13 +941,13 @@ export function BookmarkForm({
               })
             }
             placeholder="e.g. Patti Smith worked as a clerk here in the 1970s."
-            className="w-full px-3 py-2 text-sm bg-parchment-light border border-parchment-border rounded-lg text-ink focus:outline-none font-serif"
+            className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif"
           />
         </div>
       </div>
 
       {/* 3. Archival Media & Newspaper Clippings */}
-      <div className="p-6 rounded-2xl bg-white border border-parchment-border shadow-xs">
+      <div className="p-6 rounded-2xl bg-white border border-[#E8E2D5] shadow-xs">
         <MediaManager
           mediaList={formData.archivalMedia}
           onChange={(list) => setFormData({ ...formData, archivalMedia: list })}
@@ -957,7 +957,7 @@ export function BookmarkForm({
       {/* Bottom Save Button */}
       <div className="flex items-center justify-end gap-4 py-4">
         <Link href="/admin">
-          <Button type="button" variant="secondary" size="md" className="font-serif">
+          <Button type="button" variant="secondary" size="md" className="font-serif border-[#E8E2D5]">
             Cancel
           </Button>
         </Link>
@@ -967,9 +967,9 @@ export function BookmarkForm({
           variant="oxblood"
           size="md"
           disabled={loading}
-          className="font-serif flex items-center gap-2"
+          className="font-serif flex items-center gap-2 bg-[#F43F7A] hover:bg-[#E11D48] text-white"
         >
-          <CheckCircle className="w-4 h-4 text-amber-300" />
+          <CheckCircle className="w-4 h-4 text-amber-200" />
           <span>
             {loading
               ? "Cataloging..."

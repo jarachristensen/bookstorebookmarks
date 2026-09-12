@@ -61,9 +61,9 @@ export function FAQAccordion({ items = DEFAULT_FAQS }: { items?: FAQItem[] }) {
 
   return (
     <section className="space-y-4">
-      <div className="flex items-center gap-2 border-b border-parchment-border pb-3">
-        <HelpCircle className="w-5 h-5 text-archival-oxblood" />
-        <h2 className="font-serif text-2xl font-bold text-ink">
+      <div className="flex items-center gap-2 border-b border-[#E8E2D5] pb-3">
+        <HelpCircle className="w-5 h-5 text-[#F43F7A]" />
+        <h2 className="font-serif text-2xl font-bold text-stone-900">
           Frequently Asked Questions
         </h2>
       </div>
@@ -75,26 +75,26 @@ export function FAQAccordion({ items = DEFAULT_FAQS }: { items?: FAQItem[] }) {
           return (
             <div
               key={idx}
-              className="rounded-xl bg-white border border-parchment-border shadow-2xs overflow-hidden transition-all"
+              className="rounded-xl bg-white border border-[#E8E2D5] shadow-xs overflow-hidden transition-all"
             >
               <button
                 type="button"
                 onClick={() => toggle(idx)}
-                className="w-full px-5 py-4 text-left flex items-center justify-between gap-4 cursor-pointer hover:bg-parchment-light/60 transition-colors"
+                className="w-full px-5 py-4 text-left flex items-center justify-between gap-4 cursor-pointer hover:bg-[#FAF8F5] transition-colors"
                 aria-expanded={isOpen}
               >
-                <span className="font-serif font-bold text-sm sm:text-base text-ink">
+                <span className="font-serif font-bold text-sm sm:text-base text-stone-900">
                   {item.question}
                 </span>
                 <ChevronDown
-                  className={`w-4 h-4 text-archival-oxblood shrink-0 transition-transform duration-200 ${
+                  className={`w-4 h-4 text-[#F43F7A] shrink-0 transition-transform duration-200 ${
                     isOpen ? "rotate-180" : ""
                   }`}
                 />
               </button>
 
               {isOpen && (
-                <div className="px-5 pb-5 pt-1 font-serif text-xs sm:text-sm text-ink-light leading-relaxed border-t border-parchment-border/40 bg-parchment/20">
+                <div className="px-5 pb-5 pt-1 font-serif text-xs sm:text-sm text-stone-700 leading-relaxed border-t border-[#E8E2D5]/60 bg-[#FAF8F5]/50">
                   {item.answer}
                 </div>
               )}

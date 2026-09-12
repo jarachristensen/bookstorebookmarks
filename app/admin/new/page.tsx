@@ -15,11 +15,11 @@ export default async function AdminNewBookmarkPage() {
   const bookstores = await getAllBookstores();
 
   return (
-    <div className="min-h-screen bg-[#FBF9F5] p-4 sm:p-8">
+    <div className="min-h-screen bg-[#FAF8F5] p-4 sm:p-8">
       <div className="max-w-5xl mx-auto space-y-6">
         <div>
-          <h1 className="font-serif text-3xl font-bold text-ink">Catalog New Bookmark</h1>
-          <p className="text-xs text-ink-muted font-serif italic">
+          <h1 className="font-serif text-3xl font-bold text-stone-900">Catalog New Bookmark</h1>
+          <p className="text-xs text-stone-500 font-serif italic">
             Upload scans, enter physical ephemera measurements, and link to an existing bookstore or create a new dossier.
           </p>
         </div>

@@ -98,41 +98,41 @@ export function AdminTableClient({
   };
 
   return (
-    <div className="bg-white border border-parchment-border rounded-2xl shadow-xs overflow-hidden space-y-4">
+    <div className="bg-white border border-[#E8E2D5] rounded-2xl shadow-xs overflow-hidden space-y-4">
       {/* Top Segmented Tabs & Action Strip */}
-      <div className="p-4 border-b border-parchment-border bg-parchment-light/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="p-4 border-b border-[#E8E2D5] bg-[#FAF8F5]/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         {/* Tab switchers */}
-        <div className="inline-flex rounded-lg border border-parchment-border p-0.5 bg-parchment-muted text-xs font-serif">
+        <div className="inline-flex rounded-lg border border-[#E8E2D5] p-0.5 bg-[#FAF8F5] text-xs font-serif">
           <button
             type="button"
             onClick={() => setActiveTab("bookmarks")}
-            className={`px-3.5 py-1.5 rounded-md flex items-center gap-1.5 transition-all ${
+            className={`px-3.5 py-1.5 rounded-md flex items-center gap-1.5 transition-all cursor-pointer ${
               activeTab === "bookmarks"
-                ? "bg-white text-ink font-bold shadow-xs"
-                : "text-ink-muted hover:text-ink"
+                ? "bg-white text-[#F43F7A] font-bold shadow-xs border border-[#E8E2D5]"
+                : "text-stone-500 hover:text-stone-900"
             }`}
           >
-            <BookmarkIcon className="w-3.5 h-3.5 text-archival-oxblood" />
+            <BookmarkIcon className="w-3.5 h-3.5 text-[#F43F7A]" />
             <span>Bookmarks ({bookmarks.length})</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab("bookstores")}
-            className={`px-3.5 py-1.5 rounded-md flex items-center gap-1.5 transition-all ${
+            className={`px-3.5 py-1.5 rounded-md flex items-center gap-1.5 transition-all cursor-pointer ${
               activeTab === "bookstores"
-                ? "bg-white text-ink font-bold shadow-xs"
-                : "text-ink-muted hover:text-ink"
+                ? "bg-white text-[#2563EB] font-bold shadow-xs border border-[#E8E2D5]"
+                : "text-stone-500 hover:text-stone-900"
             }`}
           >
-            <Building2 className="w-3.5 h-3.5 text-archival-spruce" />
+            <Building2 className="w-3.5 h-3.5 text-[#2563EB]" />
             <span>Bookstores &amp; Dossiers ({bookstores.length})</span>
           </button>
         </div>
 
         {/* Search filter input */}
         <div className="relative w-full sm:max-w-xs">
-          <Search className="w-4 h-4 text-ink-muted absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder={
@@ -142,7 +142,7 @@ export function AdminTableClient({
             }
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9.5 pr-4 py-1.5 text-xs bg-white border border-parchment-border rounded-lg text-ink focus:outline-none focus:ring-2 focus:ring-amber-700/30 font-serif"
+            className="w-full pl-9.5 pr-4 py-1.5 text-xs bg-white border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif"
           />
         </div>
       </div>
@@ -151,7 +151,7 @@ export function AdminTableClient({
       {activeTab === "bookmarks" && (
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-parchment-muted/60 border-b border-parchment-border font-mono uppercase text-ink-muted text-[11px]">
+            <thead className="bg-[#FAF8F5] border-b border-[#E8E2D5] font-mono uppercase text-stone-500 text-[11px]">
               <tr>
                 <th className="py-3 px-4">Scan</th>
                 <th className="py-3 px-4">Bookmark Title</th>
@@ -162,18 +162,18 @@ export function AdminTableClient({
                 <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-parchment-border">
+            <tbody className="divide-y divide-[#E8E2D5]">
               {filteredBookmarks.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-ink-muted font-serif italic">
+                  <td colSpan={7} className="py-8 text-center text-stone-500 font-serif italic">
                     No bookmarks match your search query.
                   </td>
                 </tr>
               ) : (
                 filteredBookmarks.map((b) => (
-                  <tr key={b.id} className="hover:bg-parchment-light/40 transition-colors">
+                  <tr key={b.id} className="hover:bg-[#FAF8F5]/60 transition-colors">
                     <td className="py-3 px-4">
-                      <div className="relative w-9 h-20 rounded bg-parchment-border/40 overflow-hidden border border-parchment-border shadow-2xs">
+                      <div className="relative w-9 h-20 rounded bg-[#FAF8F5] overflow-hidden border border-[#E8E2D5] shadow-2xs">
                         <Image
                           src={b.frontImageUrl}
                           alt={b.title}
@@ -183,49 +183,49 @@ export function AdminTableClient({
                         />
                       </div>
                     </td>
-                    <td className="py-3 px-4 font-medium text-ink">
+                    <td className="py-3 px-4 font-medium text-stone-900">
                       <div className="space-y-0.5">
                         <div className="flex items-center gap-1.5">
                           <span className="font-serif font-bold">{b.title}</span>
                           {b.isFeatured && (
-                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-500/20 text-amber-900 border border-amber-400">
+                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-[#F59E0B]/20 text-[#F59E0B] border border-[#F59E0B]/30">
                               KEY
                             </span>
                           )}
                         </div>
-                        <span className="font-mono text-[10px] text-ink-muted block">
+                        <span className="font-mono text-[10px] text-stone-400 block">
                           Accession: {b.accessionNo}
                         </span>
                       </div>
                     </td>
-                    <td className="py-3 px-4 font-serif text-ink-light">
+                    <td className="py-3 px-4 font-serif text-stone-700">
                       {b.bookstore ? (
                         <Link
                           href={`/bookstores/${b.bookstore.id}`}
-                          className="hover:text-archival-oxblood hover:underline font-bold"
+                          className="hover:text-[#F43F7A] hover:underline font-bold"
                         >
                           {b.bookstore.name}
                         </Link>
                       ) : (
-                        <span className="text-ink-muted italic">Unattached</span>
+                        <span className="text-stone-400 italic">Unattached</span>
                       )}
                     </td>
-                    <td className="py-3 px-4 font-serif text-ink-light">
+                    <td className="py-3 px-4 font-serif text-stone-600">
                       {b.bookstore?.city}
                       {b.bookstore?.stateProvince ? `, ${b.bookstore.stateProvince}` : ""}
                     </td>
-                    <td className="py-3 px-4 font-mono text-[11px] text-ink-muted">
+                    <td className="py-3 px-4 font-mono text-[11px] text-stone-500">
                       <div>{b.dimensions}</div>
-                      <div className="text-[10px] text-ink-muted/80">{b.material}</div>
+                      <div className="text-[10px] text-stone-400">{b.material}</div>
                     </td>
-                    <td className="py-3 px-4 font-mono text-[11px] text-ink-muted">
+                    <td className="py-3 px-4 font-mono text-[11px] text-stone-500">
                       {b.bookstore?.archivalMedia.length || 0} media
                     </td>
                     <td className="py-3 px-4 text-right">
                       <div className="flex items-center justify-end gap-1.5">
                         <Link
                           href={`/admin/edit/${b.id}`}
-                          className="p-1.5 rounded-md hover:bg-parchment-muted text-ink-light hover:text-ink transition-colors"
+                          className="p-1.5 rounded-md hover:bg-stone-100 text-stone-600 hover:text-stone-900 transition-colors"
                           title="Edit Bookmark"
                         >
                           <Edit className="w-3.5 h-3.5" />
@@ -234,7 +234,7 @@ export function AdminTableClient({
                           type="button"
                           onClick={() => handleDeleteBookmark(b.id, b.title)}
                           disabled={deletingId === b.id}
-                          className="p-1.5 rounded-md hover:bg-rose-50 text-ink-muted hover:text-rose-700 transition-colors"
+                          className="p-1.5 rounded-md hover:bg-rose-50 text-stone-400 hover:text-rose-600 transition-colors cursor-pointer"
                           title="Delete Bookmark"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -253,7 +253,7 @@ export function AdminTableClient({
       {activeTab === "bookstores" && (
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-parchment-muted/60 border-b border-parchment-border font-mono uppercase text-ink-muted text-[11px]">
+            <thead className="bg-[#FAF8F5] border-b border-[#E8E2D5] font-mono uppercase text-stone-500 text-[11px]">
               <tr>
                 <th className="py-3 px-4">Storefront</th>
                 <th className="py-3 px-4">Bookstore Name</th>
@@ -264,10 +264,10 @@ export function AdminTableClient({
                 <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-parchment-border">
+            <tbody className="divide-y divide-[#E8E2D5]">
               {filteredBookstores.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-ink-muted font-serif italic">
+                  <td colSpan={7} className="py-8 text-center text-stone-500 font-serif italic">
                     No bookstores match your search query.
                   </td>
                 </tr>
@@ -284,9 +284,9 @@ export function AdminTableClient({
                   } catch {}
 
                   return (
-                    <tr key={s.id} className="hover:bg-parchment-light/40 transition-colors">
+                    <tr key={s.id} className="hover:bg-[#FAF8F5]/60 transition-colors">
                       <td className="py-3 px-4">
-                        <div className="relative w-14 h-10 rounded bg-stone-100 overflow-hidden border border-parchment-border shadow-2xs">
+                        <div className="relative w-14 h-10 rounded bg-stone-100 overflow-hidden border border-[#E8E2D5] shadow-2xs">
                           {storefront ? (
                             <Image
                               src={storefront.imageUrl}
@@ -302,63 +302,63 @@ export function AdminTableClient({
                           )}
                         </div>
                       </td>
-                      <td className="py-3 px-4 font-medium text-ink">
+                      <td className="py-3 px-4 font-medium text-stone-900">
                         <div className="space-y-0.5">
                           <Link
                             href={`/bookstores/${s.id}`}
-                            className="font-serif font-bold text-ink hover:text-archival-oxblood hover:underline flex items-center gap-1"
+                            className="font-serif font-bold text-stone-900 hover:text-[#F43F7A] hover:underline flex items-center gap-1"
                           >
                             <span>{s.name}</span>
-                            <ExternalLink className="w-3 h-3 text-ink-muted" />
+                            <ExternalLink className="w-3 h-3 text-stone-400" />
                           </Link>
                           {s.isStillOperating ? (
-                            <span className="inline-flex px-1.5 py-0.2 rounded text-[9px] font-mono bg-emerald-100 text-emerald-800 font-bold">
+                            <span className="inline-flex px-1.5 py-0.2 rounded text-[9px] font-mono bg-[#10B981]/15 text-[#10B981] font-bold border border-[#10B981]/25">
                               OPERATING
                             </span>
                           ) : (
-                            <span className="inline-flex px-1.5 py-0.2 rounded text-[9px] font-mono bg-stone-100 text-stone-700">
+                            <span className="inline-flex px-1.5 py-0.2 rounded text-[9px] font-mono bg-[#F43F7A]/10 text-[#F43F7A] font-bold border border-[#F43F7A]/20">
                               {s.yearClosed ? `CLOSED (${s.yearClosed})` : "CLOSED"}
                             </span>
                           )}
                         </div>
                       </td>
-                      <td className="py-3 px-4 font-serif text-ink-light">
+                      <td className="py-3 px-4 font-serif text-stone-700">
                         <div className="space-y-0.5">
                           <div>
                             {s.city}
                             {s.stateProvince ? `, ${s.stateProvince}` : ""}, {s.country}
                           </div>
                           {parsedLocs > 1 && (
-                            <span className="font-mono text-[10px] text-archival-oxblood font-semibold">
+                            <span className="font-mono text-[10px] text-[#F43F7A] font-semibold">
                               {parsedLocs} Historic Addresses (Relocated)
                             </span>
                           )}
                         </div>
                       </td>
-                      <td className="py-3 px-4 font-mono text-[11px] text-ink-muted">
+                      <td className="py-3 px-4 font-mono text-[11px] text-stone-500">
                         {s.yearOpened}–{s.isStillOperating ? "Present" : s.yearClosed || "Closed"}
                       </td>
-                      <td className="py-3 px-4 font-mono text-[11px] text-ink-muted">
+                      <td className="py-3 px-4 font-mono text-[11px] text-stone-500">
                         {s.bookmarks.length} bookmarks
                       </td>
-                      <td className="py-3 px-4 font-mono text-[11px] text-ink-muted">
+                      <td className="py-3 px-4 font-mono text-[11px] text-stone-500">
                         {s.archivalMedia.length} items
                       </td>
                       <td className="py-3 px-4 text-right">
                         <div className="flex items-center justify-end gap-1.5">
                           <Link
                             href={`/admin/bookstores/${s.id}`}
-                            className="p-1.5 rounded-md hover:bg-parchment-muted text-ink-light hover:text-ink transition-colors inline-flex items-center gap-1 font-serif text-xs"
+                            className="p-1.5 rounded-md hover:bg-stone-100 text-stone-700 hover:text-[#2563EB] transition-colors inline-flex items-center gap-1 font-serif text-xs"
                             title="Edit In-Depth Bookstore Dossier"
                           >
-                            <Edit className="w-3.5 h-3.5 text-archival-oxblood" />
+                            <Edit className="w-3.5 h-3.5 text-[#2563EB]" />
                             <span className="hidden sm:inline">Edit Dossier</span>
                           </Link>
                           <button
                             type="button"
                             onClick={() => handleDeleteBookstore(s.id, s.name)}
                             disabled={deletingId === s.id}
-                            className="p-1.5 rounded-md hover:bg-rose-50 text-ink-muted hover:text-rose-700 transition-colors"
+                            className="p-1.5 rounded-md hover:bg-rose-50 text-stone-400 hover:text-rose-600 transition-colors cursor-pointer"
                             title="Delete Bookstore"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
