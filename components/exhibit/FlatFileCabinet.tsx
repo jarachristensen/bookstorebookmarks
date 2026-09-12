@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { PopulatedDrawer } from "@/lib/utils/geographic-drawers";
 import { BookmarkWithDetails } from "@/lib/db/queries";
 import { SpecimenTray } from "./SpecimenTray";
+import { BrassCardPull } from "./BrassCardPull";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FolderArchive,
@@ -62,32 +63,32 @@ export function FlatFileCabinet({
   return (
     <div className="w-full max-w-[1240px] mx-auto py-2 sm:py-4 px-2 sm:px-4">
       {/* Antique Hardwood Flat-File Cabinet Housing */}
-      <div className="relative w-full rounded-2xl cabinet-antique-housing p-3 sm:p-6 lg:p-8 border-[8px] sm:border-[16px] border-[#3a1806] shadow-2xl overflow-hidden">
-        {/* Mitered Brass Corner Protectors with Rivets */}
-        <div className="absolute top-2.5 left-2.5 w-6 h-6 border-t-2 border-l-2 border-amber-400/80 pointer-events-none flex items-start justify-start p-0.5">
+      <div className="relative w-full rounded-2xl cabinet-antique-housing p-3 sm:p-6 lg:p-8 border-[10px] sm:border-[18px] border-[#381605] shadow-[0_45px_90px_-15px_rgba(0,0,0,0.95)] overflow-hidden">
+        {/* Mitered Brass Corner Protectors with Slotted Rivets */}
+        <div className="absolute top-2.5 left-2.5 w-7 h-7 border-t-2 border-l-2 border-amber-400/90 pointer-events-none flex items-start justify-start p-0.5">
           <div className="brass-screw-head" />
         </div>
-        <div className="absolute top-2.5 right-2.5 w-6 h-6 border-t-2 border-r-2 border-amber-400/80 pointer-events-none flex items-start justify-end p-0.5">
+        <div className="absolute top-2.5 right-2.5 w-7 h-7 border-t-2 border-r-2 border-amber-400/90 pointer-events-none flex items-start justify-end p-0.5">
           <div className="brass-screw-head" />
         </div>
-        <div className="absolute bottom-2.5 left-2.5 w-6 h-6 border-b-2 border-l-2 border-amber-400/80 pointer-events-none flex items-end justify-start p-0.5">
+        <div className="absolute bottom-2.5 left-2.5 w-7 h-7 border-b-2 border-l-2 border-amber-400/90 pointer-events-none flex items-end justify-start p-0.5">
           <div className="brass-screw-head" />
         </div>
-        <div className="absolute bottom-2.5 right-2.5 w-6 h-6 border-b-2 border-r-2 border-amber-400/80 pointer-events-none flex items-end justify-end p-0.5">
+        <div className="absolute bottom-2.5 right-2.5 w-7 h-7 border-b-2 border-r-2 border-amber-400/90 pointer-events-none flex items-end justify-end p-0.5">
           <div className="brass-screw-head" />
         </div>
 
         {/* Cabinet Top Brass Engraved Header Plaque */}
         <div className="relative z-10 mb-5 sm:mb-7 pb-3 border-b border-amber-500/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-md bg-amber-950/80 border border-amber-400/60 flex items-center justify-center text-amber-300 shadow-inner">
+            <div className="w-8 h-8 rounded-md bg-amber-950/90 border border-amber-400/70 flex items-center justify-center text-amber-300 shadow-inner">
               <FolderArchive className="w-4 h-4" />
             </div>
             <div>
               <h2 className="font-serif tracking-widest uppercase text-xs sm:text-sm font-bold text-amber-200 text-shadow">
                 Archival Hardwood Specimen Flat-File
               </h2>
-              <p className="text-[11px] text-amber-200/70 font-serif italic">
+              <p className="text-[11px] text-amber-200/75 font-serif italic">
                 Antique Library Card Catalog · Solid Walnut & Cast Brass Fixtures
               </p>
             </div>
@@ -106,7 +107,7 @@ export function FlatFileCabinet({
               <span>Close Cabinet</span>
             </button>
           ) : (
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-black/40 border border-amber-400/40 text-amber-300 text-xs font-serif italic shadow-inner">
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-black/50 border border-amber-400/40 text-amber-300 text-xs font-serif italic shadow-inner">
               <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
               <span>7 Regional Drawers Indexed</span>
             </div>
@@ -125,7 +126,7 @@ export function FlatFileCabinet({
               className="space-y-4"
             >
               {/* Tactile Callout Banner Prompt */}
-              <div className="relative p-3.5 sm:p-4 rounded-xl bg-gradient-to-r from-amber-950/90 via-[#481c08] to-amber-950/90 border border-amber-400/50 text-center shadow-xl">
+              <div className="relative p-3.5 sm:p-4 rounded-xl bg-gradient-to-r from-amber-950/95 via-[#481c08] to-amber-950/95 border border-amber-400/50 text-center shadow-xl">
                 <div className="flex items-center justify-center gap-2 text-amber-300 font-serif font-bold text-sm sm:text-base tracking-wide">
                   <Compass className="w-4 h-4 text-amber-400 animate-spin-slow" />
                   <span>✦ Pull Any Brass Drawer to Inspect Specimens ✦</span>
@@ -137,9 +138,8 @@ export function FlatFileCabinet({
               </div>
 
               {/* Stack of Realistic Antique Hardwood Drawer Planks */}
-              <div className="grid grid-cols-1 gap-2 sm:gap-2.5">
+              <div className="grid grid-cols-1 gap-2.5 sm:gap-3">
                 {drawers.map((drawer) => {
-                  const isHovered = hoveredDrawerId === drawer.id;
                   const isMaster = drawer.id === "drawer-all";
 
                   return (
@@ -150,7 +150,7 @@ export function FlatFileCabinet({
                       whileHover={{ scale: 1.006, y: -1 }}
                       whileTap={{ scale: 0.994 }}
                       onClick={() => onSelectDrawer(drawer.id)}
-                      className={`relative group cursor-pointer rounded-lg p-3 sm:p-4 drawer-face-plank border ${
+                      className={`relative group cursor-pointer rounded-lg p-2.5 sm:p-3.5 drawer-face-plank border ${
                         isMaster
                           ? "border-amber-400/70 bg-gradient-to-r from-[#6b3012] via-[#52220b] to-[#6b3012]"
                           : "border-[#85401b]/60"
@@ -170,65 +170,30 @@ export function FlatFileCabinet({
                       <div className="absolute right-2 top-2 bottom-2 w-1.5 rounded-sm bg-black/60 border-l border-amber-300/10 pointer-events-none" />
 
                       {/* 3-Column Symmetrical Layout: Left Detail, Centered Brass Hardware, Right Pill */}
-                      <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 items-center justify-between gap-3 px-3 sm:px-6">
-                        {/* Left Wing: Regional Subtitle & Reference Stamp */}
+                      <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 items-center justify-between gap-3 px-2 sm:px-5">
+                        {/* Left Wing: Regional Reference & Subtitle */}
                         <div className="hidden md:block text-left">
-                          <span className="text-[10px] font-mono uppercase tracking-widest text-amber-400/80 block">
+                          <span className="text-[10px] font-mono uppercase tracking-widest text-amber-400/90 block">
                             {isMaster ? "MASTER CATALOG" : `SECTION · ${drawer.romanNumeral.replace("DRAWER ", "REG-")}`}
                           </span>
-                          <span className="text-xs text-amber-200/70 font-serif italic line-clamp-1">
+                          <span className="text-xs text-amber-200/75 font-serif italic line-clamp-1">
                             {drawer.subtitle}
                           </span>
                         </div>
 
-                        {/* Center Column: EVEN & CENTERED BRASS CARD HOLDER + BRASS CUP HANDLE */}
-                        <div className="flex flex-col items-center justify-center gap-1.5 text-center mx-auto w-full max-w-[340px]">
-                          {/* Authentic Antique Brass Card-Catalog Label Frame */}
-                          <div className="brass-card-holder-frame w-full p-[3px] rounded-[5px] shadow-lg relative">
-                            {/* Four Corner Brass Screws */}
-                            <div className="absolute top-[3px] left-[3px]">
-                              <div className="brass-screw-head" />
-                            </div>
-                            <div className="absolute top-[3px] right-[3px]">
-                              <div className="brass-screw-head" />
-                            </div>
-                            <div className="absolute bottom-[3px] left-[3px]">
-                              <div className="brass-screw-head" />
-                            </div>
-                            <div className="absolute bottom-[3px] right-[3px]">
-                              <div className="brass-screw-head" />
-                            </div>
-
-                            {/* Aged Parchment Card Insert */}
-                            <div className="parchment-index-card px-4 py-1.5 rounded-[3px] text-center border border-amber-900/30">
-                              <span className="block text-[10px] font-mono font-bold tracking-widest text-amber-950 uppercase mb-0.5">
-                                {drawer.romanNumeral}
-                              </span>
-                              <h3 className="font-serif font-bold text-xs sm:text-sm text-stone-900 leading-tight">
-                                {drawer.title}
-                              </h3>
-                            </div>
-                          </div>
-
-                          {/* Authentic 3D Sculpted Antique Brass Cup Pull Handle with Screws */}
-                          <div className="flex items-center justify-center gap-1.5 mt-0.5">
-                            {/* Left Wing Screw */}
-                            <div className="brass-screw-head shrink-0" />
-
-                            {/* Sculpted Brass Cup Pull (Even & Middle) */}
-                            <div
-                              className="brass-cup-handle-sculpted w-24 sm:w-28 h-6 sm:h-7 rounded-t-full rounded-b-sm flex items-center justify-center shadow-lg group-hover:brightness-110 transition-all cursor-pointer"
-                              title="Pull Drawer"
-                            />
-
-                            {/* Right Wing Screw */}
-                            <div className="brass-screw-head shrink-0" />
-                          </div>
+                        {/* Center Column: PHOTO-REALISTIC BRASS CARD PULL (EVEN & IN THE MIDDLE) */}
+                        <div className="flex items-center justify-center mx-auto w-full">
+                          <BrassCardPull
+                            romanNumeral={drawer.romanNumeral}
+                            title={drawer.title}
+                            subtitle={drawer.subtitle}
+                            isMaster={isMaster}
+                          />
                         </div>
 
                         {/* Right Wing: Specimen Counter Pill Badge */}
                         <div className="flex items-center justify-center md:justify-end gap-2 text-right">
-                          <div className="px-3 py-1.5 rounded-full bg-black/60 border border-amber-400/40 text-amber-200 text-xs font-mono font-medium flex items-center gap-1.5 shadow-inner">
+                          <div className="px-3.5 py-1.5 rounded-full bg-black/70 border border-amber-400/40 text-amber-200 text-xs font-mono font-medium flex items-center gap-1.5 shadow-inner">
                             <Layers className="w-3.5 h-3.5 text-amber-400" />
                             <span>{drawer.count} {drawer.count === 1 ? "Specimen" : "Specimens"}</span>
                           </div>

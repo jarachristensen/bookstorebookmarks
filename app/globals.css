@@ -106,13 +106,14 @@ body {
 /* Antique Hardwood Flat-File Cabinet & Card Catalog Furniture Skeuomorphism */
 .cabinet-antique-housing {
   background: 
-    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.08) 0px, rgba(0, 0, 0, 0.08) 2px, transparent 2px, transparent 8px),
-    linear-gradient(180deg, #5c290d 0%, #3e1906 35%, #2a0f03 80%, #1a0801 100%);
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.09) 0px, rgba(0, 0, 0, 0.09) 1px, transparent 1px, transparent 6px),
+    radial-gradient(circle at 50% -20%, rgba(255, 220, 160, 0.15) 0%, transparent 70%),
+    linear-gradient(180deg, #4d2109 0%, #361504 35%, #230d02 75%, #140601 100%);
   box-shadow: 
-    0 40px 80px -15px rgba(0, 0, 0, 0.8),
-    0 20px 35px -5px rgba(0, 0, 0, 0.6),
-    inset 0 3px 6px rgba(255, 235, 190, 0.35),
-    inset 0 -5px 12px rgba(0, 0, 0, 0.95);
+    0 45px 90px -15px rgba(0, 0, 0, 0.9),
+    0 25px 40px -5px rgba(0, 0, 0, 0.7),
+    inset 0 3px 6px rgba(255, 235, 190, 0.4),
+    inset 0 -6px 14px rgba(0, 0, 0, 0.98);
 }
 
 .cabinet-housing-rim {
@@ -123,25 +124,27 @@ body {
     0 4px 15px rgba(0, 0, 0, 0.6);
 }
 
-/* Individual Hardwood Drawer Plank */
+/* Individual Hardwood Drawer Planks with Subtle Natural Variations */
 .drawer-face-plank {
   background: 
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.015) 0px, rgba(255, 255, 255, 0.015) 1px, transparent 1px, transparent 6px),
-    linear-gradient(180deg, #733513 0%, #5d290c 20%, #481d07 70%, #351304 100%);
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.02) 0px, rgba(255, 255, 255, 0.02) 1px, transparent 1px, transparent 8px),
+    radial-gradient(ellipse at 50% 0%, rgba(255, 235, 200, 0.12) 0%, transparent 75%),
+    linear-gradient(180deg, #783815 0%, #632c0f 25%, #4c1f08 70%, #361404 100%);
   box-shadow: 
-    0 5px 12px rgba(0, 0, 0, 0.45),
-    inset 0 1.5px 2px rgba(255, 235, 205, 0.5),
-    inset 0 -2.5px 4px rgba(0, 0, 0, 0.85);
+    0 6px 14px rgba(0, 0, 0, 0.5),
+    inset 0 1.5px 2px rgba(255, 235, 205, 0.55),
+    inset 0 -2.5px 4px rgba(0, 0, 0, 0.9);
 }
 
 .drawer-face-plank:hover {
   background: 
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.02) 0px, rgba(255, 255, 255, 0.02) 1px, transparent 1px, transparent 6px),
-    linear-gradient(180deg, #823e18 0%, #6b3010 20%, #522209 70%, #3e1705 100%);
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.03) 0px, rgba(255, 255, 255, 0.03) 1px, transparent 1px, transparent 8px),
+    radial-gradient(ellipse at 50% 0%, rgba(255, 245, 215, 0.18) 0%, transparent 75%),
+    linear-gradient(180deg, #87411a 0%, #703312 25%, #56240a 70%, #401705 100%);
   box-shadow: 
-    0 10px 24px rgba(0, 0, 0, 0.6),
-    inset 0 2px 3px rgba(255, 245, 220, 0.7),
-    inset 0 -3px 5px rgba(0, 0, 0, 0.9);
+    0 12px 28px rgba(0, 0, 0, 0.7),
+    inset 0 2px 3px rgba(255, 245, 220, 0.75),
+    inset 0 -3px 5px rgba(0, 0, 0, 0.95);
 }
 
 /* Authentic Antique Brass Card-Catalog Label Holder */
@@ -195,13 +198,13 @@ body {
 
 /* Slotted Antique Brass Screw Head */
 .brass-screw-head {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: radial-gradient(circle at 40% 40%, #fae69e 0%, #b8932b 50%, #684f0f 100%);
+  background: radial-gradient(circle at 35% 35%, #fae69e 0%, #b8932b 50%, #684f0f 100%);
   box-shadow: 
-    0 1px 2px rgba(0, 0, 0, 0.6),
-    inset 0 0.5px 1px rgba(255, 255, 255, 0.7);
+    0 1px 2px rgba(0, 0, 0, 0.7),
+    inset 0 0.5px 1px rgba(255, 255, 255, 0.8);
   position: relative;
 }
 
@@ -212,7 +215,7 @@ body {
   left: 15%;
   right: 15%;
   height: 1px;
-  background: #2a1b02;
+  background: #201301;
   transform: translateY(-50%) rotate(35deg);
 }
 
@@ -241,5 +244,6 @@ body {
     inset 0 2px 3px rgba(255, 255, 255, 0.9),
     inset 0 -1.5px 2px rgba(0, 0, 0, 0.7);
 }
+
 
 
