@@ -262,7 +262,15 @@ export function BookmarkForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-5xl mx-auto space-y-8">
+    <form
+      onSubmit={handleSubmit}
+      className="max-w-5xl mx-auto space-y-8"
+      data-1p-ignore
+      data-lpignore="true"
+      data-bwignore="true"
+      data-form-type="other"
+      autoComplete="off"
+    >
       {/* Top Bar Navigation & Save */}
       <div className="flex items-center justify-between pb-4 border-b border-[#E8E2D5]">
         <Link
@@ -354,6 +362,8 @@ export function BookmarkForm({
             <input
               type="text"
               required
+              data-1p-ignore
+              autoComplete="off"
               placeholder="e.g. Gotham Book Mart 'Wise Men Fish Here' Letterpress Bookmark"
               value={formData.bookmark.title}
               onChange={(e) =>
@@ -372,6 +382,8 @@ export function BookmarkForm({
             </label>
             <input
               type="number"
+              data-1p-ignore
+              autoComplete="off"
               placeholder="e.g. 1934 or 1975"
               value={formData.bookmark.yearProduced}
               onChange={(e) =>
@@ -446,6 +458,8 @@ export function BookmarkForm({
               <div className="relative flex-1">
                 <input
                   type="text"
+                  data-1p-ignore
+                  autoComplete="off"
                   placeholder={'e.g. 2.25" × 7.5" or 7.0" × 2.25"'}
                   value={formData.bookmark.dimensions}
                   onChange={(e) =>
@@ -488,6 +502,8 @@ export function BookmarkForm({
             </label>
             <input
               type="text"
+              data-1p-ignore
+              autoComplete="off"
               placeholder="e.g. Letterpress Cream Cardstock, Gloss Paper, Silk"
               value={formData.bookmark.material}
               onChange={(e) =>
@@ -506,6 +522,8 @@ export function BookmarkForm({
             </label>
             <input
               type="text"
+              data-1p-ignore
+              autoComplete="off"
               placeholder="e.g. Fine, Very Good, Aged Patina"
               value={formData.bookmark.condition}
               onChange={(e) =>
@@ -524,6 +542,8 @@ export function BookmarkForm({
             </label>
             <input
               type="date"
+              data-1p-ignore
+              autoComplete="off"
               value={formData.bookmark.acquisitionDate || ""}
               onChange={(e) =>
                 setFormData({
@@ -539,6 +559,7 @@ export function BookmarkForm({
             <input
               type="checkbox"
               id="isFeatured"
+              data-1p-ignore
               checked={formData.bookmark.isFeatured}
               onChange={(e) =>
                 setFormData({
@@ -560,6 +581,8 @@ export function BookmarkForm({
           </label>
           <textarea
             rows={2}
+            data-1p-ignore
+            autoComplete="off"
             placeholder="e.g. Found inside a 1938 edition of Ulysses acquired in Greenwich Village..."
             value={formData.bookmark.acquisitionNotes || ""}
             onChange={(e) =>
@@ -644,6 +667,7 @@ export function BookmarkForm({
               <span>SELECT EXISTING BOOKSTORE IN YOUR ARCHIVE:</span>
             </label>
             <select
+              data-1p-ignore
               value={formData.bookstore.id || bookstoresList[0]?.id}
               onChange={(e) => handleSelectExistingStore(e.target.value)}
               className="w-full px-3 py-2 text-sm bg-white border border-[#E8E2D5] rounded-lg text-stone-900 font-serif focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30"
@@ -668,6 +692,8 @@ export function BookmarkForm({
             <input
               type="text"
               required
+              data-1p-ignore
+              autoComplete="off"
               placeholder="e.g. Gotham Book Mart"
               value={formData.bookstore.name}
               onChange={(e) =>
@@ -687,6 +713,8 @@ export function BookmarkForm({
             <input
               type="text"
               required
+              data-1p-ignore
+              autoComplete="off"
               placeholder="e.g. New York"
               value={formData.bookstore.city}
               onChange={(e) =>
@@ -705,6 +733,8 @@ export function BookmarkForm({
             </label>
             <input
               type="text"
+              data-1p-ignore
+              autoComplete="off"
               placeholder="e.g. NY"
               value={formData.bookstore.stateProvince || ""}
               onChange={(e) =>
@@ -723,6 +753,8 @@ export function BookmarkForm({
             </label>
             <input
               type="text"
+              data-1p-ignore
+              autoComplete="off"
               list="country-suggestions"
               placeholder="e.g. United States, United Kingdom, France"
               value={formData.bookstore.country}
@@ -769,6 +801,8 @@ export function BookmarkForm({
             </label>
             <input
               type="text"
+              data-1p-ignore
+              autoComplete="off"
               placeholder="e.g. 41 West 47th Street"
               value={formData.bookstore.streetAddress || ""}
               onChange={(e) =>
@@ -787,6 +821,8 @@ export function BookmarkForm({
             </label>
             <input
               type="number"
+              data-1p-ignore
+              autoComplete="off"
               placeholder="e.g. 1920"
               value={formData.bookstore.yearOpened}
               onChange={(e) =>
@@ -805,6 +841,8 @@ export function BookmarkForm({
             </label>
             <input
               type="number"
+              data-1p-ignore
+              autoComplete="off"
               placeholder="e.g. 2007"
               value={formData.bookstore.yearClosed || ""}
               onChange={(e) =>
@@ -821,6 +859,7 @@ export function BookmarkForm({
             <input
               type="checkbox"
               id="isStillOperating"
+              data-1p-ignore
               checked={formData.bookstore.isStillOperating}
               onChange={(e) =>
                 setFormData({
@@ -841,6 +880,8 @@ export function BookmarkForm({
             </label>
             <input
               type="text"
+              data-1p-ignore
+              autoComplete="off"
               placeholder="e.g. Frances Steloff"
               value={formData.bookstore.founders || ""}
               onChange={(e) =>
@@ -859,6 +900,8 @@ export function BookmarkForm({
             </label>
             <input
               type="text"
+              data-1p-ignore
+              autoComplete="off"
               placeholder="e.g. Modernist Poetry, Rare Editions, Cinema"
               value={formData.bookstore.specialties}
               onChange={(e) =>
@@ -909,6 +952,8 @@ export function BookmarkForm({
           {blurbTab === "edit" ? (
             <textarea
               rows={8}
+              data-1p-ignore
+              autoComplete="off"
               value={formData.bookstore.historicalBlurb}
               onChange={(e) =>
                 setFormData({
@@ -933,6 +978,8 @@ export function BookmarkForm({
           </label>
           <textarea
             rows={3}
+            data-1p-ignore
+            autoComplete="off"
             value={formData.bookstore.notablePatronsTrivia}
             onChange={(e) =>
               setFormData({

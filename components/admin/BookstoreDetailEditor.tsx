@@ -221,7 +221,15 @@ export function BookstoreDetailEditor({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8 max-w-5xl mx-auto pb-16">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-8 max-w-5xl mx-auto pb-16"
+      data-1p-ignore
+      data-lpignore="true"
+      data-bwignore="true"
+      data-form-type="other"
+      autoComplete="off"
+    >
       {/* Header Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E8E2D5]">
         <Link
@@ -273,6 +281,8 @@ export function BookstoreDetailEditor({
             <input
               type="text"
               required
+              data-1p-ignore
+              autoComplete="off"
               placeholder="e.g. Gotham Book Mart"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -287,6 +297,8 @@ export function BookstoreDetailEditor({
             <input
               type="text"
               required
+              data-1p-ignore
+              autoComplete="off"
               placeholder="e.g. New York"
               value={formData.city}
               onChange={(e) => setFormData({ ...formData, city: e.target.value })}
@@ -300,6 +312,8 @@ export function BookstoreDetailEditor({
             </label>
             <input
               type="text"
+              data-1p-ignore
+              autoComplete="off"
               placeholder="e.g. NY or Île-de-France"
               value={formData.stateProvince}
               onChange={(e) => setFormData({ ...formData, stateProvince: e.target.value })}
@@ -314,6 +328,8 @@ export function BookstoreDetailEditor({
             <input
               type="text"
               required
+              data-1p-ignore
+              autoComplete="off"
               list="country-suggestions"
               placeholder="e.g. United States, United Kingdom, France"
               value={formData.country}
@@ -356,6 +372,8 @@ export function BookstoreDetailEditor({
             <input
               type="number"
               required
+              data-1p-ignore
+              autoComplete="off"
               placeholder="e.g. 1920"
               value={formData.yearOpened}
               onChange={(e) => setFormData({ ...formData, yearOpened: e.target.value })}
@@ -369,6 +387,8 @@ export function BookstoreDetailEditor({
             </label>
             <input
               type="number"
+              data-1p-ignore
+              autoComplete="off"
               placeholder="e.g. 2007"
               value={formData.yearClosed}
               disabled={formData.isStillOperating}
@@ -381,6 +401,7 @@ export function BookstoreDetailEditor({
             <input
               type="checkbox"
               id="isStillOperatingStore"
+              data-1p-ignore
               checked={formData.isStillOperating}
               onChange={(e) =>
                 setFormData({
@@ -500,6 +521,8 @@ export function BookstoreDetailEditor({
                   <input
                     type="text"
                     required
+                    data-1p-ignore
+                    autoComplete="off"
                     placeholder="e.g. 123 Fake Street or 41 West 47th Street"
                     value={loc.streetAddress}
                     onChange={(e) => updateLocation(index, { streetAddress: e.target.value })}
@@ -513,6 +536,8 @@ export function BookstoreDetailEditor({
                   </label>
                   <input
                     type="text"
+                    data-1p-ignore
+                    autoComplete="off"
                     placeholder="e.g. 1950–1955"
                     value={loc.yearsActive || ""}
                     onChange={(e) => updateLocation(index, { yearsActive: e.target.value })}
@@ -526,6 +551,8 @@ export function BookstoreDetailEditor({
                   </label>
                   <input
                     type="text"
+                    data-1p-ignore
+                    autoComplete="off"
                     placeholder="e.g. New York"
                     value={loc.city || formData.city}
                     onChange={(e) => updateLocation(index, { city: e.target.value })}
@@ -539,6 +566,8 @@ export function BookstoreDetailEditor({
                   </label>
                   <input
                     type="text"
+                    data-1p-ignore
+                    autoComplete="off"
                     placeholder="e.g. NY"
                     value={loc.stateProvince || formData.stateProvince}
                     onChange={(e) => updateLocation(index, { stateProvince: e.target.value })}
@@ -552,6 +581,8 @@ export function BookstoreDetailEditor({
                   </label>
                   <input
                     type="text"
+                    data-1p-ignore
+                    autoComplete="off"
                     placeholder="e.g. United States"
                     value={loc.country || formData.country}
                     onChange={(e) => updateLocation(index, { country: e.target.value })}
@@ -618,6 +649,8 @@ export function BookstoreDetailEditor({
             <textarea
               rows={8}
               required
+              data-1p-ignore
+              autoComplete="off"
               value={formData.historicalBlurb}
               onChange={(e) => setFormData({ ...formData, historicalBlurb: e.target.value })}
               className="w-full px-4 py-3 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-xl text-stone-900 font-mono focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 leading-relaxed"
@@ -639,6 +672,8 @@ export function BookstoreDetailEditor({
             </label>
             <input
               type="text"
+              data-1p-ignore
+              autoComplete="off"
               placeholder="e.g. Frances Steloff"
               value={formData.founders}
               onChange={(e) => setFormData({ ...formData, founders: e.target.value })}
@@ -652,6 +687,8 @@ export function BookstoreDetailEditor({
             </label>
             <input
               type="url"
+              data-1p-ignore
+              autoComplete="off"
               placeholder="https://..."
               value={formData.websiteUrl}
               onChange={(e) => setFormData({ ...formData, websiteUrl: e.target.value })}
@@ -665,6 +702,8 @@ export function BookstoreDetailEditor({
             </label>
             <input
               type="text"
+              data-1p-ignore
+              autoComplete="off"
               placeholder="e.g. Modernist Poetry, Radical Literature, Small Press"
               value={formData.specialties}
               onChange={(e) => setFormData({ ...formData, specialties: e.target.value })}

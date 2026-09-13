@@ -460,9 +460,19 @@ export function ImageDropzone({
       </div>
 
       {showUrlInput && !displayUrl && (
-        <form onSubmit={handleApplyCustomUrl} className="flex gap-2">
+        <form
+          onSubmit={handleApplyCustomUrl}
+          className="flex gap-2"
+          data-1p-ignore
+          data-lpignore="true"
+          data-bwignore="true"
+          data-form-type="other"
+          autoComplete="off"
+        >
           <input
             type="url"
+            data-1p-ignore
+            autoComplete="off"
             value={customUrl}
             onChange={(e) => setCustomUrl(e.target.value)}
             placeholder="https://photos.smugmug.com/... or https://..."

@@ -429,6 +429,8 @@ export function MediaManager({ mediaList, onChange }: MediaManagerProps) {
                     </label>
                     <input
                       type="text"
+                      data-1p-ignore
+                      autoComplete="off"
                       value={item.caption}
                       onChange={(e) => updateMedia(index, { caption: e.target.value })}
                       placeholder="e.g. San Francisco Chronicle (May 29, 2026)"
@@ -444,6 +446,8 @@ export function MediaManager({ mediaList, onChange }: MediaManagerProps) {
                       </label>
                       <input
                         type="text"
+                        data-1p-ignore
+                        autoComplete="off"
                         value={item.sourcePublication || ""}
                         onChange={(e) => updateMedia(index, { sourcePublication: e.target.value })}
                         placeholder="e.g. San Francisco Chronicle"
@@ -456,6 +460,8 @@ export function MediaManager({ mediaList, onChange }: MediaManagerProps) {
                       </label>
                       <input
                         type="text"
+                        data-1p-ignore
+                        autoComplete="off"
                         value={item.publicationDate || ""}
                         onChange={(e) => updateMedia(index, { publicationDate: e.target.value })}
                         placeholder="e.g. May 29, 2026"
@@ -492,6 +498,8 @@ export function MediaManager({ mediaList, onChange }: MediaManagerProps) {
                     </div>
                     <textarea
                       rows={3}
+                      data-1p-ignore
+                      autoComplete="off"
                       value={item.transcriptionText || ""}
                       onChange={(e) => updateMedia(index, { transcriptionText: e.target.value })}
                       placeholder="Type or paste the transcribed text of the article, or click 'Extract Text via OCR' above..."
