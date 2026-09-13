@@ -53,208 +53,174 @@ export function RisographHero({
   };
 
   return (
-    <section className="relative w-full pt-1 sm:pt-2 pb-1">
-      {/* Embedded SVG Filter for Organic Risograph Ink Micro-Texture */}
-      <svg className="sr-only" aria-hidden="true" width="0" height="0">
-        <defs>
-          <filter id="riso-ink-bleed" x="-10%" y="-10%" width="120%" height="120%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="3" result="noise" />
-            <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.4" xChannelSelector="R" yChannelSelector="G" />
-          </filter>
-        </defs>
-      </svg>
+    <section className="relative w-full pt-2 sm:pt-4 pb-1 space-y-3 sm:space-y-4">
+      {/* 1. Panoramic Unified Header Banner Illustration */}
+      <div className="w-full flex flex-col items-center">
+        <h1 className="sr-only">The Bookstore Bookmark Archive</h1>
+        <motion.div
+          initial={{ opacity: 0, y: 15, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.45, ease: "easeOut" }}
+          className="relative w-full max-w-5xl aspect-[1024/301] select-none"
+        >
+          <Image
+            src="/images/risograph-banner.png"
+            alt="The Bookstore Bookmark Archive — Illustrated bookmarks and archive masthead"
+            fill
+            priority
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 1024px"
+            className="object-contain object-center"
+          />
+        </motion.div>
 
-      {/* 2-Column Split Hero Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 xl:gap-12 items-center">
-        
-        {/* Left Column: Bold Duotone Typography, Tagline & Search/Filter Controls */}
-        <div className="lg:col-span-7 xl:col-span-7 flex flex-col justify-center space-y-4 sm:space-y-5">
-          
-          {/* Risograph Title Artwork */}
-          <div className="space-y-1.5 sm:space-y-2">
-            <h1 className="sr-only">The Bookstore Bookmark Archive</h1>
-            <div className="relative w-[240px] xs:w-[280px] sm:w-[340px] md:w-[390px] aspect-[264/217] select-none">
-              <Image
-                src="/images/risograph-title.png"
-                alt="The Bookstore Bookmark Archive"
-                fill
-                priority
-                className="object-contain object-left"
-              />
-            </div>
+        {/* Tagline */}
+        <p className="font-serif text-base sm:text-lg md:text-xl text-[#2563EB] max-w-2xl text-center font-medium pt-2">
+          They saved our place, now there is a place to save them.
+        </p>
+      </div>
 
-            <p className="font-serif text-base sm:text-lg md:text-xl text-[#2563EB] max-w-xl font-medium pt-1">
-              They saved our place, now there is a place to save them.
-            </p>
+      {/* 2. Search & Filter Controls Toolbar */}
+      <div className="w-full max-w-4xl mx-auto flex flex-col items-center space-y-3 pt-1">
+        {/* Search Input Bar */}
+        <div className="relative flex items-center w-full max-w-2xl bg-white rounded-xl border-2 border-[#2563EB]/40 shadow-xs focus-within:border-[#2563EB] focus-within:ring-2 focus-within:ring-[#2563EB]/20 transition-all overflow-hidden">
+          <div className="pl-3.5 pr-2 flex items-center pointer-events-none text-[#2563EB]">
+            <Search className="w-4 h-4" />
           </div>
-
-          {/* Risograph Search & Filter Toolbar */}
-          <div className="space-y-3 pt-1">
-            {/* Search Input Bar */}
-            <div className="relative flex items-center w-full max-w-2xl bg-white rounded-xl border-2 border-[#2563EB]/40 shadow-xs focus-within:border-[#2563EB] focus-within:ring-2 focus-within:ring-[#2563EB]/20 transition-all overflow-hidden">
-              <div className="pl-3.5 pr-2 flex items-center pointer-events-none text-[#2563EB]">
-                <Search className="w-4 h-4" />
-              </div>
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => onSearchChange(e.target.value)}
-                placeholder="Search archive by bookstore, city, state, or era..."
-                aria-label="Search archive"
-                className="w-full py-2.5 sm:py-3 pr-3 text-xs sm:text-sm bg-transparent outline-none placeholder:text-stone-400 text-stone-900 font-sans"
-              />
-              {search && (
-                <button
-                  type="button"
-                  onClick={() => onSearchChange("")}
-                  className="px-2.5 text-stone-400 hover:text-stone-600 cursor-pointer"
-                  aria-label="Clear search"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
-            </div>
-
-            {/* Quick Filter Tag Pills Strip */}
-            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 pt-1 max-w-3xl text-xs">
-              {/* Operating Status Tabs */}
-              <div className="inline-flex items-center p-0.5 rounded-lg bg-stone-100/90 border border-stone-200">
-                <button
-                  type="button"
-                  onClick={() => onStatusChange("all")}
-                  className={`px-2.5 py-1 rounded-md transition-all cursor-pointer font-medium ${
-                    status === "all"
-                      ? "bg-white text-[#2563EB] font-bold shadow-xs"
-                      : "text-stone-600 hover:text-stone-900"
-                  }`}
-                >
-                  All Status
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onStatusChange("open")}
-                  className={`px-2.5 py-1 rounded-md transition-all cursor-pointer font-medium ${
-                    status === "open"
-                      ? "bg-[#10B981] text-white font-bold shadow-xs"
-                      : "text-stone-600 hover:text-stone-900"
-                  }`}
-                >
-                  Still Open
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onStatusChange("historic")}
-                  className={`px-2.5 py-1 rounded-md transition-all cursor-pointer font-medium ${
-                    status === "historic"
-                      ? "bg-[#F43F7A] text-white font-bold shadow-xs"
-                      : "text-stone-600 hover:text-stone-900"
-                  }`}
-                >
-                  Permanently Closed
-                </button>
-              </div>
-
-              {/* Country Select Filter */}
-              {countries.length > 0 && (
-                <select
-                  value={country}
-                  onChange={(e) => onCountryChange(e.target.value)}
-                  className="px-2.5 py-1.5 rounded-lg bg-white border border-stone-300 text-stone-700 font-medium text-xs cursor-pointer hover:border-[#2563EB] outline-none"
-                  aria-label="Filter by country"
-                >
-                  <option value="all">All Countries</option>
-                  {countries.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-              )}
-
-              {/* City Select Filter */}
-              {cities.length > 0 && (
-                <select
-                  value={city}
-                  onChange={(e) => onCityChange(e.target.value)}
-                  className="px-2.5 py-1.5 rounded-lg bg-white border border-stone-300 text-stone-700 font-medium text-xs cursor-pointer hover:border-[#2563EB] outline-none"
-                  aria-label="Filter by city"
-                >
-                  <option value="all">All Cities</option>
-                  {cities.map((ct) => (
-                    <option key={ct} value={ct}>
-                      {ct}
-                    </option>
-                  ))}
-                </select>
-              )}
-
-              {/* Eras Filter Select */}
-              {eras.length > 0 && (
-                <select
-                  value={era}
-                  onChange={(e) => onEraChange(e.target.value)}
-                  className="px-2.5 py-1.5 rounded-lg bg-white border border-stone-300 text-stone-700 font-medium text-xs cursor-pointer hover:border-[#2563EB] outline-none"
-                  aria-label="Filter by era"
-                >
-                  {eras.map((er) => (
-                    <option key={er.value} value={er.value}>
-                      {er.label}
-                    </option>
-                  ))}
-                </select>
-              )}
-
-              {/* Clear All Filters Button */}
-              {hasActiveFilters && (
-                <button
-                  type="button"
-                  onClick={handleResetFilters}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold text-[#F43F7A] hover:bg-[#F43F7A]/10 border border-[#F43F7A]/30 transition-all cursor-pointer"
-                >
-                  <X className="w-3 h-3" />
-                  <span>Clear Filters</span>
-                </button>
-              )}
-            </div>
-
-            {/* Shuffle Spread Button (Underneath dropdowns, above bookmarks) */}
-            <div className="pt-1">
-              <button
-                type="button"
-                onClick={onShuffle}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white border border-[#E8E2D5] text-xs sm:text-sm font-medium text-stone-800 hover:bg-[#FAF8F5] hover:border-[#F43F7A] hover:text-[#F43F7A] shadow-xs transition-all cursor-pointer active:scale-95 group"
-                title="Shuffle the bookmark spread"
-                aria-label="Shuffle Spread"
-              >
-                <Shuffle className="w-3.5 h-3.5 text-[#F59E0B] group-hover:rotate-45 transition-transform" />
-                <span>Shuffle Spread</span>
-              </button>
-            </div>
-          </div>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder="Search archive by bookstore, city, state, or era..."
+            aria-label="Search archive"
+            className="w-full py-2.5 sm:py-3 pr-3 text-xs sm:text-sm bg-transparent outline-none placeholder:text-stone-400 text-stone-900 font-sans"
+          />
+          {search && (
+            <button
+              type="button"
+              onClick={() => onSearchChange("")}
+              className="px-2.5 text-stone-400 hover:text-stone-600 cursor-pointer"
+              aria-label="Clear search"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
 
-        {/* Right Column: Illustrated Hand Holding Fan of Bookmarks Artwork */}
-        <div className="lg:col-span-5 xl:col-span-5 flex items-center justify-center lg:justify-end">
-          <motion.div
-            initial={{ opacity: 0, y: 25, scale: 0.94, rotate: -20 }}
-            animate={{ opacity: 1, y: 0, scale: 1, rotate: -20 }}
-            transition={{ duration: 0.55, ease: "easeOut" }}
-            whileHover={{ y: -8, scale: 1.03, rotate: -17, transition: { duration: 0.25 } }}
-            className="relative w-full max-w-[270px] xs:max-w-[340px] sm:max-w-[380px] lg:max-w-[430px] xl:max-w-[500px] flex items-center justify-center select-none"
+        {/* Quick Filter Tag Pills Strip */}
+        <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 pt-1 w-full text-xs">
+          {/* Operating Status Tabs */}
+          <div className="inline-flex items-center p-0.5 rounded-lg bg-stone-100/90 border border-stone-200">
+            <button
+              type="button"
+              onClick={() => onStatusChange("all")}
+              className={`px-2.5 py-1 rounded-md transition-all cursor-pointer font-medium ${
+                status === "all"
+                  ? "bg-white text-[#2563EB] font-bold shadow-xs"
+                  : "text-stone-600 hover:text-stone-900"
+              }`}
+            >
+              All Status
+            </button>
+            <button
+              type="button"
+              onClick={() => onStatusChange("open")}
+              className={`px-2.5 py-1 rounded-md transition-all cursor-pointer font-medium ${
+                status === "open"
+                  ? "bg-[#10B981] text-white font-bold shadow-xs"
+                  : "text-stone-600 hover:text-stone-900"
+              }`}
+            >
+              Still Open
+            </button>
+            <button
+              type="button"
+              onClick={() => onStatusChange("historic")}
+              className={`px-2.5 py-1 rounded-md transition-all cursor-pointer font-medium ${
+                status === "historic"
+                  ? "bg-[#F43F7A] text-white font-bold shadow-xs"
+                  : "text-stone-600 hover:text-stone-900"
+              }`}
+            >
+              Permanently Closed
+            </button>
+          </div>
+
+          {/* Country Select Filter */}
+          {countries.length > 0 && (
+            <select
+              value={country}
+              onChange={(e) => onCountryChange(e.target.value)}
+              className="px-2.5 py-1.5 rounded-lg bg-white border border-stone-300 text-stone-700 font-medium text-xs cursor-pointer hover:border-[#2563EB] outline-none"
+              aria-label="Filter by country"
+            >
+              <option value="all">All Countries</option>
+              {countries.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          )}
+
+          {/* City Select Filter */}
+          {cities.length > 0 && (
+            <select
+              value={city}
+              onChange={(e) => onCityChange(e.target.value)}
+              className="px-2.5 py-1.5 rounded-lg bg-white border border-stone-300 text-stone-700 font-medium text-xs cursor-pointer hover:border-[#2563EB] outline-none"
+              aria-label="Filter by city"
+            >
+              <option value="all">All Cities</option>
+              {cities.map((ct) => (
+                <option key={ct} value={ct}>
+                  {ct}
+                </option>
+              ))}
+            </select>
+          )}
+
+          {/* Eras Filter Select */}
+          {eras.length > 0 && (
+            <select
+              value={era}
+              onChange={(e) => onEraChange(e.target.value)}
+              className="px-2.5 py-1.5 rounded-lg bg-white border border-stone-300 text-stone-700 font-medium text-xs cursor-pointer hover:border-[#2563EB] outline-none"
+              aria-label="Filter by era"
+            >
+              {eras.map((er) => (
+                <option key={er.value} value={er.value}>
+                  {er.label}
+                </option>
+              ))}
+            </select>
+          )}
+
+          {/* Clear All Filters Button */}
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold text-[#F43F7A] hover:bg-[#F43F7A]/10 border border-[#F43F7A]/30 transition-all cursor-pointer"
+            >
+              <X className="w-3 h-3" />
+              <span>Clear Filters</span>
+            </button>
+          )}
+        </div>
+
+        {/* Shuffle Spread Button (Underneath dropdowns, above bookmarks) */}
+        <div className="pt-1">
+          <button
+            type="button"
+            onClick={onShuffle}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white border border-[#E8E2D5] text-xs sm:text-sm font-medium text-stone-800 hover:bg-[#FAF8F5] hover:border-[#F43F7A] hover:text-[#F43F7A] shadow-xs transition-all cursor-pointer active:scale-95 group"
+            title="Shuffle the bookmark spread"
+            aria-label="Shuffle Spread"
           >
-            <div className="relative w-full aspect-[674/708]">
-              <Image
-                src="/images/risograph-hero.png"
-                alt="The Bookstore Bookmark Archive — Illustrated hand fanning colorful bookmarks"
-                fill
-                sizes="(max-width: 640px) 270px, (max-width: 1024px) 380px, 500px"
-                className="object-contain"
-                priority
-              />
-            </div>
-          </motion.div>
+            <Shuffle className="w-3.5 h-3.5 text-[#F59E0B] group-hover:rotate-45 transition-transform" />
+            <span>Shuffle Spread</span>
+          </button>
         </div>
-
       </div>
     </section>
   );
