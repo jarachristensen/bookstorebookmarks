@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export interface FilterOptions {
   cities: string[];
+  states?: string[];
   countries?: string[];
   eras: { label: string; value: string }[];
   specialties: string[];
@@ -47,6 +48,7 @@ export function ExhibitGalleryClient({
   // Filter States
   const [search, setSearch] = useState("");
   const [country, setCountry] = useState("all");
+  const [state, setState] = useState("all");
   const [city, setCity] = useState("all");
   const [era, setEra] = useState("all");
   const [status, setStatus] = useState<"all" | "open" | "historic">("all");
@@ -65,17 +67,33 @@ export function ExhibitGalleryClient({
     return new Set(initialBookmarks.map((b) => b.bookstoreId)).size;
   }, [initialBookmarks]);
 
-  // Dynamic available cities based on selected country
-  const availableCities = useMemo(() => {
-    if (country === "all") return filterOptions.cities;
+  // Dynamic available states based on selected country
+  const availableStates = useMemo(() => {
     const set = new Set<string>();
     initialBookmarks.forEach((bm) => {
-      if (bm.bookstore?.country?.toLowerCase() === country.toLowerCase() && bm.bookstore?.city) {
+      const matchCountry = country === "all" || bm.bookstore?.country?.toLowerCase() === country.toLowerCase();
+      if (matchCountry && bm.bookstore?.stateProvince) {
+        set.add(bm.bookstore.stateProvince);
+      }
+    });
+    if (set.size === 0 && filterOptions.states) {
+      filterOptions.states.forEach((s) => set.add(s));
+    }
+    return Array.from(set).sort();
+  }, [initialBookmarks, filterOptions.states, country]);
+
+  // Dynamic available cities based on selected country and state
+  const availableCities = useMemo(() => {
+    const set = new Set<string>();
+    initialBookmarks.forEach((bm) => {
+      const matchCountry = country === "all" || bm.bookstore?.country?.toLowerCase() === country.toLowerCase();
+      const matchState = state === "all" || bm.bookstore?.stateProvince?.toLowerCase() === state.toLowerCase();
+      if (matchCountry && matchState && bm.bookstore?.city) {
         set.add(bm.bookstore.city);
       }
     });
     return Array.from(set).sort();
-  }, [initialBookmarks, filterOptions.cities, country]);
+  }, [initialBookmarks, country, state]);
 
   // Filter Logic (Evaluated against the randomized collection)
   const filteredBookmarks = useMemo(() => {
@@ -103,12 +121,17 @@ export function ExhibitGalleryClient({
         return false;
       }
 
-      // 3. City filter
+      // 3. State filter
+      if (state !== "all" && store?.stateProvince?.toLowerCase() !== state.toLowerCase()) {
+        return false;
+      }
+
+      // 4. City filter
       if (city !== "all" && store?.city !== city) {
         return false;
       }
 
-      // 4. Status filter (open vs historic/closed)
+      // 5. Status filter (open vs historic/closed)
       if (status === "open" && !store?.isStillOperating) {
         return false;
       }
@@ -116,7 +139,7 @@ export function ExhibitGalleryClient({
         return false;
       }
 
-      // 5. Era filter
+      // 6. Era filter
       if (era !== "all" && bm.yearProduced) {
         const yr = bm.yearProduced;
         if (era === "pre-1970" && yr >= 1970) return false;
@@ -129,12 +152,17 @@ export function ExhibitGalleryClient({
 
       return true;
     });
-  }, [shuffledBookmarks, search, country, city, era, status]);
+  }, [shuffledBookmarks, search, country, state, city, era, status]);
 
   // Handlers for filter controls
   const handleSearchChange = (val: string) => setSearch(val);
   const handleCountryChange = (val: string) => {
     setCountry(val);
+    setState("all");
+    setCity("all");
+  };
+  const handleStateChange = (val: string) => {
+    setState(val);
     setCity("all");
   };
   const handleCityChange = (val: string) => setCity(val);
@@ -144,6 +172,7 @@ export function ExhibitGalleryClient({
   const handleResetFilters = () => {
     setSearch("");
     setCountry("all");
+    setState("all");
     setCity("all");
     setEra("all");
     setStatus("all");
@@ -172,6 +201,9 @@ export function ExhibitGalleryClient({
         country={country}
         onCountryChange={handleCountryChange}
         countries={filterOptions.countries || []}
+        state={state}
+        onStateChange={handleStateChange}
+        states={availableStates}
         city={city}
         onCityChange={handleCityChange}
         cities={availableCities}

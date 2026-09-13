@@ -9,6 +9,7 @@ import { sortMediaByMostRecent } from "@/lib/utils/clipping-parser";
 import { BookmarkInspector } from "@/components/exhibit/BookmarkInspector";
 import { ClippingLightbox } from "@/components/exhibit/ClippingLightbox";
 import { BookstoreHorizontalTimeline } from "@/components/bookstores/BookstoreHorizontalTimeline";
+import { BookstoreGoogleMap } from "@/components/bookstores/BookstoreGoogleMap";
 import {
   MapPin,
   Calendar,
@@ -21,6 +22,7 @@ import {
   ChevronRight,
   BookOpen,
   Navigation,
+  Building2,
 } from "lucide-react";
 import { marked } from "marked";
 
@@ -132,6 +134,28 @@ export function BookstoreDetailView({ bookstore }: BookstoreDetailViewProps) {
         )}
       </div>
 
+      {/* Flagship Notice Banner for Branch Locations */}
+      {bookstore.flagshipStore && (
+        <div className="p-4 rounded-xl bg-amber-50/90 border border-amber-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+          <div className="flex items-center gap-2.5">
+            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#F59E0B] text-white uppercase tracking-wider">
+              Branch Location
+            </span>
+            <span className="text-xs font-serif text-stone-800">
+              This is a branch listing of <strong>{bookstore.flagshipStore.name}</strong>
+              {bookstore.branchLabel ? ` (${bookstore.branchLabel})` : ""}.
+            </span>
+          </div>
+          <Link
+            href={`/bookstores/${bookstore.flagshipStore.id}`}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-900 text-amber-300 hover:bg-[#F43F7A] hover:text-white transition-colors text-xs font-serif font-bold tracking-wide shrink-0 shadow-xs"
+          >
+            <span>See Flagship Location</span>
+            <ExternalLink className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+      )}
+
       {/* 2. Clean Bookstore Header Title & Metadata */}
       <div className="space-y-3">
         <div className="flex flex-col md:flex-row md:items-baseline justify-between gap-4">
@@ -140,6 +164,18 @@ export function BookstoreDetailView({ bookstore }: BookstoreDetailViewProps) {
             <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold text-stone-900 tracking-tight">
               {bookstore.name}
             </h1>
+
+            {bookstore.isFlagship && (
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#2563EB] text-white shadow-xs tracking-wider">
+                FLAGSHIP LOCATION
+              </span>
+            )}
+
+            {bookstore.branchLabel && !bookstore.isFlagship && (
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#F59E0B] text-white shadow-xs tracking-wider">
+                {bookstore.branchLabel}
+              </span>
+            )}
 
             {bookstore.isStillOperating ? (
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#10B981] text-white shadow-xs tracking-wider">
@@ -475,6 +511,58 @@ export function BookstoreDetailView({ bookstore }: BookstoreDetailViewProps) {
           )}
         </div>
       </div>
+
+      {/* 6. Branch Locations & Sibling Stores Grid (if flagship or has branches) */}
+      {bookstore.branches && bookstore.branches.length > 0 && (
+        <section className="p-6 sm:p-8 rounded-2xl bg-white border border-[#E8E2D5] shadow-xs space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#E8E2D5]">
+            <h2 className="font-serif text-base sm:text-lg font-bold text-stone-900 flex items-center gap-2">
+              <Building2 className="w-4.5 h-4.5 text-[#2563EB]" />
+              <span>Branch Locations &amp; Sibling Stores ({bookstore.branches.length})</span>
+            </h2>
+            <span className="text-xs font-sans text-stone-500 italic">
+              {bookstore.chainName || bookstore.name} Network
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pt-2">
+            {bookstore.branches.map((branch) => (
+              <Link
+                key={branch.id}
+                href={`/bookstores/${branch.id}`}
+                className="group p-4 rounded-xl border border-[#E8E2D5] bg-[#FAF8F5] hover:bg-white hover:border-[#2563EB]/40 transition-all shadow-2xs hover:shadow-xs flex flex-col justify-between space-y-3"
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="text-[10px] font-mono font-bold text-[#2563EB] uppercase tracking-wider">
+                      {branch.branchLabel || "Branch Location"}
+                    </span>
+                    <span className="text-[10px] font-mono text-stone-500">
+                      {branch.yearOpened}–{branch.isStillOperating ? "Pres." : branch.yearClosed || "Closed"}
+                    </span>
+                  </div>
+                  <h4 className="font-serif text-sm font-bold text-stone-900 group-hover:text-[#F43F7A] transition-colors">
+                    {branch.name}
+                  </h4>
+                  <p className="font-sans text-xs text-stone-600 mt-1 flex items-center gap-1">
+                    <MapPin className="w-3 h-3 text-[#F59E0B] shrink-0" />
+                    <span className="truncate">
+                      {branch.city}{branch.stateProvince ? `, ${branch.stateProvince}` : ""}
+                    </span>
+                  </p>
+                </div>
+                <div className="text-[11px] font-serif font-bold text-[#F43F7A] group-hover:underline flex items-center gap-1 pt-2 border-t border-[#E8E2D5]/60">
+                  <span>Explore branch page</span>
+                  <span>→</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 7. Historic Location & Interactive Google Map */}
+      <BookstoreGoogleMap bookstore={bookstore} />
 
       {/* Bookmark Inspector Modal */}
       {selectedBookmark && (

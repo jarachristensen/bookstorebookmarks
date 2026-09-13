@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { BookstoreWithDetails } from "@/lib/db/queries";
 import { BookstoreLocation } from "@/db/schema";
@@ -22,6 +22,7 @@ import {
   FileText,
   Eye,
   Edit3,
+  Network,
 } from "lucide-react";
 import { marked } from "marked";
 
@@ -35,9 +36,25 @@ export function BookstoreDetailEditor({
   isEditing = false,
 }: BookstoreDetailEditorProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const paramFlagshipId = searchParams?.get("flagshipId") || "";
+  const paramChainName = searchParams?.get("chainName") || "";
+
+  const [allStores, setAllStores] = useState<BookstoreWithDetails[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [blurbTab, setBlurbTab] = useState<"edit" | "preview">("edit");
+
+  useEffect(() => {
+    fetch("/api/bookstores")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setAllStores(data);
+        }
+      })
+      .catch((err) => console.error("Error fetching bookstores list:", err));
+  }, []);
 
   // Parse locations or initialize with default
   const getInitialLocations = (): BookstoreLocation[] => {
@@ -87,6 +104,12 @@ export function BookstoreDetailEditor({
     stateProvince: initialData?.stateProvince || "",
     country: initialData?.country || "United States",
     streetAddress: initialData?.streetAddress || "",
+    isFlagship: initialData?.isFlagship ?? false,
+    flagshipId: initialData?.flagshipId || paramFlagshipId || "",
+    chainName: initialData?.chainName || paramChainName || "",
+    branchLabel:
+      initialData?.branchLabel ||
+      (paramFlagshipId ? "Branch Location" : initialData?.isFlagship ? "Flagship Location" : ""),
     yearOpened: initialData?.yearOpened?.toString() || "",
     yearClosed: initialData?.yearClosed?.toString() || "",
     isStillOperating: initialData?.isStillOperating || false,
@@ -172,6 +195,10 @@ export function BookstoreDetailEditor({
           country: primaryLoc?.country || formData.country || "United States",
           streetAddress: primaryLoc?.streetAddress || formData.streetAddress || null,
           locations: locations,
+          isFlagship: formData.isFlagship,
+          flagshipId: formData.isFlagship ? null : formData.flagshipId || null,
+          chainName: formData.chainName.trim() || null,
+          branchLabel: formData.branchLabel.trim() || null,
           yearOpened: parseInt(formData.yearOpened, 10) || 1900,
           yearClosed: formData.yearClosed ? parseInt(formData.yearClosed, 10) : null,
           isStillOperating: formData.isStillOperating,
@@ -419,6 +446,113 @@ export function BookstoreDetailEditor({
               Bookstore is Still Operating Today
             </label>
           </div>
+        </div>
+      </section>
+
+      {/* 1.5 Chain & Flagship Network Configuration */}
+      <section className="p-6 sm:p-8 rounded-2xl bg-white border border-[#E8E2D5] shadow-xs space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#E8E2D5]">
+          <div className="flex items-center gap-2 text-sm font-mono font-bold text-[#2563EB] uppercase tracking-wider">
+            <Network className="w-4 h-4" />
+            <span>Chain Bookstore &amp; Flagship Network</span>
+          </div>
+          {isEditing && formData.isFlagship && formData.id && (
+            <Link
+              href={`/admin/bookstores/new?flagshipId=${formData.id}&chainName=${encodeURIComponent(formData.chainName || formData.name)}`}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-[#2563EB] border border-blue-200 hover:bg-blue-100 text-xs font-serif font-bold transition-all"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>+ Add Branch Store to this Chain</span>
+            </Link>
+          )}
+        </div>
+
+        <p className="text-xs font-serif text-stone-500 italic">
+          Configure whether this bookstore is a primary flagship store or an individual branch of a multi-store network (e.g. Borders, B. Dalton). Each branch maintains its own storefront diecut image and bookmarks while linking back to the flagship parent.
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="sm:col-span-3 p-4 rounded-xl bg-[#FAF8F5] border border-[#E8E2D5] flex items-center justify-between gap-4">
+            <div className="space-y-0.5">
+              <label htmlFor="isFlagshipCheckbox" className="text-xs font-serif font-bold text-stone-900 cursor-pointer">
+                Flagship Location (Primary / Original Storefront)
+              </label>
+              <p className="text-[11px] font-sans text-stone-500">
+                Check this if this location is the historical flagship store for this chain.
+              </p>
+            </div>
+            <input
+              type="checkbox"
+              id="isFlagshipCheckbox"
+              data-1p-ignore
+              checked={formData.isFlagship}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  isFlagship: e.target.checked,
+                  flagshipId: e.target.checked ? "" : formData.flagshipId,
+                  branchLabel: e.target.checked
+                    ? "Flagship Location"
+                    : formData.branchLabel === "Flagship Location"
+                    ? ""
+                    : formData.branchLabel,
+                })
+              }
+              className="w-5 h-5 rounded text-[#2563EB] border-[#E8E2D5] focus:ring-[#2563EB]/30 cursor-pointer shrink-0"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-mono text-stone-600 mb-1">
+              CHAIN / BRAND NAME (OPTIONAL)
+            </label>
+            <input
+              type="text"
+              data-1p-ignore
+              autoComplete="off"
+              placeholder="e.g. Borders Book Shop"
+              value={formData.chainName}
+              onChange={(e) => setFormData({ ...formData, chainName: e.target.value })}
+              className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-mono text-stone-600 mb-1">
+              BRANCH DESCRIPTOR / SUBTITLE
+            </label>
+            <input
+              type="text"
+              data-1p-ignore
+              autoComplete="off"
+              placeholder="e.g. Ann Arbor Flagship, Chestnut Hill, State St."
+              value={formData.branchLabel}
+              onChange={(e) => setFormData({ ...formData, branchLabel: e.target.value })}
+              className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif"
+            />
+          </div>
+
+          {!formData.isFlagship && (
+            <div>
+              <label className="block text-xs font-mono text-stone-600 mb-1">
+                PARENT FLAGSHIP BOOKSTORE
+              </label>
+              <select
+                value={formData.flagshipId}
+                onChange={(e) => setFormData({ ...formData, flagshipId: e.target.value })}
+                className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif"
+              >
+                <option value="">(None / Independent Single Bookstore)</option>
+                {allStores
+                  .filter((s) => s.id !== formData.id)
+                  .map((store) => (
+                    <option key={store.id} value={store.id}>
+                      {store.name} — {store.city}{store.stateProvince ? `, ${store.stateProvince}` : ""} {store.isFlagship ? "★ (Flagship)" : ""}
+                    </option>
+                  ))}
+              </select>
+            </div>
+          )}
         </div>
       </section>
 

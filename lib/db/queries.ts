@@ -1,10 +1,22 @@
-import { db } from "@/db";
+import { db, initDb } from "@/db";
 import { bookmarks, bookstores, archivalMedia, Bookmark, Bookstore, ArchivalMedia } from "@/db/schema";
 import { eq, asc, desc } from "drizzle-orm";
+
+let dbInitPromise: Promise<void> | null = null;
+export async function ensureDb() {
+  if (!dbInitPromise) {
+    dbInitPromise = initDb().catch((err) => {
+      console.error("Database initialization error:", err);
+      dbInitPromise = null;
+    });
+  }
+  return dbInitPromise;
+}
 
 export interface FilterOptions {
   search?: string;
   city?: string;
+  state?: string;
   country?: string;
   era?: string; // e.g. "pre-1940", "1940-1960", "post-1960"
   status?: "all" | "open" | "historic";
@@ -18,12 +30,15 @@ export type BookmarkWithDetails = Bookmark & {
 export type BookstoreWithDetails = Bookstore & {
   bookmarks: Bookmark[];
   archivalMedia: ArchivalMedia[];
+  flagshipStore?: Bookstore | null;
+  branches?: Bookstore[];
 };
 
 /**
  * Fetch all bookmarks with joined bookstore details and historical media, applying optional filters.
  */
 export async function getBookmarksWithBookstores(filters?: FilterOptions): Promise<BookmarkWithDetails[]> {
+  await ensureDb();
   const allBookmarks = await db.select().from(bookmarks).orderBy(asc(bookmarks.displayOrder), desc(bookmarks.yearProduced));
   const allBookstores = await db.select().from(bookstores);
   const allMedia = await db.select().from(archivalMedia).orderBy(asc(archivalMedia.displayOrder));
@@ -43,14 +58,18 @@ export async function getBookmarksWithBookstores(filters?: FilterOptions): Promi
 
   if (!filters) return results;
 
-  const { search, city, country, era, status, specialty } = filters;
+  const { search, city, state, country, era, status, specialty } = filters;
+
+  if (country && country !== "all") {
+    results = results.filter((bm) => bm.bookstore?.country?.toLowerCase() === country.toLowerCase());
+  }
+
+  if (state && state !== "all") {
+    results = results.filter((bm) => bm.bookstore?.stateProvince?.toLowerCase() === state.toLowerCase());
+  }
 
   if (city && city !== "all") {
     results = results.filter((bm) => bm.bookstore?.city.toLowerCase() === city.toLowerCase());
-  }
-
-  if (country && country !== "all") {
-    results = results.filter((bm) => bm.bookstore?.country.toLowerCase() === country.toLowerCase());
   }
 
   if (status && status !== "all") {
@@ -91,6 +110,7 @@ export async function getBookmarksWithBookstores(filters?: FilterOptions): Promi
       const materialMatch = bm.material.toLowerCase().includes(q);
       const storeNameMatch = bm.bookstore?.name.toLowerCase().includes(q);
       const cityMatch = bm.bookstore?.city.toLowerCase().includes(q);
+      const stateMatch = bm.bookstore?.stateProvince?.toLowerCase().includes(q);
       const countryMatch = bm.bookstore?.country?.toLowerCase().includes(q);
       const foundersMatch = bm.bookstore?.founders?.toLowerCase().includes(q);
       const blurbMatch = bm.bookstore?.historicalBlurb.toLowerCase().includes(q);
@@ -102,6 +122,7 @@ export async function getBookmarksWithBookstores(filters?: FilterOptions): Promi
         materialMatch ||
         storeNameMatch ||
         cityMatch ||
+        stateMatch ||
         countryMatch ||
         foundersMatch ||
         blurbMatch ||
@@ -117,6 +138,7 @@ export async function getBookmarksWithBookstores(filters?: FilterOptions): Promi
  * Fetch a single bookmark by its ID / slug.
  */
 export async function getBookmarkBySlug(slug: string): Promise<BookmarkWithDetails | null> {
+  await ensureDb();
   const bm = await db.query.bookmarks.findFirst({
     where: eq(bookmarks.id, slug),
   });
@@ -142,14 +164,22 @@ export async function getBookmarkBySlug(slug: string): Promise<BookmarkWithDetai
  * Fetch all bookstores with their associated bookmarks and media.
  */
 export async function getAllBookstores(): Promise<BookstoreWithDetails[]> {
+  await ensureDb();
   const allStores = await db.select().from(bookstores).orderBy(asc(bookstores.name));
   const allBookmarks = await db.select().from(bookmarks);
   const allMedia = await db.select().from(archivalMedia).orderBy(asc(archivalMedia.displayOrder));
+
+  const storeMap = new Map<string, Bookstore>();
+  for (const s of allStores) {
+    storeMap.set(s.id, s);
+  }
 
   return allStores.map((store) => ({
     ...store,
     bookmarks: allBookmarks.filter((bm) => bm.bookstoreId === store.id),
     archivalMedia: allMedia.filter((m) => m.bookstoreId === store.id),
+    flagshipStore: store.flagshipId ? storeMap.get(store.flagshipId) || null : null,
+    branches: allStores.filter((s) => s.flagshipId === store.id),
   }));
 }
 
@@ -157,6 +187,7 @@ export async function getAllBookstores(): Promise<BookstoreWithDetails[]> {
  * Fetch a single bookstore by ID.
  */
 export async function getBookstoreById(id: string): Promise<BookstoreWithDetails | null> {
+  await ensureDb();
   const store = await db.query.bookstores.findFirst({
     where: eq(bookstores.id, id),
   });
@@ -173,10 +204,24 @@ export async function getBookstoreById(id: string): Promise<BookstoreWithDetails
     orderBy: [asc(archivalMedia.displayOrder)],
   });
 
+  let flagshipStore: Bookstore | null = null;
+  if (store.flagshipId) {
+    flagshipStore = (await db.query.bookstores.findFirst({
+      where: eq(bookstores.id, store.flagshipId),
+    })) || null;
+  }
+
+  const branches = await db.query.bookstores.findMany({
+    where: eq(bookstores.flagshipId, id),
+    orderBy: [asc(bookstores.name)],
+  });
+
   return {
     ...store,
     bookmarks: bms,
     archivalMedia: media,
+    flagshipStore,
+    branches: branches || [],
   };
 }
 
@@ -185,12 +230,15 @@ export async function getBookstoreById(id: string): Promise<BookstoreWithDetails
  */
 export async function getFilterOptions(): Promise<{
   cities: string[];
+  states: string[];
   countries: string[];
   eras: { label: string; value: string }[];
   specialties: string[];
 }> {
+  await ensureDb();
   const allStores = await db.select().from(bookstores);
   const cities = Array.from(new Set(allStores.map((s) => s.city))).filter(Boolean).sort();
+  const states = Array.from(new Set(allStores.map((s) => s.stateProvince))).filter(Boolean).sort() as string[];
   const countries = Array.from(new Set(allStores.map((s) => s.country))).filter(Boolean).sort();
 
   const specialtiesSet = new Set<string>();
@@ -205,6 +253,7 @@ export async function getFilterOptions(): Promise<{
 
   return {
     cities,
+    states,
     countries,
     eras: [
       { label: "All Eras", value: "all" },

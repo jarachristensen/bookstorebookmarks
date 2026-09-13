@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Header } from "@/components/ui/Header";
 import { getAllBookstores } from "@/lib/db/queries";
 import { BookstoresDirectoryClient } from "@/components/bookstores/BookstoresDirectoryClient";
+import { getAvailableStorefrontFiles } from "@/lib/utils/storefront-server";
 import { Building2, Sparkles } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -15,6 +16,7 @@ export const metadata = {
 
 export default async function BookstoresPage() {
   const bookstores = await getAllBookstores().catch(() => []);
+  const availableStorefronts = getAvailableStorefrontFiles();
 
   return (
     <div className="min-h-screen flex flex-col bg-[#FAF8F5]">
@@ -37,7 +39,10 @@ export default async function BookstoresPage() {
         </section>
 
         {/* Interactive Directory List */}
-        <BookstoresDirectoryClient bookstores={bookstores} />
+        <BookstoresDirectoryClient
+          bookstores={bookstores}
+          availableStorefronts={availableStorefronts}
+        />
       </main>
 
       <footer className="border-t border-[#E8E2D5] py-8 bg-[#FAF8F5] text-center text-xs text-stone-600">

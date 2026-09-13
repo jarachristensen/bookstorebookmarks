@@ -34,6 +34,10 @@ export const bookstores = sqliteTable("bookstores", {
   streetAddress: text("street_address"),
   locations: text("locations"), // JSON stringified BookstoreLocation[]
   timelineEvents: text("timeline_events"), // JSON stringified CustomTimelineEvent[]
+  isFlagship: integer("is_flagship", { mode: "boolean" }).default(false),
+  flagshipId: text("flagship_id"), // parent flagship bookstore ID if this is a branch
+  chainName: text("chain_name"), // brand or chain group name (e.g. "Borders Book Shop")
+  branchLabel: text("branch_label"), // e.g. "Ann Arbor Flagship", "Chestnut Hill Branch"
   yearOpened: integer("year_opened").notNull(),
   yearClosed: integer("year_closed"),
   isStillOperating: integer("is_still_operating", { mode: "boolean" }).notNull().default(false),
@@ -105,6 +109,14 @@ export const archivalMediaRelations = relations(archivalMedia, ({ one }) => ({
   }),
 }));
 
+export const pageContent = sqliteTable("page_content", {
+  id: text("id").primaryKey(), // `${pageSlug}_${sectionKey}`
+  pageSlug: text("page_slug").notNull(), // 'about' | 'partners' | 'contact'
+  sectionKey: text("section_key").notNull(),
+  contentMarkdown: text("content_markdown").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
 export type Bookstore = typeof bookstores.$inferSelect;
 export type NewBookstore = typeof bookstores.$inferInsert;
 
@@ -113,3 +125,6 @@ export type NewBookmark = typeof bookmarks.$inferInsert;
 
 export type ArchivalMedia = typeof archivalMedia.$inferSelect;
 export type NewArchivalMedia = typeof archivalMedia.$inferInsert;
+
+export type PageContent = typeof pageContent.$inferSelect;
+export type NewPageContent = typeof pageContent.$inferInsert;

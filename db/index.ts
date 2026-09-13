@@ -79,6 +79,10 @@ export async function initDb() {
       street_address TEXT,
       locations TEXT,
       timeline_events TEXT,
+      is_flagship INTEGER DEFAULT 0,
+      flagship_id TEXT,
+      chain_name TEXT,
+      branch_label TEXT,
       year_opened INTEGER NOT NULL,
       year_closed INTEGER,
       is_still_operating INTEGER NOT NULL DEFAULT 0,
@@ -98,6 +102,18 @@ export async function initDb() {
   } catch (_) {}
   try {
     await client.execute(`ALTER TABLE bookstores ADD COLUMN timeline_events TEXT;`);
+  } catch (_) {}
+  try {
+    await client.execute(`ALTER TABLE bookstores ADD COLUMN is_flagship INTEGER DEFAULT 0;`);
+  } catch (_) {}
+  try {
+    await client.execute(`ALTER TABLE bookstores ADD COLUMN flagship_id TEXT;`);
+  } catch (_) {}
+  try {
+    await client.execute(`ALTER TABLE bookstores ADD COLUMN chain_name TEXT;`);
+  } catch (_) {}
+  try {
+    await client.execute(`ALTER TABLE bookstores ADD COLUMN branch_label TEXT;`);
   } catch (_) {}
 
   await client.execute(`
@@ -146,4 +162,14 @@ export async function initDb() {
   try {
     await client.execute(`ALTER TABLE archival_media ADD COLUMN media_tag TEXT;`);
   } catch (_) {}
+
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS page_content (
+      id TEXT PRIMARY KEY,
+      page_slug TEXT NOT NULL,
+      section_key TEXT NOT NULL,
+      content_markdown TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+  `);
 }

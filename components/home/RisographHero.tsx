@@ -13,6 +13,9 @@ export interface RisographHeroProps {
   country: string;
   onCountryChange: (val: string) => void;
   countries: string[];
+  state: string;
+  onStateChange: (val: string) => void;
+  states: string[];
   city: string;
   onCityChange: (val: string) => void;
   cities: string[];
@@ -32,6 +35,9 @@ export function RisographHero({
   country,
   onCountryChange,
   countries,
+  state,
+  onStateChange,
+  states,
   city,
   onCityChange,
   cities,
@@ -42,11 +48,18 @@ export function RisographHero({
   onStatusChange,
   onShuffle,
 }: RisographHeroProps) {
-  const hasActiveFilters = search !== "" || country !== "all" || city !== "all" || era !== "all" || status !== "all";
+  const hasActiveFilters =
+    search !== "" ||
+    country !== "all" ||
+    state !== "all" ||
+    city !== "all" ||
+    era !== "all" ||
+    status !== "all";
 
   const handleResetFilters = () => {
     onSearchChange("");
     onCountryChange("all");
+    onStateChange("all");
     onCityChange("all");
     onEraChange("all");
     onStatusChange("all");
@@ -181,15 +194,32 @@ export function RisographHero({
             </select>
           )}
 
-          {/* City Select Filter */}
-          {cities.length > 0 && (
+          {/* State Select Filter */}
+          {states.length > 0 && (
+            <select
+              value={state}
+              onChange={(e) => onStateChange(e.target.value)}
+              className="px-2.5 py-1.5 rounded-lg bg-white border border-stone-300 text-stone-700 font-medium text-xs cursor-pointer hover:border-[#2563EB] outline-none"
+              aria-label="Filter by state"
+            >
+              <option value="all">All States</option>
+              {states.map((st) => (
+                <option key={st} value={st}>
+                  {st}
+                </option>
+              ))}
+            </select>
+          )}
+
+          {/* Dynamic City Select Filter (shown when a state is selected) */}
+          {state !== "all" && cities.length > 0 && (
             <select
               value={city}
               onChange={(e) => onCityChange(e.target.value)}
-              className="px-2.5 py-1.5 rounded-lg bg-white border border-stone-300 text-stone-700 font-medium text-xs cursor-pointer hover:border-[#2563EB] outline-none"
+              className="px-2.5 py-1.5 rounded-lg bg-white border border-[#2563EB]/40 text-stone-700 font-medium text-xs cursor-pointer hover:border-[#2563EB] outline-none animate-in fade-in duration-200"
               aria-label="Filter by city"
             >
-              <option value="all">All Cities</option>
+              <option value="all">All Cities in {state}</option>
               {cities.map((ct) => (
                 <option key={ct} value={ct}>
                   {ct}

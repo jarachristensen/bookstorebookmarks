@@ -147,8 +147,41 @@ At its peak in the 1970s and 1980s, K&B operated 22 branch stores across Illinoi
     updatedAt: now,
   };
 
+  // 5. Green Apple Books
+  const greenApple = {
+    id: "green-apple-books",
+    name: "Green Apple Books",
+    city: "San Francisco",
+    stateProvince: "CA",
+    country: "United States",
+    streetAddress: "506 Clement Street",
+    yearOpened: 1967,
+    yearClosed: null,
+    isStillOperating: true,
+    founders: "Richard Savoy",
+    specialties: JSON.stringify(["Used & Rare Books", "Modern Literature", "Comics & Graphic Novels", "San Francisco History", "Vinyl Records"]),
+    historicalBlurb: `### An Inner Richmond Landmark: Richard Savoy and Green Apple Books
+
+Founded in 1967 by 25-year-old **Richard Savoy**, a former radio technician, **Green Apple Books** opened at **506 Clement Street** in San Francisco's Inner Richmond district with a modest stock of used books, comic books, and pocket paperbacks.
+
+#### The Labyrinth on Clement Street
+Over the decades, Green Apple expanded into neighboring storefronts, creating a famously beloved two-story literary labyrinth featuring squeaky wood floors, narrow passageways, curated staff recommendation tags, and over 100,000 used and new volumes.
+
+#### Cultural Bastion of San Francisco
+In 1996, the shop expanded across the street into 520 Clement Street with a dedicated music and fiction annex, and later added a secondary branch in the Sunset District (Green Apple Books on the Park). In 2014, Green Apple was named *Publishers Weekly Bookstore of the Year*, recognized as one of the quintessential independent community bookstores on the West Coast.`,
+    notablePatronsTrivia: JSON.stringify([
+      "Green Apple Books was founded in 1967 with a small $1,000 savings bond and used books gathered at flea markets.",
+      "Named Publishers Weekly Bookstore of the Year in 2014.",
+      "The shop's creaky original wood staircase on Clement Street is an iconic landmark of San Francisco bookselling.",
+      "In 2009, founder Richard Savoy transitioned co-ownership of the store to three longtime managers to ensure its permanent independence."
+    ]),
+    websiteUrl: "https://www.greenapplebooks.com",
+    createdAt: now,
+    updatedAt: now,
+  };
+
   // Upsert Bookstores
-  for (const b of [gotham, shakespeare, cityLights, krochs]) {
+  for (const b of [gotham, shakespeare, cityLights, krochs, greenApple]) {
     await db.insert(bookstores).values(b).onConflictDoUpdate({
       target: bookstores.id,
       set: b,
@@ -271,6 +304,25 @@ At its peak in the 1970s and 1980s, K&B operated 22 branch stores across Illinoi
       createdAt: now,
       updatedAt: now,
     },
+    {
+      id: "green-apple-clement-vintage",
+      bookstoreId: "green-apple-books",
+      title: "Green Apple Books 506 Clement Street San Francisco Bookmark",
+      accessionNo: "BM-1967-SF-07",
+      frontImageUrl: "/seed-images/greenapple-front.svg",
+      backImageUrl: "/seed-images/greenapple-back.svg",
+      yearProduced: 1967,
+      material: "Two-Tone Forest & Lime Cardstock with Apple Motif",
+      dimensions: "2.25\" × 7.5\"",
+      condition: "Fine (Clean edges, vibrant green ink)",
+      acquisitionDate: "2018-09-12",
+      acquisitionNotes: "Acquired at the original 506 Clement St. counter.",
+      isFeatured: true,
+      displayOrder: 5,
+      accentColor: "#15803D",
+      createdAt: now,
+      updatedAt: now,
+    },
   ];
 
   for (const bm of bookmarkEntries) {
@@ -330,6 +382,18 @@ At its peak in the 1970s and 1980s, K&B operated 22 branch stores across Illinoi
       displayOrder: 1,
       createdAt: now,
     },
+    {
+      id: "greenapple-clipping-chronicle-1967",
+      bookstoreId: "green-apple-books",
+      mediaType: "newspaper",
+      imageUrl: "/seed-images/greenapple-front.svg",
+      caption: "San Francisco Chronicle: 'Richard Savoy Opens Used Book Haven on Clement Street'",
+      sourcePublication: "San Francisco Chronicle",
+      publicationDate: "September 15, 1967",
+      transcriptionText: `“SAN FRANCISCO — A promising new haven for book collectors has opened in the Inner Richmond at 506 Clement Street. Founded by Richard Savoy, Green Apple Books offers thousands of paperbacks, rare editions, and comix in an inviting, informal shop that invites browsing from morning until late evening.”`,
+      displayOrder: 1,
+      createdAt: now,
+    },
   ];
 
   for (const m of mediaEntries) {
@@ -338,4 +402,16 @@ At its peak in the 1970s and 1980s, K&B operated 22 branch stores across Illinoi
       set: m,
     });
   }
+}
+
+if (require.main === module || process.argv[1]?.includes("seed.ts")) {
+  seedDatabase()
+    .then(() => {
+      console.log("Database seeded successfully with Green Apple Books!");
+      process.exit(0);
+    })
+    .catch((err) => {
+      console.error("Seeding failed:", err);
+      process.exit(1);
+    });
 }

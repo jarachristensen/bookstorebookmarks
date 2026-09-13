@@ -107,13 +107,22 @@ export function BookstoreDossier({
 
             {/* Core Info Row */}
             <div className="flex flex-wrap items-center gap-y-2 gap-x-6 text-sm text-stone-600 font-serif">
-              <div className="flex items-center gap-1.5 text-[#F43F7A] font-semibold">
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                  `${store.name}, ${store.streetAddress || ""}, ${store.city}, ${store.country}`
+                )}`}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-1.5 text-[#F43F7A] hover:underline font-semibold"
+                title="View on Google Maps"
+              >
                 <MapPin className="w-4 h-4" />
                 <span>
                   {store.streetAddress ? `${store.streetAddress}, ` : ""}
                   {store.city}, {store.stateProvince || store.country}
                 </span>
-              </div>
+                <ExternalLink className="w-3 h-3 text-stone-400" />
+              </a>
 
               {store.founders && (
                 <div className="flex items-center gap-1.5 text-stone-500">

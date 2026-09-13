@@ -1,6 +1,7 @@
 import { db } from "@/db";
 import { bookmarks, bookstores, archivalMedia, BookstoreLocation, CustomTimelineEvent } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { ensureDb } from "./queries";
 
 export interface FullBookmarkInput {
   bookmark: {
@@ -29,6 +30,10 @@ export interface FullBookmarkInput {
     streetAddress?: string | null;
     locations?: BookstoreLocation[] | null;
     timelineEvents?: CustomTimelineEvent[] | null;
+    isFlagship?: boolean | null;
+    flagshipId?: string | null;
+    chainName?: string | null;
+    branchLabel?: string | null;
     yearOpened: number;
     yearClosed?: number | null;
     isStillOperating?: boolean;
@@ -62,6 +67,10 @@ export interface BookstoreDossierInput {
     streetAddress?: string | null;
     locations?: BookstoreLocation[] | null;
     timelineEvents?: CustomTimelineEvent[] | null;
+    isFlagship?: boolean | null;
+    flagshipId?: string | null;
+    chainName?: string | null;
+    branchLabel?: string | null;
     yearOpened: number;
     yearClosed?: number | null;
     isStillOperating?: boolean;
@@ -101,6 +110,7 @@ export function generateSlug(text: string): string {
  * Upsert bookstore, bookmark, and associated media in a single transaction/operation.
  */
 export async function saveBookmarkAndBookstore(data: FullBookmarkInput): Promise<string> {
+  await ensureDb();
   const now = new Date().toISOString();
 
   // 1. Prepare Bookstore ID & Data
@@ -127,6 +137,18 @@ export async function saveBookmarkAndBookstore(data: FullBookmarkInput): Promise
     timelineEvents: data.bookstore.timelineEvents !== undefined
       ? (data.bookstore.timelineEvents ? JSON.stringify(data.bookstore.timelineEvents) : null)
       : (existingStore?.timelineEvents ?? null),
+    isFlagship: data.bookstore.isFlagship !== undefined
+      ? Boolean(data.bookstore.isFlagship)
+      : (existingStore?.isFlagship ?? false),
+    flagshipId: data.bookstore.flagshipId !== undefined
+      ? (data.bookstore.flagshipId || null)
+      : (existingStore?.flagshipId ?? null),
+    chainName: data.bookstore.chainName !== undefined
+      ? (data.bookstore.chainName || null)
+      : (existingStore?.chainName ?? null),
+    branchLabel: data.bookstore.branchLabel !== undefined
+      ? (data.bookstore.branchLabel || null)
+      : (existingStore?.branchLabel ?? null),
     yearOpened: Number(data.bookstore.yearOpened) || existingStore?.yearOpened || 1900,
     yearClosed: data.bookstore.yearClosed !== undefined
       ? (data.bookstore.yearClosed ? Number(data.bookstore.yearClosed) : null)
@@ -219,6 +241,7 @@ export async function saveBookmarkAndBookstore(data: FullBookmarkInput): Promise
  * Upsert bookstore dossier and its archival media directly.
  */
 export async function saveBookstoreDossier(data: BookstoreDossierInput): Promise<string> {
+  await ensureDb();
   const now = new Date().toISOString();
   const bookstoreId = data.bookstore.id || generateSlug(data.bookstore.name);
 
@@ -239,6 +262,18 @@ export async function saveBookstoreDossier(data: BookstoreDossierInput): Promise
     timelineEvents: data.bookstore.timelineEvents !== undefined
       ? (data.bookstore.timelineEvents ? JSON.stringify(data.bookstore.timelineEvents) : null)
       : (existingStore?.timelineEvents ?? null),
+    isFlagship: data.bookstore.isFlagship !== undefined
+      ? Boolean(data.bookstore.isFlagship)
+      : (existingStore?.isFlagship ?? false),
+    flagshipId: data.bookstore.flagshipId !== undefined
+      ? (data.bookstore.flagshipId || null)
+      : (existingStore?.flagshipId ?? null),
+    chainName: data.bookstore.chainName !== undefined
+      ? (data.bookstore.chainName || null)
+      : (existingStore?.chainName ?? null),
+    branchLabel: data.bookstore.branchLabel !== undefined
+      ? (data.bookstore.branchLabel || null)
+      : (existingStore?.branchLabel ?? null),
     yearOpened: Number(data.bookstore.yearOpened) || existingStore?.yearOpened || 1900,
     yearClosed: data.bookstore.yearClosed !== undefined
       ? (data.bookstore.yearClosed ? Number(data.bookstore.yearClosed) : null)

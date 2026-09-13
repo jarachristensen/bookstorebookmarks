@@ -40,6 +40,7 @@ import {
   ArrowRight,
   PlusCircle,
   Building2,
+  Network,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { marked } from "marked";
@@ -63,6 +64,24 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
   const [websiteUrl, setWebsiteUrl] = useState(initialData.websiteUrl || "");
   const [historicalBlurb, setHistoricalBlurb] = useState(initialData.historicalBlurb || "");
   const [isEditingBlurb, setIsEditingBlurb] = useState(false);
+
+  // Chain & Flagship Network State
+  const [isFlagship, setIsFlagship] = useState(initialData.isFlagship ?? false);
+  const [flagshipId, setFlagshipId] = useState(initialData.flagshipId || "");
+  const [chainName, setChainName] = useState(initialData.chainName || "");
+  const [branchLabel, setBranchLabel] = useState(initialData.branchLabel || "");
+  const [allStores, setAllStores] = useState<BookstoreWithDetails[]>([]);
+
+  React.useEffect(() => {
+    fetch("/api/bookstores")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setAllStores(data);
+        }
+      })
+      .catch((err) => console.error("Error fetching bookstores in visual editor:", err));
+  }, []);
 
   // Multi-location Relocation Modeling
   const getInitialLocations = (): BookstoreLocation[] => {
@@ -531,6 +550,10 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
           country: primaryLoc?.country || country.trim(),
           streetAddress: primaryLoc?.streetAddress || streetAddress.trim() || null,
           locations: locations,
+          isFlagship: isFlagship,
+          flagshipId: isFlagship ? null : flagshipId || null,
+          chainName: chainName.trim() || null,
+          branchLabel: branchLabel.trim() || null,
           yearOpened: Number(yearOpened) || 1900,
           yearClosed: isStillOperating ? null : Number(yearClosed) || null,
           isStillOperating: isStillOperating,
@@ -711,6 +734,110 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
           </div>
         </div>
       </div>
+
+      {/* 2.3 Chain Bookstore & Flagship Network */}
+      <section className="p-6 sm:p-8 rounded-2xl bg-white border border-[#E8E2D5] shadow-xs space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E8E2D5]">
+          <div className="space-y-1">
+            <h2 className="font-serif text-lg font-bold text-stone-900 flex items-center gap-2">
+              <Network className="w-4 h-4 text-[#2563EB]" />
+              <span>Chain Bookstore &amp; Flagship Network</span>
+            </h2>
+            <p className="text-xs font-serif text-stone-500">
+              Configure flagship and branch relationships. Each branch listing has its own storefront diecut image and bookmarks while linking back to the flagship parent store.
+            </p>
+          </div>
+
+          {isFlagship && (
+            <Link
+              href={`/admin/bookstores/new?flagshipId=${initialData.id}&chainName=${encodeURIComponent(chainName || name)}`}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-[#2563EB] border border-blue-200 hover:bg-blue-100 text-xs font-serif font-bold transition-all shrink-0"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>+ Add Branch Store</span>
+            </Link>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="sm:col-span-3 p-4 rounded-xl bg-[#FAF8F5] border border-[#E8E2D5] flex items-center justify-between gap-4">
+            <div className="space-y-0.5">
+              <label htmlFor="isFlagshipVisualCheckbox" className="text-xs font-serif font-bold text-stone-900 cursor-pointer">
+                Flagship Location (Primary / Original Storefront)
+              </label>
+              <p className="text-[11px] font-sans text-stone-500">
+                Check this if this location is the historical flagship / founding store for this chain.
+              </p>
+            </div>
+            <input
+              type="checkbox"
+              id="isFlagshipVisualCheckbox"
+              data-1p-ignore
+              checked={isFlagship}
+              onChange={(e) => {
+                setIsFlagship(e.target.checked);
+                if (e.target.checked) {
+                  setFlagshipId("");
+                  if (!branchLabel) setBranchLabel("Flagship Location");
+                }
+              }}
+              className="w-5 h-5 rounded text-[#2563EB] border-[#E8E2D5] focus:ring-[#2563EB]/30 cursor-pointer shrink-0"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-mono text-stone-600 mb-1">
+              CHAIN / BRAND NAME (OPTIONAL)
+            </label>
+            <input
+              type="text"
+              data-1p-ignore
+              autoComplete="off"
+              placeholder="e.g. Borders Book Shop"
+              value={chainName}
+              onChange={(e) => setChainName(e.target.value)}
+              className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-mono text-stone-600 mb-1">
+              BRANCH DESCRIPTOR / SUBTITLE
+            </label>
+            <input
+              type="text"
+              data-1p-ignore
+              autoComplete="off"
+              placeholder="e.g. Ann Arbor Flagship, Chestnut Hill, State St."
+              value={branchLabel}
+              onChange={(e) => setBranchLabel(e.target.value)}
+              className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif"
+            />
+          </div>
+
+          {!isFlagship && (
+            <div>
+              <label className="block text-xs font-mono text-stone-600 mb-1">
+                PARENT FLAGSHIP BOOKSTORE
+              </label>
+              <select
+                value={flagshipId}
+                onChange={(e) => setFlagshipId(e.target.value)}
+                className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif"
+              >
+                <option value="">(None / Independent Single Bookstore)</option>
+                {allStores
+                  .filter((s) => s.id !== initialData.id)
+                  .map((store) => (
+                    <option key={store.id} value={store.id}>
+                      {store.name} — {store.city}{store.stateProvince ? `, ${store.stateProvince}` : ""} {store.isFlagship ? "★ (Flagship)" : ""}
+                    </option>
+                  ))}
+              </select>
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* 2.5 Historic Locations & Relocations Editor */}
       <section className="p-6 sm:p-8 rounded-2xl bg-white border border-[#E8E2D5] shadow-xs space-y-6">

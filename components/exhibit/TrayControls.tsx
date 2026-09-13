@@ -14,6 +14,9 @@ export interface TrayControlsProps {
   country?: string;
   onCountryChange?: (val: string) => void;
   countries?: string[];
+  state?: string;
+  onStateChange?: (val: string) => void;
+  states?: string[];
   city: string;
   onCityChange: (val: string) => void;
   cities: string[];
@@ -37,6 +40,9 @@ export function TrayControls({
   country = "all",
   onCountryChange,
   countries = [],
+  state = "all",
+  onStateChange,
+  states = [],
   city,
   onCityChange,
   cities,
@@ -70,11 +76,17 @@ export function TrayControls({
   };
 
   const hasActiveFilters =
-    search !== "" || (country !== "all" && onCountryChange) || city !== "all" || era !== "all" || status !== "all";
+    search !== "" ||
+    (country !== "all" && onCountryChange) ||
+    (state !== "all" && onStateChange) ||
+    city !== "all" ||
+    era !== "all" ||
+    status !== "all";
 
   const clearFilters = () => {
     onSearchChange("");
     if (onCountryChange) onCountryChange("all");
+    if (onStateChange) onStateChange("all");
     onCityChange("all");
     onEraChange("all");
     onStatusChange("all");
@@ -88,7 +100,7 @@ export function TrayControls({
         <div className="relative w-full md:w-80">
           <input
             type="text"
-            placeholder="Search bookmark, bookstore, city, country..."
+            placeholder="Search bookmark, bookstore, city, state, country..."
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
             className="w-full px-3.5 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] transition-all font-serif"
@@ -121,19 +133,39 @@ export function TrayControls({
             </select>
           )}
 
-          {/* City Filter */}
-          <select
-            value={city}
-            onChange={(e) => onCityChange(e.target.value)}
-            className="px-3 py-2 text-xs sm:text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] cursor-pointer font-serif"
-          >
-            <option value="all">All Cities</option>
-            {cities.map((c) => (
-              <option key={c} value={c}>
-                {c}
+          {/* State Filter */}
+          {states.length > 0 && onStateChange && (
+            <select
+              value={state}
+              onChange={(e) => onStateChange(e.target.value)}
+              className="px-3 py-2 text-xs sm:text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] cursor-pointer font-serif"
+            >
+              <option value="all">All States</option>
+              {states.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          )}
+
+          {/* City Filter (shown when state is selected or when onStateChange is not used) */}
+          {((state !== "all" && cities.length > 0) || !onStateChange) && (
+            <select
+              value={city}
+              onChange={(e) => onCityChange(e.target.value)}
+              className="px-3 py-2 text-xs sm:text-sm bg-[#FAF8F5] border border-[#2563EB]/40 rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] cursor-pointer font-serif animate-in fade-in duration-200"
+            >
+              <option value="all">
+                {state !== "all" ? `All Cities in ${state}` : "All Cities"}
               </option>
-            ))}
-          </select>
+              {cities.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          )}
 
           {/* Era Filter */}
           <select

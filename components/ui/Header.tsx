@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   Bookmark,
   Building2,
@@ -15,13 +15,45 @@ import {
   HeartHandshake,
 } from "lucide-react";
 
+function CuratorCabinetButton({ pathname }: { pathname: string | null }) {
+  const searchParams = useSearchParams();
+  const isEditing = searchParams?.get("edit") === "true";
+  const bookstoreMatch = pathname?.match(/^\/bookstores\/([^/]+)$/);
+  const isEditorialPage =
+    pathname === "/partners" || pathname === "/about" || pathname === "/contact";
+
+  let curatorUrl = "/admin";
+  let title = "Curator's Cabinet";
+  let label = "Curator's Cabinet";
+
+  if (bookstoreMatch) {
+    curatorUrl = `/admin/bookstores/${bookstoreMatch[1]}`;
+    title = "Edit this Bookstore Dossier in Curator's Cabinet";
+  } else if (isEditorialPage) {
+    curatorUrl = isEditing ? pathname || "/" : `${pathname}?edit=true`;
+    title = isEditing ? "Exit In-Place Editing Mode" : "Edit this Page in Curator's Cabinet";
+    label = isEditing ? "Editing Page" : "Curator's Cabinet";
+  }
+
+  return (
+    <Link
+      href={curatorUrl}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium shadow-xs transition-all ${
+        isEditing
+          ? "bg-[#2563EB] text-white border border-[#2563EB] font-bold shadow-sm"
+          : "bg-white border border-[#E8E2D5] text-stone-700 hover:text-stone-900 hover:border-stone-400"
+      }`}
+      title={title}
+    >
+      <Lock className={`w-3.5 h-3.5 ${isEditing ? "text-amber-300" : "text-stone-400"}`} />
+      <span className="hidden sm:inline">{label}</span>
+    </Link>
+  );
+}
+
 export function Header() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  // If on a bookstore detail page /bookstores/[id], link directly to its visual editor /admin/bookstores/[id]
-  const bookstoreMatch = pathname?.match(/^\/bookstores\/([^/]+)$/);
-  const curatorUrl = bookstoreMatch ? `/admin/bookstores/${bookstoreMatch[1]}` : "/admin";
 
   const navLinks = [
     { href: "/", label: "Archive", icon: Bookmark },
@@ -80,14 +112,16 @@ export function Header() {
           </a>
 
           {/* Curator's Cabinet Button */}
-          <Link
-            href={curatorUrl}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-white border border-[#E8E2D5] text-xs font-medium text-stone-700 hover:text-stone-900 hover:border-stone-400 shadow-xs transition-all"
-            title={bookstoreMatch ? "Edit this Bookstore Dossier in Curator's Cabinet" : "Curator's Cabinet"}
+          <React.Suspense
+            fallback={
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-white border border-[#E8E2D5] text-xs text-stone-400">
+                <Lock className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Curator's Cabinet</span>
+              </div>
+            }
           >
-            <Lock className="w-3.5 h-3.5 text-stone-400" />
-            <span className="hidden sm:inline">Curator's Cabinet</span>
-          </Link>
+            <CuratorCabinetButton pathname={pathname} />
+          </React.Suspense>
 
           {/* Mobile Menu Toggle Button */}
           <button

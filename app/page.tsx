@@ -13,6 +13,7 @@ export const dynamic = "force-dynamic";
 
 const defaultFilterOptions = {
   cities: [] as string[],
+  states: [] as string[],
   countries: [] as string[],
   eras: [
     { label: "All Eras", value: "all" },
