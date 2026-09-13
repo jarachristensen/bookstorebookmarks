@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import React from "react";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
   title: "Bookstore Bookmark Archive — Curated Specimen Collection & Historical Research",
@@ -17,6 +19,8 @@ export default function RootLayout({
     <html lang="en" className="h-full scroll-smooth">
       <body className="h-full flex flex-col antialiased selection:bg-rose-900/20 selection:text-archival-oxblood">
         {children}
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
