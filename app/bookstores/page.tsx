@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Header } from "@/components/ui/Header";
 import { getAllBookstores } from "@/lib/db/queries";
 import { BookstoresDirectoryClient } from "@/components/bookstores/BookstoresDirectoryClient";
@@ -19,17 +20,20 @@ export default async function BookstoresPage() {
     <div className="min-h-screen flex flex-col bg-[#FAF8F5]">
       <Header />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {/* Page Title & Intro */}
-        <section className="text-center space-y-3 pb-6 border-b border-[#E8E2D5]">
-          <h1 className="font-serif font-black text-3xl sm:text-4xl lg:text-5xl tracking-tight">
-            <span className="text-[#F43F7A]">Historic</span>{" "}
-            <span className="text-[#2563EB]">Bookstores</span> &amp;{" "}
-            <span className="text-[#F43F7A]">Booksellers</span>
-          </h1>
-          <p className="font-serif text-base sm:text-lg text-stone-600 max-w-2xl mx-auto leading-relaxed">
-            Browse the historic institutions, radical booksellers, and neighborhood shops that issued each specimen in our archive.
-          </p>
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        {/* Page Banner Artwork */}
+        <section className="w-full flex flex-col items-center pb-2 border-b border-[#E8E2D5]">
+          <h1 className="sr-only">Historic Bookstores &amp; Booksellers</h1>
+          <div className="relative w-full max-w-5xl aspect-[1995/250] select-none">
+            <Image
+              src="/images/bookstore-banner.png"
+              alt="Historic Bookstores & Booksellers"
+              fill
+              unoptimized
+              priority
+              className="object-contain object-center w-full h-full"
+            />
+          </div>
         </section>
 
         {/* Interactive Directory List */}
