@@ -54,14 +54,33 @@ export function RisographHero({
 
   return (
     <section className="relative w-full pt-2 sm:pt-4 pb-1 space-y-3 sm:space-y-4">
-      {/* 1. Panoramic Unified Header Banner Illustration */}
+      {/* 1. Header Banner Illustration (Responsive: Mobile-specific square, Desktop panoramic) */}
       <div className="w-full flex flex-col items-center">
         <h1 className="sr-only">The Bookstore Bookmark Archive</h1>
+        
+        {/* Mobile Banner (< sm screens) */}
         <motion.div
           initial={{ opacity: 0, y: 15, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.45, ease: "easeOut" }}
-          className="relative w-full aspect-[6249/1838] select-none"
+          className="relative w-full max-w-[340px] xs:max-w-[400px] aspect-square select-none sm:hidden"
+        >
+          <Image
+            src="/images/risograph-banner-mobile.png"
+            alt="The Bookstore Bookmark Archive — Illustrated bookmarks and archive masthead"
+            fill
+            unoptimized
+            priority
+            className="object-contain object-center w-full h-full"
+          />
+        </motion.div>
+
+        {/* Desktop & Tablet Panoramic Banner (sm+ screens) */}
+        <motion.div
+          initial={{ opacity: 0, y: 15, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.45, ease: "easeOut" }}
+          className="relative w-full aspect-[6249/1838] select-none hidden sm:block"
         >
           <Image
             src="/images/risograph-banner.png"
