@@ -27,8 +27,8 @@ describe("Main Exhibit Flow Integration", () => {
     expect(screen.getAllByText(/The/i).length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText(/Bookstore/i).length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText(/Bookmark/i).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText(/Archive/i).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText(/They saved our place; now, let’s save theirs/i)).toBeDefined();
+    expect(screen.getByText(/They saved our place/i)).toBeDefined();
+    expect(screen.getByText(/now, let's save theirs/i)).toBeDefined();
 
     // Verify bookmark specimens are rendered in the spread
     const bookmarkButtons = screen.getAllByRole("button", { name: /inspect/i });

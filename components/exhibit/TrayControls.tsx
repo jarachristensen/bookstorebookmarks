@@ -20,9 +20,9 @@ export interface TrayControlsProps {
   city: string;
   onCityChange: (val: string) => void;
   cities: string[];
-  era: string;
-  onEraChange: (val: string) => void;
-  eras: { label: string; value: string }[];
+  era?: string;
+  onEraChange?: (val: string) => void;
+  eras?: { label: string; value: string }[];
   status: "all" | "open" | "historic";
   onStatusChange: (val: "all" | "open" | "historic") => void;
   onPrevPage?: () => void;
@@ -46,9 +46,9 @@ export function TrayControls({
   city,
   onCityChange,
   cities,
-  era,
+  era = "all",
   onEraChange,
-  eras,
+  eras = [],
   status,
   onStatusChange,
   onPrevPage,
@@ -80,7 +80,6 @@ export function TrayControls({
     (country !== "all" && onCountryChange) ||
     (state !== "all" && onStateChange) ||
     city !== "all" ||
-    era !== "all" ||
     status !== "all";
 
   const clearFilters = () => {
@@ -88,7 +87,7 @@ export function TrayControls({
     if (onCountryChange) onCountryChange("all");
     if (onStateChange) onStateChange("all");
     onCityChange("all");
-    onEraChange("all");
+    if (onEraChange) onEraChange("all");
     onStatusChange("all");
   };
 
@@ -166,19 +165,6 @@ export function TrayControls({
               ))}
             </select>
           )}
-
-          {/* Era Filter */}
-          <select
-            value={era}
-            onChange={(e) => onEraChange(e.target.value)}
-            className="px-3 py-2 text-xs sm:text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] cursor-pointer font-serif"
-          >
-            {eras.map((e) => (
-              <option key={e.value} value={e.value}>
-                {e.label}
-              </option>
-            ))}
-          </select>
 
           {/* Status Buttons */}
           <div className="inline-flex rounded-lg border border-[#E8E2D5] p-0.5 bg-[#FAF8F5] text-xs font-serif">

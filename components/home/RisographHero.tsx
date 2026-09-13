@@ -19,9 +19,9 @@ export interface RisographHeroProps {
   city: string;
   onCityChange: (val: string) => void;
   cities: string[];
-  era: string;
-  onEraChange: (val: string) => void;
-  eras: { label: string; value: string }[];
+  era?: string;
+  onEraChange?: (val: string) => void;
+  eras?: { label: string; value: string }[];
   status: "all" | "open" | "historic";
   onStatusChange: (val: "all" | "open" | "historic") => void;
   onShuffle: () => void;
@@ -41,9 +41,9 @@ export function RisographHero({
   city,
   onCityChange,
   cities,
-  era,
+  era = "all",
   onEraChange,
-  eras,
+  eras = [],
   status,
   onStatusChange,
   onShuffle,
@@ -53,7 +53,6 @@ export function RisographHero({
     country !== "all" ||
     state !== "all" ||
     city !== "all" ||
-    era !== "all" ||
     status !== "all";
 
   const handleResetFilters = () => {
@@ -61,7 +60,7 @@ export function RisographHero({
     onCountryChange("all");
     onStateChange("all");
     onCityChange("all");
-    onEraChange("all");
+    if (onEraChange) onEraChange("all");
     onStatusChange("all");
   };
 
@@ -105,10 +104,15 @@ export function RisographHero({
           />
         </motion.div>
 
-        {/* Tagline */}
-        <p className="font-serif text-base sm:text-lg md:text-xl text-[#2563EB] max-w-2xl text-center font-medium pt-2">
-          They saved our place; now, let’s save theirs.
-        </p>
+        {/* Tagline (Left-aligned & staggered) */}
+        <div className="w-full max-w-4xl px-3 sm:px-6 pt-2 text-left font-serif text-[#2563EB]">
+          <p className="text-base sm:text-lg md:text-xl font-medium tracking-tight">
+            They saved our place -
+          </p>
+          <p className="text-base sm:text-lg md:text-xl font-medium tracking-tight pl-8 sm:pl-16 md:pl-24 italic">
+            now, let's save theirs.
+          </p>
+        </div>
       </div>
 
       {/* 2. Search & Filter Controls Toolbar */}
@@ -122,7 +126,7 @@ export function RisographHero({
             type="text"
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search archive by bookstore, city, state, or era..."
+            placeholder="Search archive by bookstore, city, or state..."
             aria-label="Search archive"
             className="w-full py-2.5 sm:py-3 pr-3 text-xs sm:text-sm bg-transparent outline-none placeholder:text-stone-400 text-stone-900 font-sans"
           />
@@ -223,22 +227,6 @@ export function RisographHero({
               {cities.map((ct) => (
                 <option key={ct} value={ct}>
                   {ct}
-                </option>
-              ))}
-            </select>
-          )}
-
-          {/* Eras Filter Select */}
-          {eras.length > 0 && (
-            <select
-              value={era}
-              onChange={(e) => onEraChange(e.target.value)}
-              className="px-2.5 py-1.5 rounded-lg bg-white border border-stone-300 text-stone-700 font-medium text-xs cursor-pointer hover:border-[#2563EB] outline-none"
-              aria-label="Filter by era"
-            >
-              {eras.map((er) => (
-                <option key={er.value} value={er.value}>
-                  {er.label}
                 </option>
               ))}
             </select>
