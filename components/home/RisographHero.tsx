@@ -75,7 +75,7 @@ export function RisographHero({
 
         {/* Tagline */}
         <p className="font-serif text-base sm:text-lg md:text-xl text-[#2563EB] max-w-2xl text-center font-medium pt-2">
-          They saved our place, now there is a place to save them.
+          They saved our place; now, let’s save theirs.
         </p>
       </div>
 

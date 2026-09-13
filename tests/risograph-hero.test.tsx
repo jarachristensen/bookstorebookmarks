@@ -31,7 +31,7 @@ describe("RisographHero Component", () => {
 
     expect(screen.getByRole("heading", { level: 1, name: /The Bookstore Bookmark Archive/i })).toBeDefined();
     expect(screen.getAllByAltText(/The Bookstore Bookmark Archive/i).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText(/They saved our place, now there is a place to save them/i)).toBeDefined();
+    expect(screen.getByText(/They saved our place; now, let’s save theirs/i)).toBeDefined();
     expect(screen.getByText(/Permanently Closed/i)).toBeDefined();
 
     const searchInput = screen.getByPlaceholderText(/search/i);

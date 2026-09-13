@@ -86,7 +86,7 @@ export default async function HomePage() {
             <span className="text-[#F43F7A]">The</span> <span className="text-[#2563EB]">Bookstore</span> <span className="text-[#F43F7A]">Bookmark</span> <span className="text-[#2563EB]">Archive</span>
           </p>
           <p className="italic font-serif text-stone-700 max-w-xl mx-auto">
-            "They saved our place, now there is a place to save them."
+            "They saved our place; now, let’s save theirs."
           </p>
           <p className="font-mono text-[10px] text-stone-400">
             A Living Digital Archive of Independent &amp; Historic Bookseller Ephemera

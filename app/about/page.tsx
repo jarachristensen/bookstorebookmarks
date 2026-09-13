@@ -110,8 +110,8 @@ export default function AboutPage() {
           <p className="font-serif font-bold text-stone-900 text-sm">
             <span className="text-[#F43F7A]">The</span> <span className="text-[#2563EB]">Bookstore</span> <span className="text-[#F43F7A]">Bookmark</span> <span className="text-[#2563EB]">Archive</span>
           </p>
-          <p className="font-serif text-stone-700 max-w-xl mx-auto">
-            "They saved our place, now there is a place to save them."
+          <p className="italic font-serif text-stone-700 max-w-xl mx-auto">
+            "They saved our place; now, let’s save theirs."
           </p>
         </div>
       </footer>
