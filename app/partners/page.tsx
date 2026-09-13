@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Header } from "@/components/ui/Header";
 import {
   HeartHandshake,
@@ -24,19 +25,22 @@ export default function PartnersPage() {
     <div className="min-h-screen flex flex-col bg-[#FAF8F5]">
       <Header />
 
-      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
-        {/* 1. Page Header / Hero Banner */}
-        <section className="text-center space-y-3 pb-6 border-b border-[#E8E2D5]">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F43F7A]/10 border border-[#F43F7A]/20 text-[#F43F7A] text-xs font-mono font-semibold tracking-wider uppercase mb-1">
-            <HeartHandshake className="w-3.5 h-3.5" />
-            <span>Community Honor Roll</span>
+      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+        {/* 1. Page Header / Hero Banner Artwork */}
+        <section className="w-full flex flex-col items-center pb-6 border-b border-[#E8E2D5] space-y-4">
+          <h1 className="sr-only">Partners &amp; Donors — Community Honor Roll</h1>
+          <div className="relative w-full max-w-4xl aspect-[1617/253] select-none">
+            <Image
+              src="/images/partners-banner.png"
+              alt="Partners & Donors"
+              fill
+              unoptimized
+              priority
+              className="object-contain object-center w-full h-full"
+            />
           </div>
-
-          <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-stone-900">
-            <span className="text-[#F43F7A]">Partners</span> <span className="text-[#2563EB]">&amp;</span> <span className="text-[#F43F7A]">Donors</span>
-          </h1>
-          <p className="font-serif text-base sm:text-lg text-stone-600 max-w-2xl mx-auto leading-relaxed">
-            The Bookstore Bookmark Archive exists thanks to the generosity of collectors, booksellers, historians, and readers worldwide who share their physical bookmarks and stories with us.
+          <p className="font-serif text-base sm:text-lg text-stone-600 max-w-2xl text-center mx-auto leading-relaxed">
+            The Bookstore Bookmark Archive began as a personal collection, but can continue to grow on a larger scale with the help of used booksellers and collectors alike! This page is dedicated to those who have contributed to our library.
           </p>
         </section>
 
