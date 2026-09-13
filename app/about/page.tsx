@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Header } from "@/components/ui/Header";
 import { FAQAccordion } from "@/components/ui/FAQAccordion";
 import { BookOpen, ArrowRight, Instagram } from "lucide-react";
@@ -14,14 +15,21 @@ export default function AboutPage() {
     <div className="min-h-screen flex flex-col bg-[#FAF8F5]">
       <Header />
 
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
-        {/* Hero Section */}
-        <section className="text-center space-y-3 pb-6 border-b border-[#E8E2D5]">
-          <h1 className="font-serif font-black text-3xl sm:text-4xl lg:text-5xl tracking-tight">
-            <span className="text-[#F43F7A]">Keeping Our Place</span> in{" "}
-            <span className="text-[#2563EB]">Literary History</span>
-          </h1>
-          <p className="font-serif text-base sm:text-lg text-stone-600 max-w-2xl mx-auto leading-relaxed">
+      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+        {/* Hero Banner Artwork */}
+        <section className="w-full flex flex-col items-center pb-6 border-b border-[#E8E2D5] space-y-4">
+          <h1 className="sr-only">About the Archive — Keeping Our Place in Literary History</h1>
+          <div className="relative w-full max-w-3xl aspect-[1606/267] select-none">
+            <Image
+              src="/images/about-banner.png"
+              alt="About The Bookstore Bookmark Archive"
+              fill
+              unoptimized
+              priority
+              className="object-contain object-center w-full h-full"
+            />
+          </div>
+          <p className="font-serif text-base sm:text-lg text-stone-600 max-w-2xl text-center mx-auto leading-relaxed">
             A digital sanctuary dedicated to the often overlooked artistry and history of bookstore bookmarks, and the bookstores that created them.
           </p>
         </section>
