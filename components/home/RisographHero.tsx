@@ -104,12 +104,12 @@ export function RisographHero({
           />
         </motion.div>
 
-        {/* Tagline (Left-aligned & staggered) */}
-        <div className="w-full max-w-4xl px-3 sm:px-6 pt-2 text-left font-serif text-[#2563EB]">
-          <p className="text-base sm:text-lg md:text-xl font-medium tracking-tight">
+        {/* Tagline (All the way to the left & staggered in sans-serif) */}
+        <div className="w-full px-1 sm:px-2 pt-2 text-left font-sans text-[#2563EB]">
+          <p className="text-sm sm:text-base md:text-lg font-medium tracking-tight text-[#2563EB]">
             They saved our place -
           </p>
-          <p className="text-base sm:text-lg md:text-xl font-medium tracking-tight pl-8 sm:pl-16 md:pl-24 italic">
+          <p className="text-sm sm:text-base md:text-lg font-medium tracking-tight text-[#2563EB] pl-8 sm:pl-16 md:pl-24 italic">
             now, let's save theirs.
           </p>
         </div>
