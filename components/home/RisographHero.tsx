@@ -61,7 +61,7 @@ export function RisographHero({
           initial={{ opacity: 0, y: 15, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.45, ease: "easeOut" }}
-          className="relative w-full aspect-[1024/301] select-none"
+          className="relative w-full aspect-[6249/1838] select-none"
         >
           <Image
             src="/images/risograph-banner.png"
