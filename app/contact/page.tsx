@@ -106,7 +106,7 @@ export default function ContactPage() {
             </a>
 
             <a
-              href="mailto:curator@bookstorebookmarks.com"
+              href="mailto:bookstorebookmarks@gmail.com"
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-200 border border-stone-700 font-serif text-xs transition-all"
             >
               <Mail className="w-4 h-4 text-[#F59E0B]" />
