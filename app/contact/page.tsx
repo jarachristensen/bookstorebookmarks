@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Header } from "@/components/ui/Header";
 import { FAQAccordion } from "@/components/ui/FAQAccordion";
 import { Mail, Send, Heart, MapPin, Instagram, Sparkles, AlertCircle, BookOpen } from "lucide-react";
@@ -14,13 +15,21 @@ export default function ContactPage() {
     <div className="min-h-screen flex flex-col bg-[#FAF8F5]">
       <Header />
 
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
+      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
         {/* Hero Section */}
-        <section className="text-center space-y-3 pb-6 border-b border-[#E8E2D5]">
-          <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-stone-900">
-            <span className="text-[#F43F7A]">Contribute</span> <span className="text-[#2563EB]">to the</span> <span className="text-[#F43F7A]">Archive</span>
-          </h1>
-          <p className="font-serif text-base sm:text-lg text-stone-600 max-w-2xl mx-auto leading-relaxed">
+        <section className="w-full flex flex-col items-center pb-6 border-b border-[#E8E2D5] space-y-4">
+          <h1 className="sr-only">Contribute to the Archive — Submissions &amp; Contact</h1>
+          <div className="relative w-full max-w-3xl aspect-[1975/267] select-none">
+            <Image
+              src="/images/contact-banner.png"
+              alt="Contribute to the Archive"
+              fill
+              unoptimized
+              priority
+              className="object-contain object-center w-full h-full"
+            />
+          </div>
+          <p className="font-serif text-base sm:text-lg text-stone-600 max-w-2xl text-center mx-auto leading-relaxed">
             Have a rare bookstore bookmark in your collection? Know a forgotten detail about a shop’s history? We welcome your submissions and stories.
           </p>
         </section>
