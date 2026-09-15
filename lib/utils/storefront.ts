@@ -23,6 +23,38 @@ export function slugifyStoreName(name: string): string {
 }
 
 /**
+ * Formats a human-readable bookstore name from a raw filename.
+ * Example: "powells-city-of-books-storefront.png" -> "Powells City of Books"
+ * Example: "green-apple-books.png" -> "Green Apple Books"
+ */
+export function formatStoreNameFromFilename(filename: string): string {
+  if (!filename) return "";
+  const withoutExt = filename.replace(/\.[^/.]+$/, "");
+  const withoutSuffix = withoutExt
+    .replace(/[-_]?(storefront|front)$/i, "")
+    .replace(/^storefront[-_]?/i, "");
+
+  // Insert space before capital letters if PascalCase/camelCase
+  const spaced = withoutSuffix
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/[-_.]+/g, " ")
+    .trim();
+
+  const lowerWords = new Set(["a", "an", "the", "and", "but", "or", "for", "nor", "on", "at", "to", "by", "of", "in"]);
+
+  const words = spaced.split(/\s+/).filter(Boolean);
+  const formatted = words.map((word, index) => {
+    const lower = word.toLowerCase();
+    if (index > 0 && lowerWords.has(lower)) {
+      return lower;
+    }
+    return lower.charAt(0).toUpperCase() + lower.slice(1);
+  });
+
+  return formatted.join(" ") || "Historic Bookstore";
+}
+
+/**
  * Returns candidate filenames/relative paths for a given bookstore.
  */
 export function getStorefrontCandidatePaths(store: { name: string; id?: string }): string[] {

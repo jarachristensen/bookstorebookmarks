@@ -4,6 +4,7 @@ import { getBookstoreById } from "@/lib/db/queries";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/ui/Header";
 import { BookstoreDetailView } from "@/components/bookstores/BookstoreDetailView";
+import { getAvailableStorefrontFiles } from "@/lib/utils/storefront-server";
 
 export const dynamic = "force-dynamic";
 
@@ -25,13 +26,14 @@ export default async function SingleBookstorePage({
   if (!bookstore) {
     notFound();
   }
+  const availableStorefronts = getAvailableStorefrontFiles();
 
   return (
     <div className="min-h-screen flex flex-col bg-[#FAF8F5]">
       <Header />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <BookstoreDetailView bookstore={bookstore} />
+        <BookstoreDetailView bookstore={bookstore} availableStorefronts={availableStorefronts} />
       </main>
 
       <footer className="border-t border-[#E8E2D5] py-8 bg-[#FAF8F5] text-center text-xs text-stone-600 mt-12">

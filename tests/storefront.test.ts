@@ -4,6 +4,7 @@ import {
   slugifyStoreName,
   getStorefrontCandidatePaths,
   resolveStorefrontImage,
+  formatStoreNameFromFilename,
   DEFAULT_STOREFRONT_IMAGE,
 } from "@/lib/utils/storefront";
 
@@ -82,5 +83,17 @@ describe("Storefront Resolution Utility", () => {
     );
 
     expect(resolved).toBe(DEFAULT_STOREFRONT_IMAGE);
+  });
+
+  it("formats human-readable store name from raw filename", () => {
+    expect(formatStoreNameFromFilename("powells-city-of-books-storefront.png")).toBe(
+      "Powells City of Books"
+    );
+    expect(formatStoreNameFromFilename("green-apple-books-storefront.PNG")).toBe(
+      "Green Apple Books"
+    );
+    expect(formatStoreNameFromFilename("the-last-bookstore.jpg")).toBe(
+      "The Last Bookstore"
+    );
   });
 });

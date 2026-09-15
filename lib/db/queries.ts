@@ -1,14 +1,25 @@
 import { db, initDb } from "@/db";
 import { bookmarks, bookstores, archivalMedia, Bookmark, Bookstore, ArchivalMedia } from "@/db/schema";
 import { eq, asc, desc } from "drizzle-orm";
+import { autoSyncStorefronts } from "@/lib/utils/storefront-sync";
 
 let dbInitPromise: Promise<void> | null = null;
 export async function ensureDb() {
   if (!dbInitPromise) {
-    dbInitPromise = initDb().catch((err) => {
+    dbInitPromise = (async () => {
+      await initDb();
+      try {
+        await autoSyncStorefronts();
+      } catch (err) {
+        console.warn("Storefronts auto-sync notice:", err);
+      }
+    })().catch((err) => {
       console.error("Database initialization error:", err);
       dbInitPromise = null;
     });
+  } else {
+    // Non-blocking background sync check
+    autoSyncStorefronts().catch(() => {});
   }
   return dbInitPromise;
 }

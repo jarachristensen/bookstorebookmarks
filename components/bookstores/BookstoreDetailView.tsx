@@ -25,9 +25,11 @@ import {
   Building2,
 } from "lucide-react";
 import { marked } from "marked";
+import { resolveStorefrontImage, DEFAULT_STOREFRONT_IMAGE } from "@/lib/utils/storefront";
 
 export interface BookstoreDetailViewProps {
   bookstore: BookstoreWithDetails;
+  availableStorefronts?: string[];
 }
 
 /**
@@ -49,7 +51,7 @@ function getCleanCaption(caption?: string | null): string | null {
   return trimmed;
 }
 
-export function BookstoreDetailView({ bookstore }: BookstoreDetailViewProps) {
+export function BookstoreDetailView({ bookstore, availableStorefronts }: BookstoreDetailViewProps) {
   const [selectedBookmark, setSelectedBookmark] = useState<BookmarkWithDetails | null>(null);
   const [selectedLightboxMedia, setSelectedLightboxMedia] = useState<ArchivalMedia | null>(null);
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
@@ -94,7 +96,37 @@ export function BookstoreDetailView({ bookstore }: BookstoreDetailViewProps) {
       m.mediaTag === "interior" ||
       m.mediaTag === "storefront"
   );
-  const storefrontPhotos = React.useMemo(() => sortMediaByMostRecent(rawPhotos), [rawPhotos]);
+
+  const fallbackStorefront = React.useMemo(() => {
+    if (rawPhotos.length === 0) {
+      const resolved = resolveStorefrontImage(bookstore, availableStorefronts);
+      if (resolved && resolved !== DEFAULT_STOREFRONT_IMAGE) {
+        return {
+          id: `fallback-storefront-${bookstore.id}`,
+          bookstoreId: bookstore.id,
+          mediaType: "photo",
+          imageUrl: resolved,
+          caption: `${bookstore.name} Storefront Photo`,
+          sourcePublication: null,
+          publicationDate: null,
+          transcriptionText: null,
+          isStorefront: true,
+          mediaTag: "storefront",
+          displayOrder: 0,
+          createdAt: "",
+        } as ArchivalMedia;
+      }
+    }
+    return null;
+  }, [rawPhotos.length, bookstore, availableStorefronts]);
+
+  const effectivePhotos = React.useMemo(() => {
+    if (rawPhotos.length > 0) return rawPhotos;
+    if (fallbackStorefront) return [fallbackStorefront];
+    return [];
+  }, [rawPhotos, fallbackStorefront]);
+
+  const storefrontPhotos = React.useMemo(() => sortMediaByMostRecent(effectivePhotos), [effectivePhotos]);
   const currentPhoto = storefrontPhotos[activePhotoIdx] || storefrontPhotos[0] || null;
 
   const nextPhoto = () => {
