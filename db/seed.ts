@@ -180,8 +180,201 @@ In 1996, the shop expanded across the street into 520 Clement Street with a dedi
     updatedAt: now,
   };
 
+  // 6. A Clean Well-Lighted Place for Books
+  const cleanWellLighted = {
+    id: "a-clean-well-lighted-place-for-books",
+    name: "A Clean Well-Lighted Place for Books",
+    city: "San Francisco",
+    stateProvince: "CA",
+    country: "United States",
+    streetAddress: "601 Van Ness Avenue (Opera Plaza)",
+    yearOpened: 1975,
+    yearClosed: 2006,
+    isStillOperating: false,
+    founders: "Lewis Buzbee · Wendy Lesser · John May · William Petrocelli",
+    specialties: JSON.stringify(["Contemporary Literature", "Author Readings", "Poetry", "Opera Plaza Community", "Independent Press"]),
+    historicalBlurb: `### For People Who Love Good Books: Opera Plaza's Literary Epicenter
+    
+Named after Ernest Hemingway's famed 1933 short story, **A Clean Well-Lighted Place for Books** opened in 1975 in Larkspur Landing before establishing its landmark flagship at San Francisco's Opera Plaza in 1982. 
+
+For three glorious decades, it was one of the premier independent literary bookstores on the West Coast, celebrated for its legendary author readings hosting Toni Morrison, Gabriel García Márquez, Isabel Allende, and Salman Rushdie.`,
+    notablePatronsTrivia: JSON.stringify([
+      "Named after Ernest Hemingway's classic 1933 short story.",
+      "Hosted some of the most celebrated author reading series in San Francisco history.",
+      "Co-founder William Petrocelli later founded Book Passage in Corte Madera."
+    ]),
+    websiteUrl: "https://www.sfgate.com",
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  // 7. Arches Bookhouse
+  const arches = {
+    id: "arches-bookhouse",
+    name: "Arches Bookhouse",
+    city: "Portland",
+    stateProvince: "OR",
+    country: "United States",
+    streetAddress: "8900 N Lombard Street",
+    yearOpened: 2017,
+    yearClosed: null,
+    isStillOperating: true,
+    founders: "Tim & Megan Hall",
+    specialties: JSON.stringify(["Scholarly & Antiquarian", "Theology & Philosophy", "Classical Literature", "Poetry", "Rare Editions"]),
+    historicalBlurb: `### St. Johns Antiquarian Sanctuary in North Portland
+    
+Located in the historic St. Johns neighborhood of North Portland, **Arches Bookhouse** is an antiquarian and secondhand bookshop specializing in scholarly literature, philosophy, theology, and rare bindings. Filled with natural wood arches and curated library shelves, it provides a quiet sanctuary for serious readers and collectors.`,
+    notablePatronsTrivia: JSON.stringify([
+      "Known for its architectural Gothic wooden arches framing the shop interior.",
+      "Specializes in academic theology, classic poetry, and rare antiquarian volumes."
+    ]),
+    websiteUrl: "https://archesbookhouse.com",
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  // 8. Aunt Bonnie's Book House
+  const auntBonnies = {
+    id: "aunt-bonnies-book-house",
+    name: "Aunt Bonnie's Book House",
+    city: "Oklahoma City",
+    stateProvince: "OK",
+    country: "United States",
+    streetAddress: "2101 NW 39th Street",
+    yearOpened: 1984,
+    yearClosed: null,
+    isStillOperating: true,
+    founders: "Bonnie Martin",
+    specialties: JSON.stringify(["Children's Literature", "Illustrated Classics", "Vintage Fiction", "School Reading Lists", "Storytelling"]),
+    historicalBlurb: `### Generations of Storytelling in Oklahoma City
+    
+Founded in 1984, **Aunt Bonnie's Book House** is a beloved institution in Oklahoma City, delighting generations of young readers and collectors with vintage illustrated children's books, school classics, and community reading circles.`,
+    notablePatronsTrivia: JSON.stringify([
+      "Beloved for over four decades of children's literary enrichment in Oklahoma.",
+      "Maintains a renowned archive of vintage mid-century illustrated storybooks."
+    ]),
+    websiteUrl: "https://www.facebook.com",
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  // 9. Dog Star Books
+  const dogStar = {
+    id: "dog-star-books",
+    name: "Dog Star Books",
+    city: "Lancaster",
+    stateProvince: "PA",
+    country: "United States",
+    streetAddress: "401 W Lemon Street",
+    yearOpened: 2010,
+    yearClosed: null,
+    isStillOperating: true,
+    founders: "Jordan & Deidre Dunn",
+    specialties: JSON.stringify(["Used & Rare Books", "Small Press Poetry", "Science Fiction", "Art & Philosophy", "Literary Ephemera"]),
+    historicalBlurb: `### Lancaster's Literary Curiosity Shop
+    
+Nestled in Lancaster, Pennsylvania, **Dog Star Books** is an independent secondhand and rare bookshop known for its hand-curated fiction, vintage sci-fi, poetry chapbooks, and community literary readings.`,
+    notablePatronsTrivia: JSON.stringify([
+      "Named after Sirius, the brightest star in the night sky (the Dog Star).",
+      "Regularly hosts underground poetry readings and acoustic salon evenings."
+    ]),
+    websiteUrl: "https://www.dogstarbooks.com",
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  // 10. Gardner's Used Books
+  const gardners = {
+    id: "gardners-used-books",
+    name: "Gardner's Used Books",
+    city: "Tulsa",
+    stateProvince: "OK",
+    country: "United States",
+    streetAddress: "4421 S Mingo Road",
+    yearOpened: 1991,
+    yearClosed: null,
+    isStillOperating: true,
+    founders: "Richard Gardner",
+    specialties: JSON.stringify(["Used Books Superstore", "Vintage Comics", "Rare Paperbacks", "Military History", "Oklahoma Lore"]),
+    historicalBlurb: `### Oklahoma's Largest Used Bookstore: 23,000 Square Feet of Books
+    
+Recognized as the largest used bookstore in Oklahoma with over 23,000 square feet of book aisles, **Gardner's Used Books** in Tulsa holds hundreds of thousands of books, vintage comics, retro paperbacks, and historical ephemera.`,
+    notablePatronsTrivia: JSON.stringify([
+      "With over 23,000 sq ft, it is the largest independent used bookshop in the state of Oklahoma.",
+      "Famous for its towering wall of vintage pulp fiction paperbacks and comic back issues."
+    ]),
+    websiteUrl: "https://www.gardnersbooks.com",
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  // 11. Third Street Books
+  const thirdStreet = {
+    id: "third-street-books",
+    name: "Third Street Books",
+    city: "McMinnville",
+    stateProvince: "OR",
+    country: "United States",
+    streetAddress: "320 NE 3rd Street",
+    yearOpened: 2004,
+    yearClosed: null,
+    isStillOperating: true,
+    founders: "Sylla McClellan",
+    specialties: JSON.stringify(["Pacific Northwest Authors", "Local History", "New Fiction", "Children's Room", "Independent Press"]),
+    historicalBlurb: `### Willamette Valley Literary Heart in Historic McMinnville
+    
+Located in the heart of historic downtown McMinnville in Oregon's Willamette Valley wine country, **Third Street Books** is a vibrant community bookstore celebrating Northwest authors, independent press titles, and local readers.`,
+    notablePatronsTrivia: JSON.stringify([
+      "Anchors historic 3rd Street in McMinnville, consistently voted one of America's best Main Streets.",
+      "Hosts annual literary festivals celebrating Oregon poets and novelists."
+    ]),
+    websiteUrl: "https://www.thirdstreetbooks.com",
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  // 12. Vintage Books
+  const vintageBooks = {
+    id: "vintage-books",
+    name: "Vintage Books",
+    city: "Vancouver",
+    stateProvince: "WA",
+    country: "United States",
+    streetAddress: "6613 E Mill Plain Blvd",
+    yearOpened: 1975,
+    yearClosed: null,
+    isStillOperating: true,
+    founders: "Nancy Anderson · Becky Milner",
+    specialties: JSON.stringify(["Used & Out-of-Print", "Mystery & Crime", "Pacific Northwest History", "Science Fiction & Fantasy", "Book Clubs"]),
+    historicalBlurb: `### Fifty Years of Bookselling on the Columbia River
+    
+Serving readers across Southwest Washington and the Columbia River since 1975, **Vintage Books** is Vancouver's oldest independent bookstore, housing over 60,000 used, rare, and new titles across its labyrinthine aisles.`,
+    notablePatronsTrivia: JSON.stringify([
+      "Vancouver, Washington's oldest independent bookstore, celebrating 50 years of community bookselling.",
+      "Home to the famous shop cats who greet browsers along the mystery and history shelves."
+    ]),
+    websiteUrl: "https://www.vintage-books.net",
+    createdAt: now,
+    updatedAt: now,
+  };
+
   // Upsert Bookstores
-  for (const b of [gotham, shakespeare, cityLights, krochs, greenApple]) {
+  const allSeedStores = [
+    gotham,
+    shakespeare,
+    cityLights,
+    krochs,
+    greenApple,
+    cleanWellLighted,
+    arches,
+    auntBonnies,
+    dogStar,
+    gardners,
+    thirdStreet,
+    vintageBooks,
+  ];
+
+  for (const b of allSeedStores) {
     await db.insert(bookstores).values(b).onConflictDoUpdate({
       target: bookstores.id,
       set: b,
@@ -267,44 +460,6 @@ In 1996, the shop expanded across the street into 520 Clement Street with a dedi
       updatedAt: now,
     },
     {
-      id: "gotham-joyce-society-1975",
-      bookstoreId: "gotham-book-mart",
-      title: "Gotham Book Mart James Joyce Society Commemorative Bookmark",
-      accessionNo: "BM-1975-NY-05",
-      frontImageUrl: "/seed-images/gotham-front.svg",
-      backImageUrl: "/seed-images/gotham-back.svg",
-      yearProduced: 1975,
-      material: "Heavy Parchment Stock with Black Letterpress Imprint",
-      dimensions: "2.0\" × 8.25\"",
-      condition: "Fine",
-      acquisitionDate: "2019-02-14",
-      acquisitionNotes: "Acquired at a rare book fair in Manhattan.",
-      isFeatured: false,
-      displayOrder: 5,
-      accentColor: "#881337",
-      createdAt: now,
-      updatedAt: now,
-    },
-    {
-      id: "shakespeare-left-bank-1978",
-      bookstoreId: "shakespeare-and-company",
-      title: "Shakespeare and Company Paris Left Bank Writers & Tumbleweeds Bookmark",
-      accessionNo: "BM-1978-PAR-06",
-      frontImageUrl: "/seed-images/shakespeare-front.svg",
-      backImageUrl: "/seed-images/shakespeare-back.svg",
-      yearProduced: 1978,
-      material: "Cream French Vellum with Green Typography",
-      dimensions: "2.5\" × 7.0\"",
-      condition: "Very Good",
-      acquisitionDate: "2015-06-20",
-      acquisitionNotes: "Found inside an edition of Lawrence Durrell poems.",
-      isFeatured: false,
-      displayOrder: 6,
-      accentColor: "#14532D",
-      createdAt: now,
-      updatedAt: now,
-    },
-    {
       id: "green-apple-clement-vintage",
       bookstoreId: "green-apple-books",
       title: "Green Apple Books 506 Clement Street San Francisco Bookmark",
@@ -320,6 +475,139 @@ In 1996, the shop expanded across the street into 520 Clement Street with a dedi
       isFeatured: true,
       displayOrder: 5,
       accentColor: "#15803D",
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: "clean-well-lighted-opera-plaza",
+      bookstoreId: "a-clean-well-lighted-place-for-books",
+      title: "A Clean Well-Lighted Place for Books Opera Plaza Bookmark",
+      accessionNo: "BM-1975-SF-08",
+      frontImageUrl: "/seed-images/cleanwelllighted-front.svg",
+      backImageUrl: "/seed-images/cleanwelllighted-back.svg",
+      yearProduced: 1975,
+      material: "Classic Blue Ink on Cream Cardstock",
+      dimensions: "2.25\" × 7.5\"",
+      condition: "Fine",
+      acquisitionDate: "1994-04-12",
+      acquisitionNotes: "Acquired at an author reading at Opera Plaza.",
+      isFeatured: true,
+      displayOrder: 6,
+      accentColor: "#2563EB",
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: "arches-bookhouse-st-johns",
+      bookstoreId: "arches-bookhouse",
+      title: "Arches Bookhouse St. Johns Portland Bookmark",
+      accessionNo: "BM-2017-OR-09",
+      frontImageUrl: "/seed-images/arches-front.svg",
+      backImageUrl: "/seed-images/arches-back.svg",
+      yearProduced: 2017,
+      material: "Amber Letterpress Heavy Linen",
+      dimensions: "2.25\" × 7.5\"",
+      condition: "Mint",
+      acquisitionDate: "2021-08-05",
+      acquisitionNotes: "Acquired during a visit to Portland, Oregon.",
+      isFeatured: true,
+      displayOrder: 7,
+      accentColor: "#B45309",
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: "dog-star-books-lemon-st",
+      bookstoreId: "dog-star-books",
+      title: "Dog Star Books Lemon Street Lancaster Bookmark",
+      accessionNo: "BM-2010-PA-10",
+      frontImageUrl: "/seed-images/dogstar-front.svg",
+      backImageUrl: "/seed-images/dogstar-back.svg",
+      yearProduced: 2010,
+      material: "Purple & Lavender Heavy Vellum",
+      dimensions: "2.25\" × 7.5\"",
+      condition: "Fine",
+      acquisitionDate: "2019-11-18",
+      acquisitionNotes: "Acquired at 401 W Lemon Street in Lancaster.",
+      isFeatured: false,
+      displayOrder: 8,
+      accentColor: "#7E22CE",
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: "gardners-used-books-tulsa",
+      bookstoreId: "gardners-used-books",
+      title: "Gardner's Used Books Tulsa Oklahoma Bookmark",
+      accessionNo: "BM-1991-OK-11",
+      frontImageUrl: "/seed-images/gardners-front.svg",
+      backImageUrl: "/seed-images/gardners-back.svg",
+      yearProduced: 1991,
+      material: "Warm Ochre Card with Bookstore Map",
+      dimensions: "2.25\" × 7.5\"",
+      condition: "Fine",
+      acquisitionDate: "2016-05-30",
+      acquisitionNotes: "Acquired at Gardner's Used Books on Mingo Road in Tulsa.",
+      isFeatured: true,
+      displayOrder: 9,
+      accentColor: "#B45309",
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: "third-street-books-mcminnville",
+      bookstoreId: "third-street-books",
+      title: "Third Street Books McMinnville Oregon Bookmark",
+      accessionNo: "BM-2004-OR-12",
+      frontImageUrl: "/seed-images/thirdstreet-front.svg",
+      backImageUrl: "/seed-images/thirdstreet-back.svg",
+      yearProduced: 2004,
+      material: "Forest Green Linen Cardstock",
+      dimensions: "2.25\" × 7.5\"",
+      condition: "Mint",
+      acquisitionDate: "2020-07-22",
+      acquisitionNotes: "Acquired during a Willamette Valley book tour.",
+      isFeatured: false,
+      displayOrder: 10,
+      accentColor: "#15803D",
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: "vintage-books-vancouver-wa",
+      bookstoreId: "vintage-books",
+      title: "Vintage Books Vancouver Washington Bookmark",
+      accessionNo: "BM-1975-WA-13",
+      frontImageUrl: "/seed-images/vintagebooks-front.svg",
+      backImageUrl: "/seed-images/vintagebooks-back.svg",
+      yearProduced: 1975,
+      material: "Vintage Amber & Brown Cardstock",
+      dimensions: "2.25\" × 7.5\"",
+      condition: "Fine",
+      acquisitionDate: "2017-10-14",
+      acquisitionNotes: "Acquired at Vintage Books in Vancouver, WA.",
+      isFeatured: true,
+      displayOrder: 11,
+      accentColor: "#B45309",
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: "aunt-bonnies-okc-vintage",
+      bookstoreId: "aunt-bonnies-book-house",
+      title: "Aunt Bonnie's Book House Oklahoma City Bookmark",
+      accessionNo: "BM-1984-OK-14",
+      frontImageUrl: "/seed-images/auntbonnies-front.svg",
+      backImageUrl: "/seed-images/auntbonnies-back.svg",
+      yearProduced: 1984,
+      material: "Rose Tinted Soft Touch Cardstock",
+      dimensions: "2.25\" × 7.5\"",
+      condition: "Very Good",
+      acquisitionDate: "2018-03-10",
+      acquisitionNotes: "Acquired from an Oklahoma collector.",
+      isFeatured: false,
+      displayOrder: 12,
+      accentColor: "#BE185D",
       createdAt: now,
       updatedAt: now,
     },

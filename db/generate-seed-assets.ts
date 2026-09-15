@@ -490,6 +490,189 @@ export function ensureSeedAssets() {
         <text x="160" y="755" font-family="Georgia, serif" font-size="11" font-style="italic" fill="#78716C" text-anchor="middle">every year since 1989.</text>
         <text x="160" y="795" font-family="monospace" font-size="9" fill="#15803D" text-anchor="middle">506 CLEMENT ST · SAN FRANCISCO, CA</text>
       </svg>`,
+
+      // 6. A Clean Well-Lighted Place for Books
+      "cleanwelllighted-front.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 900" width="100%" height="100%">
+        <rect width="320" height="900" fill="#FAF8F5" rx="4" />
+        <rect x="12" y="12" width="296" height="876" fill="none" stroke="#2563EB" stroke-width="1.5" rx="2" />
+        <text x="160" y="75" font-family="'Playfair Display', Georgia, serif" font-size="18" font-weight="bold" fill="#1E293B" text-anchor="middle" letter-spacing="1">A CLEAN WELL-LIGHTED</text>
+        <text x="160" y="105" font-family="'Playfair Display', Georgia, serif" font-size="20" font-weight="bold" fill="#2563EB" text-anchor="middle" letter-spacing="1">PLACE FOR BOOKS</text>
+        <line x1="60" y1="125" x2="260" y2="125" stroke="#2563EB" stroke-width="1" />
+        <g transform="translate(40, 160)">
+          <rect width="240" height="200" fill="#F1F5F9" stroke="#94A3B8" stroke-width="1" rx="4" />
+          <text x="120" y="90" font-family="Georgia, serif" font-size="32" fill="#2563EB" text-anchor="middle">☕ 📖</text>
+          <text x="120" y="135" font-family="Georgia, serif" font-size="12" font-style="italic" fill="#475569" text-anchor="middle">San Francisco · Opera Plaza</text>
+        </g>
+        <text x="160" y="420" font-family="Georgia, serif" font-size="14" font-style="italic" fill="#334155" text-anchor="middle">“For people who love good books.”</text>
+        <rect x="35" y="780" width="250" height="70" fill="#EFF6FF" rx="4" stroke="#93C5FD" stroke-width="1" />
+        <text x="160" y="805" font-family="monospace" font-size="11" font-weight="bold" fill="#1D4ED8" text-anchor="middle">CATALOG: BM-1975-SF-05</text>
+        <text x="160" y="825" font-family="Georgia, serif" font-size="11" font-style="italic" fill="#64748B" text-anchor="middle">Opera Plaza · 601 Van Ness Ave</text>
+      </svg>`,
+      "cleanwelllighted-back.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 900" width="100%" height="100%">
+        <rect width="320" height="900" fill="#F8FAFC" rx="4" />
+        <rect x="16" y="16" width="288" height="868" fill="none" stroke="#CBD5E1" stroke-width="1" rx="2" />
+        <text x="160" y="65" font-family="Georgia, serif" font-size="15" font-weight="bold" fill="#1E293B" text-anchor="middle">OPERA PLAZA SAN FRANCISCO</text>
+        <line x1="60" y1="80" x2="260" y2="80" stroke="#2563EB" stroke-width="1" />
+        <g transform="translate(35, 120)">
+          <text x="0" y="0" font-family="Georgia, serif" font-size="13" fill="#334155" line-height="1.6">
+            <tspan x="0" dy="0">Founded in 1975, celebrated for its</tspan>
+            <tspan x="0" dy="24">unrivaled author readings, deep</tspan>
+            <tspan x="0" dy="24">fiction inventory, and dedication to</tspan>
+            <tspan x="0" dy="24">San Francisco readers.</tspan>
+          </text>
+        </g>
+      </svg>`,
+
+      // 7. Arches Bookhouse
+      "arches-front.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 900" width="100%" height="100%">
+        <rect width="320" height="900" fill="#FAF6EE" rx="4" />
+        <rect x="12" y="12" width="296" height="876" fill="none" stroke="#78350F" stroke-width="1.5" rx="2" />
+        <text x="160" y="80" font-family="'Playfair Display', Georgia, serif" font-size="22" font-weight="bold" fill="#78350F" text-anchor="middle" letter-spacing="1">ARCHES</text>
+        <text x="160" y="110" font-family="'Playfair Display', Georgia, serif" font-size="16" font-weight="bold" fill="#92400E" text-anchor="middle" letter-spacing="2">BOOKHOUSE</text>
+        <line x1="60" y1="130" x2="260" y2="130" stroke="#D97706" stroke-width="1" />
+        <g transform="translate(40, 170)">
+          <rect width="240" height="200" fill="#FEF3C7" stroke="#D97706" stroke-width="1" rx="4" />
+          <text x="120" y="95" font-family="Georgia, serif" font-size="30" fill="#78350F" text-anchor="middle">🏛️ 📚</text>
+          <text x="120" y="140" font-family="Georgia, serif" font-size="12" font-style="italic" fill="#92400E" text-anchor="middle">Portland, Oregon · St. Johns</text>
+        </g>
+        <text x="160" y="430" font-family="Georgia, serif" font-size="13" font-style="italic" fill="#78350F" text-anchor="middle">“Antiquarian &amp; Scholarly Volumes”</text>
+        <rect x="35" y="780" width="250" height="70" fill="#FEF3C7" rx="4" stroke="#F59E0B" stroke-width="1" />
+        <text x="160" y="805" font-family="monospace" font-size="11" font-weight="bold" fill="#78350F" text-anchor="middle">CATALOG: BM-2017-OR-06</text>
+        <text x="160" y="825" font-family="Georgia, serif" font-size="11" font-style="italic" fill="#92400E" text-anchor="middle">St. Johns · Portland, OR</text>
+      </svg>`,
+      "arches-back.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 900" width="100%" height="100%">
+        <rect width="320" height="900" fill="#FFFBEB" rx="4" />
+        <rect x="16" y="16" width="288" height="868" fill="none" stroke="#FDE68A" stroke-width="1" rx="2" />
+        <text x="160" y="65" font-family="Georgia, serif" font-size="15" font-weight="bold" fill="#78350F" text-anchor="middle">THE SCHOLAR'S HAVEN</text>
+        <line x1="60" y1="80" x2="260" y2="80" stroke="#D97706" stroke-width="1" />
+        <g transform="translate(35, 120)">
+          <text x="0" y="0" font-family="Georgia, serif" font-size="13" fill="#78350F" line-height="1.6">
+            <tspan x="0" dy="0">Specializing in secondhand &amp; rare</tspan>
+            <tspan x="0" dy="24">books of enduring value in theology,</tspan>
+            <tspan x="0" dy="24">philosophy, literature, and art.</tspan>
+          </text>
+        </g>
+      </svg>`,
+
+      // 8. Dog Star Books
+      "dogstar-front.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 900" width="100%" height="100%">
+        <rect width="320" height="900" fill="#FAF5FF" rx="4" />
+        <rect x="12" y="12" width="296" height="876" fill="none" stroke="#7E22CE" stroke-width="1.5" rx="2" />
+        <text x="160" y="80" font-family="'Playfair Display', Georgia, serif" font-size="24" font-weight="bold" fill="#581C87" text-anchor="middle" letter-spacing="1">DOG STAR</text>
+        <text x="160" y="110" font-family="'Playfair Display', Georgia, serif" font-size="18" font-weight="bold" fill="#7E22CE" text-anchor="middle" letter-spacing="2">BOOKS</text>
+        <line x1="60" y1="130" x2="260" y2="130" stroke="#A855F7" stroke-width="1" />
+        <g transform="translate(40, 170)">
+          <rect width="240" height="200" fill="#F3E8FF" stroke="#A855F7" stroke-width="1" rx="4" />
+          <text x="120" y="95" font-family="Georgia, serif" font-size="30" fill="#6B21A8" text-anchor="middle">⭐ 🐕 📚</text>
+          <text x="120" y="140" font-family="Georgia, serif" font-size="12" font-style="italic" fill="#581C87" text-anchor="middle">Lancaster, Pennsylvania</text>
+        </g>
+        <text x="160" y="430" font-family="Georgia, serif" font-size="13" font-style="italic" fill="#6B21A8" text-anchor="middle">“Secondhand, Rare &amp; Small Press”</text>
+        <rect x="35" y="780" width="250" height="70" fill="#F3E8FF" rx="4" stroke="#C084FC" stroke-width="1" />
+        <text x="160" y="805" font-family="monospace" font-size="11" font-weight="bold" fill="#6B21A8" text-anchor="middle">CATALOG: BM-2010-PA-07</text>
+        <text x="160" y="825" font-family="Georgia, serif" font-size="11" font-style="italic" fill="#7E22CE" text-anchor="middle">Lancaster, PA</text>
+      </svg>`,
+      "dogstar-back.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 900" width="100%" height="100%">
+        <rect width="320" height="900" fill="#FAF5FF" rx="4" />
+        <rect x="16" y="16" width="288" height="868" fill="none" stroke="#E9D5FF" stroke-width="1" rx="2" />
+        <text x="160" y="65" font-family="Georgia, serif" font-size="15" font-weight="bold" fill="#581C87" text-anchor="middle">LANCASTER VINTAGE LITERATURE</text>
+        <line x1="60" y1="80" x2="260" y2="80" stroke="#A855F7" stroke-width="1" />
+      </svg>`,
+
+      // 9. Gardner's Used Books
+      "gardners-front.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 900" width="100%" height="100%">
+        <rect width="320" height="900" fill="#FDFBF7" rx="4" />
+        <rect x="12" y="12" width="296" height="876" fill="none" stroke="#B45309" stroke-width="1.5" rx="2" />
+        <text x="160" y="80" font-family="'Playfair Display', Georgia, serif" font-size="22" font-weight="bold" fill="#78350F" text-anchor="middle" letter-spacing="1">GARDNER'S</text>
+        <text x="160" y="110" font-family="'Playfair Display', Georgia, serif" font-size="18" font-weight="bold" fill="#B45309" text-anchor="middle" letter-spacing="1">USED BOOKS</text>
+        <line x1="60" y1="130" x2="260" y2="130" stroke="#F59E0B" stroke-width="1" />
+        <g transform="translate(40, 170)">
+          <rect width="240" height="200" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1" rx="4" />
+          <text x="120" y="95" font-family="Georgia, serif" font-size="30" fill="#92400E" text-anchor="middle">📚 🤠 🌟</text>
+          <text x="120" y="140" font-family="Georgia, serif" font-size="12" font-style="italic" fill="#78350F" text-anchor="middle">Tulsa, Oklahoma · 23,000 sq ft</text>
+        </g>
+        <text x="160" y="430" font-family="Georgia, serif" font-size="13" font-style="italic" fill="#78350F" text-anchor="middle">“Oklahoma's Largest Used Bookstore”</text>
+        <rect x="35" y="780" width="250" height="70" fill="#FEF3C7" rx="4" stroke="#F59E0B" stroke-width="1" />
+        <text x="160" y="805" font-family="monospace" font-size="11" font-weight="bold" fill="#92400E" text-anchor="middle">CATALOG: BM-1991-OK-08</text>
+        <text x="160" y="825" font-family="Georgia, serif" font-size="11" font-style="italic" fill="#78350F" text-anchor="middle">Tulsa, OK</text>
+      </svg>`,
+      "gardners-back.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 900" width="100%" height="100%">
+        <rect width="320" height="900" fill="#FFFBEB" rx="4" />
+        <rect x="16" y="16" width="288" height="868" fill="none" stroke="#FDE68A" stroke-width="1" rx="2" />
+        <text x="160" y="65" font-family="Georgia, serif" font-size="15" font-weight="bold" fill="#78350F" text-anchor="middle">TULSA BOOK MILES</text>
+        <line x1="60" y1="80" x2="260" y2="80" stroke="#F59E0B" stroke-width="1" />
+      </svg>`,
+
+      // 10. Third Street Books
+      "thirdstreet-front.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 900" width="100%" height="100%">
+        <rect width="320" height="900" fill="#F0FDF4" rx="4" />
+        <rect x="12" y="12" width="296" height="876" fill="none" stroke="#15803D" stroke-width="1.5" rx="2" />
+        <text x="160" y="80" font-family="'Playfair Display', Georgia, serif" font-size="22" font-weight="bold" fill="#14532D" text-anchor="middle" letter-spacing="1">THIRD STREET</text>
+        <text x="160" y="110" font-family="'Playfair Display', Georgia, serif" font-size="18" font-weight="bold" fill="#15803D" text-anchor="middle" letter-spacing="2">BOOKS</text>
+        <line x1="60" y1="130" x2="260" y2="130" stroke="#22C55E" stroke-width="1" />
+        <g transform="translate(40, 170)">
+          <rect width="240" height="200" fill="#DCFCE7" stroke="#22C55E" stroke-width="1" rx="4" />
+          <text x="120" y="95" font-family="Georgia, serif" font-size="30" fill="#166534" text-anchor="middle">🌲 📚 🍇</text>
+          <text x="120" y="140" font-family="Georgia, serif" font-size="12" font-style="italic" fill="#14532D" text-anchor="middle">McMinnville, Oregon</text>
+        </g>
+        <text x="160" y="430" font-family="Georgia, serif" font-size="13" font-style="italic" fill="#166534" text-anchor="middle">“Heart of Willamette Valley Bookselling”</text>
+        <rect x="35" y="780" width="250" height="70" fill="#DCFCE7" rx="4" stroke="#4ADE80" stroke-width="1" />
+        <text x="160" y="805" font-family="monospace" font-size="11" font-weight="bold" fill="#15803D" text-anchor="middle">CATALOG: BM-2004-OR-09</text>
+        <text x="160" y="825" font-family="Georgia, serif" font-size="11" font-style="italic" fill="#166534" text-anchor="middle">McMinnville, OR</text>
+      </svg>`,
+      "thirdstreet-back.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 900" width="100%" height="100%">
+        <rect width="320" height="900" fill="#F0FDF4" rx="4" />
+        <rect x="16" y="16" width="288" height="868" fill="none" stroke="#BBF7D0" stroke-width="1" rx="2" />
+        <text x="160" y="65" font-family="Georgia, serif" font-size="15" font-weight="bold" fill="#14532D" text-anchor="middle">HISTORIC MCMINNVILLE</text>
+        <line x1="60" y1="80" x2="260" y2="80" stroke="#22C55E" stroke-width="1" />
+      </svg>`,
+
+      // 11. Vintage Books
+      "vintagebooks-front.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 900" width="100%" height="100%">
+        <rect width="320" height="900" fill="#FFFBEB" rx="4" />
+        <rect x="12" y="12" width="296" height="876" fill="none" stroke="#B45309" stroke-width="1.5" rx="2" />
+        <text x="160" y="80" font-family="'Playfair Display', Georgia, serif" font-size="24" font-weight="bold" fill="#78350F" text-anchor="middle" letter-spacing="2">VINTAGE</text>
+        <text x="160" y="110" font-family="'Playfair Display', Georgia, serif" font-size="18" font-weight="bold" fill="#B45309" text-anchor="middle" letter-spacing="2">BOOKS</text>
+        <line x1="60" y1="130" x2="260" y2="130" stroke="#F59E0B" stroke-width="1" />
+        <g transform="translate(40, 170)">
+          <rect width="240" height="200" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1" rx="4" />
+          <text x="120" y="95" font-family="Georgia, serif" font-size="30" fill="#92400E" text-anchor="middle">📖 ☕ 🌲</text>
+          <text x="120" y="140" font-family="Georgia, serif" font-size="12" font-style="italic" fill="#78350F" text-anchor="middle">Vancouver, Washington · Est. 1975</text>
+        </g>
+        <text x="160" y="430" font-family="Georgia, serif" font-size="13" font-style="italic" fill="#78350F" text-anchor="middle">“Vancouver's Oldest Independent Bookseller”</text>
+        <rect x="35" y="780" width="250" height="70" fill="#FEF3C7" rx="4" stroke="#F59E0B" stroke-width="1" />
+        <text x="160" y="805" font-family="monospace" font-size="11" font-weight="bold" fill="#92400E" text-anchor="middle">CATALOG: BM-1975-WA-10</text>
+        <text x="160" y="825" font-family="Georgia, serif" font-size="11" font-style="italic" fill="#78350F" text-anchor="middle">Vancouver, WA</text>
+      </svg>`,
+      "vintagebooks-back.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 900" width="100%" height="100%">
+        <rect width="320" height="900" fill="#FFFBEB" rx="4" />
+        <rect x="16" y="16" width="288" height="868" fill="none" stroke="#FDE68A" stroke-width="1" rx="2" />
+        <text x="160" y="65" font-family="Georgia, serif" font-size="15" font-weight="bold" fill="#78350F" text-anchor="middle">COLUMBIA RIVER COMMUNITY</text>
+        <line x1="60" y1="80" x2="260" y2="80" stroke="#F59E0B" stroke-width="1" />
+      </svg>`,
+
+      // 12. Aunt Bonnie's Book House
+      "auntbonnies-front.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 900" width="100%" height="100%">
+        <rect width="320" height="900" fill="#FDF2F8" rx="4" />
+        <rect x="12" y="12" width="296" height="876" fill="none" stroke="#BE185D" stroke-width="1.5" rx="2" />
+        <text x="160" y="75" font-family="'Playfair Display', Georgia, serif" font-size="20" font-weight="bold" fill="#9D174D" text-anchor="middle" letter-spacing="1">AUNT BONNIE'S</text>
+        <text x="160" y="105" font-family="'Playfair Display', Georgia, serif" font-size="18" font-weight="bold" fill="#BE185D" text-anchor="middle" letter-spacing="1">BOOK HOUSE</text>
+        <line x1="60" y1="125" x2="260" y2="125" stroke="#F43F5E" stroke-width="1" />
+        <g transform="translate(40, 160)">
+          <rect width="240" height="200" fill="#FCE7F3" stroke="#F43F5E" stroke-width="1" rx="4" />
+          <text x="120" y="90" font-family="Georgia, serif" font-size="30" fill="#9D174D" text-anchor="middle">🏡 🧸 📚</text>
+          <text x="120" y="135" font-family="Georgia, serif" font-size="12" font-style="italic" fill="#831843" text-anchor="middle">Oklahoma City, OK</text>
+        </g>
+        <text x="160" y="420" font-family="Georgia, serif" font-size="13" font-style="italic" fill="#831843" text-anchor="middle">“Vintage &amp; Children's Literature”</text>
+        <rect x="35" y="780" width="250" height="70" fill="#FCE7F3" rx="4" stroke="#F472B6" stroke-width="1" />
+        <text x="160" y="805" font-family="monospace" font-size="11" font-weight="bold" fill="#9D174D" text-anchor="middle">CATALOG: BM-1984-OK-11</text>
+        <text x="160" y="825" font-family="Georgia, serif" font-size="11" font-style="italic" fill="#831843" text-anchor="middle">Oklahoma City, OK</text>
+      </svg>`,
+      "auntbonnies-back.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 900" width="100%" height="100%">
+        <rect width="320" height="900" fill="#FDF2F8" rx="4" />
+        <rect x="16" y="16" width="288" height="868" fill="none" stroke="#FBCFE8" stroke-width="1" rx="2" />
+        <text x="160" y="65" font-family="Georgia, serif" font-size="15" font-weight="bold" fill="#9D174D" text-anchor="middle">STORIES &amp; CLASSICS</text>
+        <line x1="60" y1="80" x2="260" y2="80" stroke="#F43F5E" stroke-width="1" />
+      </svg>`,
     };
 
     for (const [filename, content] of Object.entries(assets)) {
