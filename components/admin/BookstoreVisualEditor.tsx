@@ -255,6 +255,31 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string>("");
 
+  // Deletion State
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const handleDeleteBookstore = async () => {
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      const res = await fetch(`/api/bookstores/${initialData.id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to delete bookstore.");
+      }
+      router.push("/admin");
+      router.refresh();
+    } catch (err: any) {
+      console.error("Error deleting bookstore:", err);
+      setDeleteError(err.message || "An error occurred while deleting.");
+      setIsDeleting(false);
+    }
+  };
+
   // Modals for Bookmark flip & Lightbox
   const [selectedBookmark, setSelectedBookmark] = useState<BookmarkWithDetails | null>(null);
   const [selectedLightboxMedia, setSelectedLightboxMedia] = useState<ArchivalMedia | null>(null);
@@ -1618,6 +1643,27 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
         </div>
       </div>
 
+      {/* 6. Danger Zone / Bookstore Deletion */}
+      <div className="p-6 rounded-2xl bg-white border border-rose-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <h3 className="font-serif text-base font-bold text-stone-900 flex items-center gap-2">
+            <Trash2 className="w-4 h-4 text-rose-600" />
+            <span>Delete Bookstore Dossier</span>
+          </h3>
+          <p className="text-xs font-serif text-stone-500">
+            Permanently remove <strong>{name || initialData.name}</strong>, its address timeline, and linked media from the archive database.
+          </p>
+        </div>
+        <Button
+          type="button"
+          onClick={() => setIsDeleteModalOpen(true)}
+          className="bg-rose-50 hover:bg-rose-100 text-rose-700 hover:text-rose-800 border border-rose-200 font-serif text-xs gap-1.5 shrink-0 cursor-pointer"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+          <span>Delete Bookstore</span>
+        </Button>
+      </div>
+
       {/* --- MODAL: Add Archival / Storefront / Inside Photo (Manual Metadata Entry) --- */}
       {isPhotoModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
@@ -1911,6 +1957,73 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
           bookmark={selectedBookmark}
           onClose={() => setSelectedBookmark(null)}
         />
+      )}
+
+      {/* --- MODAL: Confirm Delete Bookstore --- */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
+          <div className="relative w-full max-w-md bg-white border border-[#E8E2D5] rounded-2xl shadow-2xl p-6 space-y-5 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3 text-rose-600 border-b border-rose-100 pb-3">
+              <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center shrink-0">
+                <Trash2 className="w-5 h-5 text-rose-600" />
+              </div>
+              <div>
+                <h3 className="font-serif text-lg font-bold text-stone-900">Delete Bookstore</h3>
+                <p className="text-xs font-serif text-stone-500">This action cannot be undone.</p>
+              </div>
+            </div>
+
+            <div className="space-y-3 text-xs font-serif text-stone-600 leading-relaxed">
+              <p>
+                Are you sure you want to permanently delete{" "}
+                <strong className="text-stone-900">{name || initialData.name}</strong> from the archive?
+              </p>
+              <p className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-[11px]">
+                ⚠️ Any bookmarks attached to this bookstore will remain in the catalog, but their linked bookstore profile, address timeline, and archival press clippings will be removed.
+              </p>
+              {deleteError && (
+                <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 font-mono text-[11px]">
+                  {deleteError}
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#E8E2D5]">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isDeleting}
+                onClick={() => {
+                  setIsDeleteModalOpen(false);
+                  setDeleteError(null);
+                }}
+                className="border-[#E8E2D5] cursor-pointer"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                disabled={isDeleting}
+                onClick={handleDeleteBookstore}
+                className="bg-rose-600 hover:bg-rose-700 text-white gap-1.5 cursor-pointer"
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Yes, Delete Bookstore</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
