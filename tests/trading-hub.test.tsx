@@ -180,4 +180,11 @@ describe("TradingHubClient Component", () => {
       expect(screen.queryByText("Physical Specimen Specifications")).toBeNull();
     });
   });
+
+  it("renders the Bazaar FAQ section", () => {
+    render(<TradingHubClient initialBookmarks={mockTradeBookmarks} />);
+
+    expect(screen.getByText(/Bazaar FAQ/i)).toBeDefined();
+    expect(screen.getByText(/Trading & Exchange FAQ/i)).toBeDefined();
+  });
 });

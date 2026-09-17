@@ -46,13 +46,15 @@ Over decades of browsing antiquarian bookshops, library sales, and paper ephemer
 1. **Browse Available Duplicates**: Every specimen below is an authentic vintage or modern bookstore bookmark with verified duplicate copies in the archive.
 2. **Select Bookmarks for Trade**: Click **"+ Add to Trade Proposal"** on any bookmarks you would like to acquire.
 3. **Submit Your Offer**: Open the floating swap drawer below to submit a proposal describing the bookmarks or historic bookstore ephemera you would like to offer in exchange!`,
-  wishlist_title: "Curator's 'In Search Of' (ISO) & Wishlist",
-  wishlist_content: `We are currently actively seeking original bookmarks from:
-- **Mid-Century San Francisco & North Beach** (Discovery Bookshop, Lawrence Ferlinghetti early imprints)
-- **Historic New York Book Row** (Fourth Avenue used bookstores, 1920s–1950s)
-- **Pacific Northwest Indie Pioneers** (Early Powell's, Catbird Seat, Looking Glass)
-- **Midwest Literary Havens** (Stuart Brent Books Chicago, Prairie Lights Iowa City early series)
-- *Any rare letterpress or diecut bookmarks from discontinued indie bookstores!*`,
+  faq_title: "Trading & Exchange FAQ",
+  faq_content: `**Q: What kind of bookmarks can I trade?**
+We trade duplicate bookstore bookmarks for other authentic indie bookstore bookmarks, antiquarian bookseller slips, or historic reading ephemera we don't already have in the archive.
+
+**Q: What condition are these duplicate bookmarks in?**
+Every duplicate specimen is in collectible, authentic condition (Very Good to Mint) and stored in an archival polyester sleeve.
+
+**Q: How do we complete the swap?**
+Once you submit your trade proposal with the items you're offering, the curator will follow up by email to confirm the swap and exchange mailing addresses.`,
 };
 
 export function TradingHubClient({
@@ -243,17 +245,10 @@ export function TradingHubClient({
           )}
         </section>
 
-        {/* 1. Introductory Exchange Letter & Curator's Wishlist */}
+        {/* 1. Introductory Exchange Letter & Small FAQ Section */}
         <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Left Column: Guidelines & Letter */}
           <div className="lg:col-span-7 bg-white rounded-3xl border border-[#E8E2D5] p-6 sm:p-8 shadow-xs space-y-5">
-            <div className="flex items-center gap-2.5 text-[#2563EB]">
-              <ArrowLeftRight className="w-5 h-5 text-[#2563EB]" />
-              <span className="text-xs font-mono font-bold tracking-wider uppercase">
-                Collector-to-Collector Exchange
-              </span>
-            </div>
-
             {isEditing ? (
               <div className="space-y-3">
                 <label className="block text-xs font-mono text-stone-500 uppercase">
@@ -288,44 +283,46 @@ export function TradingHubClient({
             )}
           </div>
 
-          {/* Right Column: Curator's Wishlist / In Search Of */}
+          {/* Right Column: Small FAQ Section */}
           <div className="lg:col-span-5 bg-[#FAF8F5] rounded-3xl border-2 border-dashed border-[#E8E2D5] p-6 sm:p-7 space-y-4">
-            <div className="flex items-center gap-2 text-[#F43F7A]">
-              <Sparkles className="w-4 h-4 text-[#F43F7A]" />
-              <span className="text-xs font-mono font-bold tracking-wider uppercase text-[#F43F7A]">
-                Curator's In-Search-Of (ISO)
+            <div className="flex items-center gap-2 text-[#2563EB]">
+              <HelpCircle className="w-4 h-4 text-[#2563EB]" />
+              <span className="text-xs font-mono font-bold tracking-wider uppercase text-[#2563EB]">
+                Bazaar FAQ
               </span>
             </div>
 
             {isEditing ? (
               <div className="space-y-3">
                 <label className="block text-xs font-mono text-stone-500 uppercase">
-                  Wishlist Title
+                  FAQ Section Title
                 </label>
                 <input
                   type="text"
-                  value={content.wishlist_title || ""}
-                  onChange={(e) => handleUpdateContent("wishlist_title", e.target.value)}
+                  value={content.faq_title || content.wishlist_title || ""}
+                  onChange={(e) => handleUpdateContent("faq_title", e.target.value)}
                   className="w-full text-lg font-serif font-bold text-stone-900 bg-white border border-[#E8E2D5] rounded-xl px-3 py-1.5"
                 />
                 <label className="block text-xs font-mono text-stone-500 uppercase mt-2">
-                  Wishlist Items (Markdown)
+                  FAQ Questions &amp; Answers (Markdown)
                 </label>
                 <textarea
-                  rows={6}
-                  value={content.wishlist_content || ""}
-                  onChange={(e) => handleUpdateContent("wishlist_content", e.target.value)}
+                  rows={7}
+                  value={content.faq_content || content.wishlist_content || ""}
+                  onChange={(e) => handleUpdateContent("faq_content", e.target.value)}
                   className="w-full text-xs font-mono text-stone-900 bg-white border border-[#E8E2D5] rounded-xl p-3 leading-relaxed"
                 />
               </div>
             ) : (
               <div className="space-y-3">
                 <h3 className="font-serif text-lg font-bold text-stone-900">
-                  {content.wishlist_title}
+                  {content.faq_title || content.wishlist_title || "Frequently Asked Questions"}
                 </h3>
                 <div
                   className="prose prose-stone prose-xs max-w-none text-stone-600 font-serif leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: marked(content.wishlist_content || "") }}
+                  dangerouslySetInnerHTML={{
+                    __html: marked(content.faq_content || content.wishlist_content || ""),
+                  }}
                 />
               </div>
             )}
