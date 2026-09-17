@@ -9,6 +9,7 @@ import { BookmarkWithDetails } from "@/lib/db/queries";
 import { BookmarkInspector } from "@/components/exhibit/BookmarkInspector";
 import { Header } from "@/components/ui/Header";
 import { CuratorPageToolbar } from "@/components/admin/CuratorPageToolbar";
+import { VisualTextarea } from "@/components/ui/VisualTextarea";
 import {
   ArrowLeftRight,
   Search,
@@ -17,7 +18,6 @@ import {
   Trash2,
   Send,
   X,
-  Sparkles,
   Layers,
   HelpCircle,
   Eye,
@@ -25,36 +25,55 @@ import {
   Mail,
   CheckCircle2,
   Edit3,
+  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { marked } from "marked";
 
 export interface TradingHubClientProps {
   initialBookmarks: BookmarkWithDetails[];
   initialContent?: Record<string, string>;
 }
 
+export interface FAQItem {
+  question: string;
+  answer: string;
+}
+
+const DEFAULT_FAQS: FAQItem[] = [
+  {
+    question: "What kind of bookmarks can I offer in trade?",
+    answer:
+      "We trade duplicate bookstore bookmarks for other authentic indie bookstore bookmarks, antiquarian bookseller slips, or historic reading ephemera we don't already have in the archive.",
+  },
+  {
+    question: "What condition are these duplicate bookmarks in?",
+    answer:
+      "Every duplicate specimen is in collectible, authentic condition (Very Good to Mint) and stored in an archival polyester sleeve.",
+  },
+  {
+    question: "How do we complete the swap?",
+    answer:
+      "Once you submit your trade proposal with the items you're offering, the curator will follow up by email to confirm the swap and exchange mailing addresses.",
+  },
+];
+
 const DEFAULT_CONTENT: Record<string, string> = {
   hero_subtitle:
     "A dedicated exchange for fellow bookmark collectors, ephemera archivists, and indie bookstore lovers to swap duplicate bookmarks.",
   intro_title: "The Collector's Duplicate Exchange",
-  intro_letter: `Welcome to the **Bookmark Bazaar**! 
-
-Over decades of browsing antiquarian bookshops, library sales, and paper ephemera fairs, I have gathered multiple copies of several cherished bookstore bookmarks. This page is dedicated to fellow collectors, archivist enthusiasts, and independent bookstore lovers who would like to swap duplicates.
-
-### How Trades Work
-1. **Browse Available Duplicates**: Every specimen below is an authentic vintage or modern bookstore bookmark with verified duplicate copies in the archive.
-2. **Select Bookmarks for Trade**: Click **"+ Add to Trade Proposal"** on any bookmarks you would like to acquire.
-3. **Submit Your Offer**: Open the floating swap drawer below to submit a proposal describing the bookmarks or historic bookstore ephemera you would like to offer in exchange!`,
+  intro_p1:
+    "Welcome to the Bookmark Bazaar! Over decades of browsing antiquarian bookshops, library sales, and paper ephemera fairs, I have gathered multiple copies of several cherished bookstore bookmarks.",
+  intro_p2:
+    "This page is dedicated to fellow collectors, archivist enthusiasts, and independent bookstore lovers who would like to swap duplicates.",
+  how_it_works_title: "How Trades Work",
+  step1_text:
+    "Browse Available Duplicates: Every specimen below is an authentic bookstore bookmark with verified duplicate copies in the archive.",
+  step2_text:
+    "Select Bookmarks for Trade: Click '+ Add to Trade Proposal' on any bookmarks you would like to acquire.",
+  step3_text:
+    "Submit Your Offer: Open the floating swap drawer below to submit a proposal describing the bookmarks or historic ephemera you would like to offer in exchange!",
   faq_title: "Trading & Exchange FAQ",
-  faq_content: `**Q: What kind of bookmarks can I trade?**
-We trade duplicate bookstore bookmarks for other authentic indie bookstore bookmarks, antiquarian bookseller slips, or historic reading ephemera we don't already have in the archive.
-
-**Q: What condition are these duplicate bookmarks in?**
-Every duplicate specimen is in collectible, authentic condition (Very Good to Mint) and stored in an archival polyester sleeve.
-
-**Q: How do we complete the swap?**
-Once you submit your trade proposal with the items you're offering, the curator will follow up by email to confirm the swap and exchange mailing addresses.`,
+  faqs_json: JSON.stringify(DEFAULT_FAQS),
 };
 
 export function TradingHubClient({
@@ -80,6 +99,36 @@ export function TradingHubClient({
 
   const handleUpdateContent = (key: string, value: string) => {
     setContent((prev) => ({ ...prev, [key]: value }));
+  };
+
+  // Structured FAQs Helper
+  const currentFaqs: FAQItem[] = useMemo(() => {
+    if (content.faqs_json) {
+      try {
+        const parsed = JSON.parse(content.faqs_json);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch {}
+    }
+    return DEFAULT_FAQS;
+  }, [content.faqs_json]);
+
+  const handleFaqChange = (index: number, field: "question" | "answer", value: string) => {
+    const updated = [...currentFaqs];
+    updated[index] = { ...updated[index], [field]: value };
+    handleUpdateContent("faqs_json", JSON.stringify(updated));
+  };
+
+  const handleAddFaq = () => {
+    const updated = [
+      ...currentFaqs,
+      { question: "New Question?", answer: "Write the answer here..." },
+    ];
+    handleUpdateContent("faqs_json", JSON.stringify(updated));
+  };
+
+  const handleRemoveFaq = (index: number) => {
+    const updated = currentFaqs.filter((_, i) => i !== index);
+    handleUpdateContent("faqs_json", JSON.stringify(updated));
   };
 
   const handleSave = async (): Promise<boolean | void> => {
@@ -227,15 +276,13 @@ export function TradingHubClient({
           </div>
 
           {isEditing ? (
-            <div className="w-full max-w-2xl space-y-1.5">
-              <label className="flex items-center gap-1.5 text-[11px] font-mono font-bold text-[#F43F7A] uppercase tracking-wider">
-                <Edit3 className="w-3.5 h-3.5" /> Edit Hero Subtitle:
-              </label>
-              <textarea
+            <div className="w-full max-w-2xl">
+              <VisualTextarea
+                label="Edit Hero Subtitle:"
                 value={content.hero_subtitle || ""}
-                onChange={(e) => handleUpdateContent("hero_subtitle", e.target.value)}
+                onChange={(val) => handleUpdateContent("hero_subtitle", val)}
                 rows={2}
-                className="w-full p-3 text-sm sm:text-base font-serif text-stone-800 bg-white border-2 border-dashed border-[#F43F7A]/40 rounded-xl focus:border-[#2563EB] focus:outline-hidden transition-all shadow-xs leading-relaxed"
+                placeholder="Enter subtitle describing the duplicate exchange..."
               />
             </div>
           ) : (
@@ -250,35 +297,105 @@ export function TradingHubClient({
           {/* Left Column: Guidelines & Letter */}
           <div className="lg:col-span-7 bg-white rounded-3xl border border-[#E8E2D5] p-6 sm:p-8 shadow-xs space-y-5">
             {isEditing ? (
-              <div className="space-y-3">
-                <label className="block text-xs font-mono text-stone-500 uppercase">
-                  Section Headline
-                </label>
-                <input
-                  type="text"
-                  value={content.intro_title || ""}
-                  onChange={(e) => handleUpdateContent("intro_title", e.target.value)}
-                  className="w-full text-xl sm:text-2xl font-serif font-bold text-stone-900 bg-[#FAF8F5] border border-[#E8E2D5] rounded-xl px-4 py-2"
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <label className="block text-xs font-mono text-stone-600 uppercase font-semibold">
+                    Section Headline
+                  </label>
+                  <input
+                    type="text"
+                    value={content.intro_title || ""}
+                    onChange={(e) => handleUpdateContent("intro_title", e.target.value)}
+                    className="w-full text-lg sm:text-xl font-serif font-bold text-stone-900 bg-[#FAF8F5] border border-[#E8E2D5] rounded-xl px-4 py-2"
+                  />
+                </div>
+
+                <VisualTextarea
+                  label="Welcome Message (Paragraph 1)"
+                  rows={3}
+                  value={content.intro_p1 || ""}
+                  onChange={(val) => handleUpdateContent("intro_p1", val)}
+                  placeholder="Welcome to the Bookmark Bazaar! Over decades of browsing..."
                 />
-                <label className="block text-xs font-mono text-stone-500 uppercase mt-2">
-                  Trade Guidelines &amp; Letter (Markdown)
-                </label>
-                <textarea
-                  rows={8}
-                  value={content.intro_letter || ""}
-                  onChange={(e) => handleUpdateContent("intro_letter", e.target.value)}
-                  className="w-full text-xs font-mono text-stone-900 bg-[#FAF8F5] border border-[#E8E2D5] rounded-xl p-4 leading-relaxed"
+
+                <VisualTextarea
+                  label="Welcome Message (Paragraph 2)"
+                  rows={2}
+                  value={content.intro_p2 || ""}
+                  onChange={(val) => handleUpdateContent("intro_p2", val)}
+                  placeholder="This page is dedicated to fellow collectors..."
                 />
+
+                <div className="pt-2 border-t border-[#E8E2D5] space-y-3">
+                  <label className="block text-xs font-mono text-stone-600 uppercase font-semibold">
+                    How Trades Work (3 Easy Steps)
+                  </label>
+                  
+                  <div className="space-y-2">
+                    <input
+                      type="text"
+                      value={content.step1_text || ""}
+                      onChange={(e) => handleUpdateContent("step1_text", e.target.value)}
+                      placeholder="Step 1 description..."
+                      className="w-full text-xs font-serif text-stone-800 bg-[#FAF8F5] border border-[#E8E2D5] rounded-xl px-3 py-2"
+                    />
+                    <input
+                      type="text"
+                      value={content.step2_text || ""}
+                      onChange={(e) => handleUpdateContent("step2_text", e.target.value)}
+                      placeholder="Step 2 description..."
+                      className="w-full text-xs font-serif text-stone-800 bg-[#FAF8F5] border border-[#E8E2D5] rounded-xl px-3 py-2"
+                    />
+                    <input
+                      type="text"
+                      value={content.step3_text || ""}
+                      onChange={(e) => handleUpdateContent("step3_text", e.target.value)}
+                      placeholder="Step 3 description..."
+                      className="w-full text-xs font-serif text-stone-800 bg-[#FAF8F5] border border-[#E8E2D5] rounded-xl px-3 py-2"
+                    />
+                  </div>
+                </div>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-5 font-serif text-stone-700 leading-relaxed text-sm sm:text-base">
                 <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900 leading-tight">
                   {content.intro_title}
                 </h2>
-                <div
-                  className="prose prose-stone prose-sm max-w-none text-stone-700 font-serif leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: marked(content.intro_letter || "") }}
-                />
+                
+                {content.intro_p1 && <p>{content.intro_p1}</p>}
+                {content.intro_p2 && <p>{content.intro_p2}</p>}
+
+                <div className="pt-2 border-t border-[#E8E2D5]/70 space-y-3">
+                  <h3 className="font-serif text-base sm:text-lg font-bold text-stone-900">
+                    {content.how_it_works_title || "How Trades Work"}
+                  </h3>
+                  <div className="space-y-2 text-xs sm:text-sm text-stone-600">
+                    {content.step1_text && (
+                      <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-[#FAF8F5] border border-[#E8E2D5]">
+                        <span className="w-5 h-5 rounded-full bg-[#2563EB] text-white flex items-center justify-center text-[11px] font-bold shrink-0 mt-0.5">
+                          1
+                        </span>
+                        <span>{content.step1_text}</span>
+                      </div>
+                    )}
+                    {content.step2_text && (
+                      <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-[#FAF8F5] border border-[#E8E2D5]">
+                        <span className="w-5 h-5 rounded-full bg-[#2563EB] text-white flex items-center justify-center text-[11px] font-bold shrink-0 mt-0.5">
+                          2
+                        </span>
+                        <span>{content.step2_text}</span>
+                      </div>
+                    )}
+                    {content.step3_text && (
+                      <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-[#FAF8F5] border border-[#E8E2D5]">
+                        <span className="w-5 h-5 rounded-full bg-[#2563EB] text-white flex items-center justify-center text-[11px] font-bold shrink-0 mt-0.5">
+                          3
+                        </span>
+                        <span>{content.step3_text}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -293,37 +410,92 @@ export function TradingHubClient({
             </div>
 
             {isEditing ? (
-              <div className="space-y-3">
-                <label className="block text-xs font-mono text-stone-500 uppercase">
-                  FAQ Section Title
-                </label>
-                <input
-                  type="text"
-                  value={content.faq_title || content.wishlist_title || ""}
-                  onChange={(e) => handleUpdateContent("faq_title", e.target.value)}
-                  className="w-full text-lg font-serif font-bold text-stone-900 bg-white border border-[#E8E2D5] rounded-xl px-3 py-1.5"
-                />
-                <label className="block text-xs font-mono text-stone-500 uppercase mt-2">
-                  FAQ Questions &amp; Answers (Markdown)
-                </label>
-                <textarea
-                  rows={7}
-                  value={content.faq_content || content.wishlist_content || ""}
-                  onChange={(e) => handleUpdateContent("faq_content", e.target.value)}
-                  className="w-full text-xs font-mono text-stone-900 bg-white border border-[#E8E2D5] rounded-xl p-3 leading-relaxed"
-                />
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <label className="block text-xs font-mono text-stone-600 uppercase font-semibold">
+                    FAQ Section Title
+                  </label>
+                  <input
+                    type="text"
+                    value={content.faq_title || "Trading & Exchange FAQ"}
+                    onChange={(e) => handleUpdateContent("faq_title", e.target.value)}
+                    className="w-full text-base font-serif font-bold text-stone-900 bg-white border border-[#E8E2D5] rounded-xl px-3 py-1.5"
+                  />
+                </div>
+
+                {/* FAQ List Manager */}
+                <div className="space-y-3">
+                  <label className="block text-xs font-mono text-stone-600 uppercase font-semibold">
+                    Questions &amp; Answers
+                  </label>
+                  {currentFaqs.map((faq, idx) => (
+                    <div
+                      key={idx}
+                      className="p-3.5 rounded-2xl bg-white border border-[#E8E2D5] shadow-2xs space-y-2.5 relative group"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-mono font-bold text-[#2563EB] uppercase">
+                          Question {idx + 1}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveFaq(idx)}
+                          className="text-stone-400 hover:text-rose-500 p-1 transition-colors"
+                          title="Delete this question"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+
+                      <input
+                        type="text"
+                        value={faq.question}
+                        onChange={(e) => handleFaqChange(idx, "question", e.target.value)}
+                        placeholder="e.g. What condition are these bookmarks in?"
+                        className="w-full px-3 py-1.5 text-xs font-serif font-bold text-stone-900 bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg focus:outline-hidden focus:border-[#2563EB]"
+                      />
+
+                      <textarea
+                        rows={3}
+                        value={faq.answer}
+                        onChange={(e) => handleFaqChange(idx, "answer", e.target.value)}
+                        placeholder="Write the answer..."
+                        className="w-full px-3 py-1.5 text-xs font-serif text-stone-700 bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg focus:outline-hidden focus:border-[#2563EB] leading-relaxed"
+                      />
+                    </div>
+                  ))}
+
+                  <button
+                    type="button"
+                    onClick={handleAddFaq}
+                    className="w-full py-2.5 px-3 rounded-xl border border-dashed border-[#2563EB]/40 bg-blue-50/50 hover:bg-blue-50 text-[#2563EB] text-xs font-serif font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Another Question</span>
+                  </button>
+                </div>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <h3 className="font-serif text-lg font-bold text-stone-900">
-                  {content.faq_title || content.wishlist_title || "Frequently Asked Questions"}
+                  {content.faq_title || "Trading & Exchange FAQ"}
                 </h3>
-                <div
-                  className="prose prose-stone prose-xs max-w-none text-stone-600 font-serif leading-relaxed"
-                  dangerouslySetInnerHTML={{
-                    __html: marked(content.faq_content || content.wishlist_content || ""),
-                  }}
-                />
+
+                <div className="space-y-3">
+                  {currentFaqs.map((faq, idx) => (
+                    <div
+                      key={idx}
+                      className="p-3.5 rounded-2xl bg-white border border-[#E8E2D5] shadow-2xs space-y-1.5"
+                    >
+                      <h4 className="font-serif text-xs sm:text-sm font-bold text-stone-900 leading-snug">
+                        {faq.question}
+                      </h4>
+                      <p className="font-serif text-xs text-stone-600 leading-relaxed">
+                        {faq.answer}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>

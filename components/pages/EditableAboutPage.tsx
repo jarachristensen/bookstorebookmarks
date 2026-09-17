@@ -7,6 +7,7 @@ import { useSearchParams } from "next/navigation";
 import { Header } from "@/components/ui/Header";
 import { CuratorPageToolbar } from "@/components/admin/CuratorPageToolbar";
 import { FAQAccordion } from "@/components/ui/FAQAccordion";
+import { VisualTextarea } from "@/components/ui/VisualTextarea";
 import { BookOpen, ArrowRight, Instagram, Edit3 } from "lucide-react";
 
 const DEFAULT_CONTENT = {
@@ -93,15 +94,12 @@ export function EditableAboutPage({
           </div>
 
           {isEditing ? (
-            <div className="w-full max-w-2xl space-y-1.5">
-              <label className="flex items-center gap-1.5 text-[11px] font-mono font-bold text-[#F43F7A] uppercase tracking-wider">
-                <Edit3 className="w-3.5 h-3.5" /> Edit Hero Subtitle:
-              </label>
-              <textarea
+            <div className="w-full max-w-2xl">
+              <VisualTextarea
+                label="Edit Hero Subtitle:"
                 value={content.hero_subtitle}
-                onChange={(e) => handleChange("hero_subtitle", e.target.value)}
+                onChange={(val) => handleChange("hero_subtitle", val)}
                 rows={3}
-                className="w-full p-3 text-sm sm:text-base font-serif text-stone-800 bg-white border-2 border-dashed border-[#F43F7A]/40 rounded-xl focus:border-[#2563EB] focus:outline-hidden transition-all shadow-xs leading-relaxed"
               />
             </div>
           ) : (
@@ -136,53 +134,33 @@ export function EditableAboutPage({
 
           {isEditing ? (
             <div className="space-y-4">
-              <div className="space-y-1">
-                <label className="text-[10px] font-mono font-bold text-stone-500 uppercase tracking-wider">
-                  Essay Paragraph 1:
-                </label>
-                <textarea
-                  value={content.essay_p1}
-                  onChange={(e) => handleChange("essay_p1", e.target.value)}
-                  rows={3}
-                  className="w-full p-2.5 text-sm font-serif text-stone-800 bg-[#FAF8F5] border border-dashed border-stone-300 rounded-lg focus:border-[#2563EB] focus:outline-hidden leading-relaxed"
-                />
-              </div>
+              <VisualTextarea
+                label="Essay Paragraph 1:"
+                value={content.essay_p1}
+                onChange={(val) => handleChange("essay_p1", val)}
+                rows={3}
+              />
 
-              <div className="space-y-1">
-                <label className="text-[10px] font-mono font-bold text-stone-500 uppercase tracking-wider">
-                  Essay Paragraph 2:
-                </label>
-                <textarea
-                  value={content.essay_p2}
-                  onChange={(e) => handleChange("essay_p2", e.target.value)}
-                  rows={3}
-                  className="w-full p-2.5 text-sm font-serif text-stone-800 bg-[#FAF8F5] border border-dashed border-stone-300 rounded-lg focus:border-[#2563EB] focus:outline-hidden leading-relaxed"
-                />
-              </div>
+              <VisualTextarea
+                label="Essay Paragraph 2:"
+                value={content.essay_p2}
+                onChange={(val) => handleChange("essay_p2", val)}
+                rows={3}
+              />
 
-              <div className="space-y-1">
-                <label className="text-[10px] font-mono font-bold text-stone-500 uppercase tracking-wider">
-                  Essay Paragraph 3:
-                </label>
-                <textarea
-                  value={content.essay_p3}
-                  onChange={(e) => handleChange("essay_p3", e.target.value)}
-                  rows={3}
-                  className="w-full p-2.5 text-sm font-serif text-stone-800 bg-[#FAF8F5] border border-dashed border-stone-300 rounded-lg focus:border-[#2563EB] focus:outline-hidden leading-relaxed"
-                />
-              </div>
+              <VisualTextarea
+                label="Essay Paragraph 3:"
+                value={content.essay_p3}
+                onChange={(val) => handleChange("essay_p3", val)}
+                rows={3}
+              />
 
-              <div className="space-y-1">
-                <label className="text-[10px] font-mono font-bold text-[#F43F7A] uppercase tracking-wider">
-                  Larry Hoefling Quote Callout:
-                </label>
-                <textarea
-                  value={content.quote_callout}
-                  onChange={(e) => handleChange("quote_callout", e.target.value)}
-                  rows={2}
-                  className="w-full p-2.5 text-xs sm:text-sm font-serif text-stone-800 bg-[#FAF8F5] border-l-4 border-l-[#F43F7A] border-dashed border-stone-300 rounded-lg focus:border-[#2563EB] focus:outline-hidden"
-                />
-              </div>
+              <VisualTextarea
+                label="Larry Hoefling Quote Callout:"
+                value={content.quote_callout}
+                onChange={(val) => handleChange("quote_callout", val)}
+                rows={2}
+              />
 
               <div className="pt-4 border-t border-[#E8E2D5] space-y-3">
                 <div className="space-y-1">
@@ -196,17 +174,12 @@ export function EditableAboutPage({
                     className="w-full p-2 font-serif text-lg font-bold text-stone-900 bg-[#FAF8F5] border border-dashed border-stone-300 rounded-lg"
                   />
                 </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-mono font-bold text-stone-500 uppercase tracking-wider block">
-                    Mission Body:
-                  </label>
-                  <textarea
-                    value={content.mission_body}
-                    onChange={(e) => handleChange("mission_body", e.target.value)}
-                    rows={2}
-                    className="w-full p-2.5 text-sm font-serif text-stone-800 bg-[#FAF8F5] border border-dashed border-stone-300 rounded-lg leading-relaxed"
-                  />
-                </div>
+                <VisualTextarea
+                  label="Mission Body:"
+                  value={content.mission_body}
+                  onChange={(val) => handleChange("mission_body", val)}
+                  rows={2}
+                />
               </div>
             </div>
           ) : (

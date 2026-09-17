@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { Header } from "@/components/ui/Header";
 import { CuratorPageToolbar } from "@/components/admin/CuratorPageToolbar";
+import { VisualTextarea } from "@/components/ui/VisualTextarea";
 import {
   HeartHandshake,
   BookOpen,
@@ -110,15 +111,12 @@ export function EditablePartnersPage({
           </div>
 
           {isEditing ? (
-            <div className="w-full max-w-2xl space-y-1.5">
-              <label className="flex items-center gap-1.5 text-[11px] font-mono font-bold text-[#F43F7A] uppercase tracking-wider">
-                <Edit3 className="w-3.5 h-3.5" /> Edit Hero Subtitle:
-              </label>
-              <textarea
+            <div className="w-full max-w-2xl">
+              <VisualTextarea
+                label="Edit Hero Subtitle:"
                 value={content.hero_subtitle}
-                onChange={(e) => handleChange("hero_subtitle", e.target.value)}
+                onChange={(val) => handleChange("hero_subtitle", val)}
                 rows={3}
-                className="w-full p-3 text-sm sm:text-base font-serif text-stone-800 bg-white border-2 border-dashed border-[#F43F7A]/40 rounded-xl focus:border-[#2563EB] focus:outline-hidden transition-all shadow-xs leading-relaxed"
               />
             </div>
           ) : (
@@ -153,41 +151,26 @@ export function EditablePartnersPage({
 
           {isEditing ? (
             <div className="space-y-4">
-              <div className="space-y-1">
-                <label className="text-[10px] font-mono font-bold text-stone-500 uppercase tracking-wider">
-                  Letter Paragraph 1:
-                </label>
-                <textarea
-                  value={content.letter_p1}
-                  onChange={(e) => handleChange("letter_p1", e.target.value)}
-                  rows={3}
-                  className="w-full p-2.5 text-sm font-serif text-stone-800 bg-[#FAF8F5] border border-dashed border-stone-300 rounded-lg focus:border-[#2563EB] focus:outline-hidden leading-relaxed"
-                />
-              </div>
+              <VisualTextarea
+                label="Letter Paragraph 1:"
+                value={content.letter_p1}
+                onChange={(val) => handleChange("letter_p1", val)}
+                rows={3}
+              />
 
-              <div className="space-y-1">
-                <label className="text-[10px] font-mono font-bold text-stone-500 uppercase tracking-wider">
-                  Letter Paragraph 2:
-                </label>
-                <textarea
-                  value={content.letter_p2}
-                  onChange={(e) => handleChange("letter_p2", e.target.value)}
-                  rows={3}
-                  className="w-full p-2.5 text-sm font-serif text-stone-800 bg-[#FAF8F5] border border-dashed border-stone-300 rounded-lg focus:border-[#2563EB] focus:outline-hidden leading-relaxed"
-                />
-              </div>
+              <VisualTextarea
+                label="Letter Paragraph 2:"
+                value={content.letter_p2}
+                onChange={(val) => handleChange("letter_p2", val)}
+                rows={3}
+              />
 
-              <div className="space-y-1">
-                <label className="text-[10px] font-mono font-bold text-[#F43F7A] uppercase tracking-wider">
-                  Callout Quote:
-                </label>
-                <textarea
-                  value={content.letter_quote}
-                  onChange={(e) => handleChange("letter_quote", e.target.value)}
-                  rows={2}
-                  className="w-full p-2.5 text-xs sm:text-sm font-serif text-stone-800 bg-[#FAF8F5] border-l-4 border-l-[#F43F7A] border-dashed border-stone-300 rounded-lg focus:border-[#2563EB] focus:outline-hidden"
-                />
-              </div>
+              <VisualTextarea
+                label="Callout Quote:"
+                value={content.letter_quote}
+                onChange={(val) => handleChange("letter_quote", val)}
+                rows={2}
+              />
             </div>
           ) : (
             <>
@@ -216,11 +199,11 @@ export function EditablePartnersPage({
                     onChange={(e) => handleChange("card1_title", e.target.value)}
                     className="w-full p-1.5 font-serif text-base font-bold text-stone-900 bg-[#FAF8F5] border border-dashed border-[#F43F7A]/40 rounded"
                   />
-                  <textarea
+                  <VisualTextarea
+                    label="Description:"
                     value={content.card1_desc}
-                    onChange={(e) => handleChange("card1_desc", e.target.value)}
+                    onChange={(val) => handleChange("card1_desc", val)}
                     rows={3}
-                    className="w-full p-1.5 font-serif text-xs text-stone-600 bg-[#FAF8F5] border border-dashed border-stone-300 rounded"
                   />
                 </div>
               ) : (
@@ -256,11 +239,11 @@ export function EditablePartnersPage({
                     onChange={(e) => handleChange("card2_title", e.target.value)}
                     className="w-full p-1.5 font-serif text-base font-bold text-stone-900 bg-[#FAF8F5] border border-dashed border-[#F59E0B]/40 rounded"
                   />
-                  <textarea
+                  <VisualTextarea
+                    label="Description:"
                     value={content.card2_desc}
-                    onChange={(e) => handleChange("card2_desc", e.target.value)}
+                    onChange={(val) => handleChange("card2_desc", val)}
                     rows={3}
-                    className="w-full p-1.5 font-serif text-xs text-stone-600 bg-[#FAF8F5] border border-dashed border-stone-300 rounded"
                   />
                 </div>
               ) : (
@@ -296,11 +279,11 @@ export function EditablePartnersPage({
                     onChange={(e) => handleChange("card3_title", e.target.value)}
                     className="w-full p-1.5 font-serif text-base font-bold text-stone-900 bg-[#FAF8F5] border border-dashed border-[#10B981]/40 rounded"
                   />
-                  <textarea
+                  <VisualTextarea
+                    label="Description:"
                     value={content.card3_desc}
-                    onChange={(e) => handleChange("card3_desc", e.target.value)}
+                    onChange={(val) => handleChange("card3_desc", val)}
                     rows={3}
-                    className="w-full p-1.5 font-serif text-xs text-stone-600 bg-[#FAF8F5] border border-dashed border-stone-300 rounded"
                   />
                 </div>
               ) : (
@@ -356,18 +339,18 @@ export function EditablePartnersPage({
         <section className="p-8 sm:p-10 rounded-2xl bg-stone-900 text-white shadow-lg text-center space-y-6 border border-stone-800">
           <div className="space-y-2 max-w-xl mx-auto">
             {isEditing ? (
-              <div className="space-y-2">
+              <div className="space-y-2 max-w-xl mx-auto">
                 <input
                   type="text"
                   value={content.cta_title}
                   onChange={(e) => handleChange("cta_title", e.target.value)}
                   className="w-full p-2 font-serif text-xl sm:text-2xl font-bold text-amber-100 bg-stone-800 border border-dashed border-amber-300/40 rounded-lg text-center"
                 />
-                <textarea
+                <VisualTextarea
+                  label="Description:"
                   value={content.cta_desc}
-                  onChange={(e) => handleChange("cta_desc", e.target.value)}
+                  onChange={(val) => handleChange("cta_desc", val)}
                   rows={2}
-                  className="w-full p-2 font-serif text-xs sm:text-sm text-stone-300 bg-stone-800 border border-dashed border-stone-600 rounded-lg text-center"
                 />
               </div>
             ) : (
