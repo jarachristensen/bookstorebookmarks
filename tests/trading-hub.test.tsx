@@ -106,21 +106,66 @@ const mockTradeBookmarks: BookmarkWithDetails[] = [
       archivalMedia: [],
     },
   },
+  {
+    id: "bm-trade-3",
+    bookstoreId: "store-3",
+    title: "Powell's City of Books Wide Bookmark",
+    accessionNo: "BM-1003",
+    frontImageUrl: "/images/bookmarks/powells-front.png",
+    backImageUrl: null,
+    yearProduced: 1990,
+    material: "Glossy Cardstock",
+    dimensions: '7.5" × 2.25"',
+    condition: "Near Mint",
+    acquisitionDate: "2023-03-01",
+    acquisitionNotes: "Horizontal specimen",
+    isFeatured: false,
+    tradeQuantity: 2,
+    displayOrder: 3,
+    accentColor: "#F43F7A",
+    createdAt: 1000,
+    updatedAt: 1000,
+    bookstore: {
+      id: "store-3",
+      name: "Powell's Books",
+      city: "Portland",
+      stateProvince: "OR",
+      country: "United States",
+      streetAddress: "1005 W Burnside St",
+      locations: null,
+      timelineEvents: null,
+      isFlagship: true,
+      flagshipId: null,
+      chainName: null,
+      branchLabel: null,
+      yearOpened: 1971,
+      yearClosed: null,
+      isStillOperating: true,
+      founders: "Walter Powell",
+      specialties: '["New & Used Books"]',
+      historicalBlurb: "Famous Portland bookstore",
+      notablePatronsTrivia: '[]',
+      websiteUrl: "https://powells.com",
+      createdAt: 1000,
+      updatedAt: 1000,
+      archivalMedia: [],
+    },
+  },
 ];
 
 describe("TradingHubClient Component", () => {
-  it("renders duplicate bookmarks with copy count badges", () => {
+  it("renders duplicate bookmarks with copy count badges and portrait/landscape cards", () => {
     render(<TradingHubClient initialBookmarks={mockTradeBookmarks} />);
 
     // Check titles
     expect(screen.getByText("City Lights Booksellers & Publishers")).toBeDefined();
     expect(screen.getByText("Strand Book Store '18 Miles of Books'")).toBeDefined();
+    expect(screen.getByText("Powell's City of Books Wide Bookmark")).toBeDefined();
 
     // Check duplicate quantity badges
     expect(screen.getByText("✕ 3")).toBeDefined();
     expect(screen.getByText("✕ 1")).toBeDefined();
-    expect(screen.getByText("extras")).toBeDefined();
-    expect(screen.getByText("extra")).toBeDefined();
+    expect(screen.getByText("✕ 2")).toBeDefined();
   });
 
   it("filters duplicates by search query", () => {
@@ -139,8 +184,8 @@ describe("TradingHubClient Component", () => {
     // Bottom tray should not be visible initially
     expect(screen.queryByText(/in Trade Tray/i)).toBeNull();
 
-    // Click "Add to Trade Proposal" for City Lights
-    const addButtons = screen.getAllByRole("button", { name: /Add to Trade Proposal/i });
+    // Click "+ Add" button for City Lights
+    const addButtons = screen.getAllByRole("button", { name: /^Add$/i });
     fireEvent.click(addButtons[0]);
 
     // Bottom tray should now appear with 1 Bookmark
@@ -148,19 +193,19 @@ describe("TradingHubClient Component", () => {
     expect(screen.getByRole("button", { name: /Propose Trade \(1\)/i })).toBeDefined();
 
     // Click second bookmark
-    const addSecond = screen.getByRole("button", { name: /Add to Trade Proposal/i });
-    fireEvent.click(addSecond);
+    const addSecond = screen.getAllByRole("button", { name: /^Add$/i });
+    fireEvent.click(addSecond[0]); // first remaining unselected
 
     expect(screen.getByText("2 Bookmarks in Trade Tray")).toBeDefined();
     expect(screen.getByRole("button", { name: /Propose Trade \(2\)/i })).toBeDefined();
   });
 
-  it("opens BookmarkInspector modal on card click and allows 3D flipping", async () => {
+  it("opens BookmarkInspector modal on card/title click and allows 3D flipping", async () => {
     render(<TradingHubClient initialBookmarks={mockTradeBookmarks} />);
 
-    // Click on the title or inspect button of City Lights
-    const inspectBtn = screen.getAllByTitle(/Inspect & 3D Flip Bookmark/i)[0];
-    fireEvent.click(inspectBtn);
+    // Click on the title of City Lights
+    const titleEl = screen.getByText("City Lights Booksellers & Publishers");
+    fireEvent.click(titleEl);
 
     // Inspector modal should be open showing specifications and flip trigger
     expect(screen.getByText("Physical Specimen Specifications")).toBeDefined();
@@ -181,10 +226,10 @@ describe("TradingHubClient Component", () => {
     });
   });
 
-  it("renders the Bazaar FAQ section", () => {
+  it("renders the side column FAQ questions", () => {
     render(<TradingHubClient initialBookmarks={mockTradeBookmarks} />);
 
-    expect(screen.getByText(/Bazaar FAQ/i)).toBeDefined();
-    expect(screen.getByText(/Trading & Exchange FAQ/i)).toBeDefined();
+    expect(screen.getByText("What kind of bookmarks can I offer in trade?")).toBeDefined();
+    expect(screen.getByText("What condition are these duplicate bookmarks in?")).toBeDefined();
   });
 });
