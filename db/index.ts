@@ -131,12 +131,18 @@ export async function initDb() {
       acquisition_date TEXT,
       acquisition_notes TEXT,
       is_featured INTEGER NOT NULL DEFAULT 0,
+      trade_quantity INTEGER NOT NULL DEFAULT 0,
       display_order INTEGER NOT NULL DEFAULT 0,
       accent_color TEXT,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     );
   `);
+
+  // Migrate bookmarks table if trade_quantity column does not exist
+  try {
+    await client.execute(`ALTER TABLE bookmarks ADD COLUMN trade_quantity INTEGER NOT NULL DEFAULT 0;`);
+  } catch (_) {}
 
   await client.execute(`
     CREATE TABLE IF NOT EXISTS archival_media (

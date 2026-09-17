@@ -39,6 +39,7 @@ export interface BookmarkFormData {
     acquisitionDate: string;
     acquisitionNotes: string;
     isFeatured: boolean;
+    tradeQuantity?: number;
     displayOrder: number;
     accentColor: string;
   };
@@ -103,6 +104,7 @@ export function BookmarkForm({
         acquisitionDate: "",
         acquisitionNotes: "",
         isFeatured: false,
+        tradeQuantity: 0,
         displayOrder: 0,
         accentColor: "#881337",
       },
@@ -223,6 +225,7 @@ export function BookmarkForm({
           yearProduced: formData.bookmark.yearProduced
             ? Number(formData.bookmark.yearProduced)
             : null,
+          tradeQuantity: Number(formData.bookmark.tradeQuantity) || 0,
         },
         bookstore: {
           ...formData.bookstore,
@@ -549,6 +552,32 @@ export function BookmarkForm({
                 setFormData({
                   ...formData,
                   bookmark: { ...formData.bookmark, acquisitionDate: e.target.value },
+                })
+              }
+              className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-mono"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-mono text-stone-600 mb-1 flex items-center justify-between">
+              <span>TRADE COPIES AVAILABLE</span>
+              <span className="text-[10px] text-amber-600 font-sans">Trading Hub if &gt; 0</span>
+            </label>
+            <input
+              type="number"
+              min="0"
+              max="999"
+              data-1p-ignore
+              autoComplete="off"
+              placeholder="0"
+              value={formData.bookmark.tradeQuantity ?? 0}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  bookmark: {
+                    ...formData.bookmark,
+                    tradeQuantity: Math.max(0, parseInt(e.target.value, 10) || 0),
+                  },
                 })
               }
               className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-mono"

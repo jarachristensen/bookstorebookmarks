@@ -66,6 +66,7 @@ export const bookmarks = sqliteTable("bookmarks", {
   acquisitionDate: text("acquisition_date"),
   acquisitionNotes: text("acquisition_notes"),
   isFeatured: integer("is_featured", { mode: "boolean" }).notNull().default(false),
+  tradeQuantity: integer("trade_quantity").notNull().default(0),
   displayOrder: integer("display_order").notNull().default(0),
   accentColor: text("accent_color"),
   createdAt: text("created_at").notNull(),

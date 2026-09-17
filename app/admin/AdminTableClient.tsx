@@ -157,6 +157,7 @@ export function AdminTableClient({
                 <th className="py-3 px-4">Bookmark Title</th>
                 <th className="py-3 px-4">Historic Bookstore</th>
                 <th className="py-3 px-4">Location</th>
+                <th className="py-3 px-4">Trade Extras</th>
                 <th className="py-3 px-4">Physical Specs</th>
                 <th className="py-3 px-4">Clippings</th>
                 <th className="py-3 px-4 text-right">Actions</th>
@@ -165,7 +166,7 @@ export function AdminTableClient({
             <tbody className="divide-y divide-[#E8E2D5]">
               {filteredBookmarks.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-stone-500 font-serif italic">
+                  <td colSpan={8} className="py-8 text-center text-stone-500 font-serif italic">
                     No bookmarks match your search query.
                   </td>
                 </tr>
@@ -213,6 +214,15 @@ export function AdminTableClient({
                     <td className="py-3 px-4 font-serif text-stone-600">
                       {b.bookstore?.city}
                       {b.bookstore?.stateProvince ? `, ${b.bookstore.stateProvince}` : ""}
+                    </td>
+                    <td className="py-3 px-4 font-mono text-[11px]">
+                      {(b.tradeQuantity || 0) > 0 ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                          ✕ {b.tradeQuantity} {b.tradeQuantity === 1 ? "extra" : "extras"}
+                        </span>
+                      ) : (
+                        <span className="text-stone-400 text-[10px]">0</span>
+                      )}
                     </td>
                     <td className="py-3 px-4 font-mono text-[11px] text-stone-500">
                       <div>{b.dimensions}</div>

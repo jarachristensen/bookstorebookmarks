@@ -59,6 +59,7 @@ export default async function AdminEditBookmarkPage({
       acquisitionDate: bookmark.acquisitionDate || "",
       acquisitionNotes: bookmark.acquisitionNotes || "",
       isFeatured: bookmark.isFeatured,
+      tradeQuantity: bookmark.tradeQuantity ?? 0,
       displayOrder: bookmark.displayOrder,
       accentColor: bookmark.accentColor || "#881337",
     },

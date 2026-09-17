@@ -146,6 +146,14 @@ export async function getBookmarksWithBookstores(filters?: FilterOptions): Promi
 }
 
 /**
+ * Fetch all bookmarks currently available for trade (tradeQuantity > 0).
+ */
+export async function getTradeBookmarks(): Promise<BookmarkWithDetails[]> {
+  const allBookmarks = await getBookmarksWithBookstores();
+  return allBookmarks.filter((bm) => (bm.tradeQuantity || 0) > 0);
+}
+
+/**
  * Fetch a single bookmark by its ID / slug.
  */
 export async function getBookmarkBySlug(slug: string): Promise<BookmarkWithDetails | null> {

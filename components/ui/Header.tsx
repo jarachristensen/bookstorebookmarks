@@ -13,6 +13,7 @@ import {
   Menu,
   X,
   HeartHandshake,
+  ArrowLeftRight,
 } from "lucide-react";
 
 function CuratorCabinetButton({ pathname }: { pathname: string | null }) {
@@ -20,7 +21,7 @@ function CuratorCabinetButton({ pathname }: { pathname: string | null }) {
   const isEditing = searchParams?.get("edit") === "true";
   const bookstoreMatch = pathname?.match(/^\/bookstores\/([^/]+)$/);
   const isEditorialPage =
-    pathname === "/partners" || pathname === "/about" || pathname === "/contact";
+    pathname === "/partners" || pathname === "/about" || pathname === "/contact" || pathname === "/trading";
 
   let curatorUrl = "/admin";
   let title = "Curator's Cabinet";
@@ -60,6 +61,7 @@ export function Header() {
     { href: "/bookstores", label: "Bookstores", icon: Building2 },
     { href: "/partners", label: "Partners & Donors", icon: HeartHandshake },
     { href: "/about", label: "About Archive", icon: Info },
+    { href: "/trading", label: "Trading Hub", icon: ArrowLeftRight },
     { href: "/contact", label: "Contact", icon: Mail },
   ];
 

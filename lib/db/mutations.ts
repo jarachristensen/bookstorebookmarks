@@ -18,6 +18,7 @@ export interface FullBookmarkInput {
     acquisitionDate?: string | null;
     acquisitionNotes?: string | null;
     isFeatured?: boolean;
+    tradeQuantity?: number;
     displayOrder?: number;
     accentColor?: string | null;
   };
@@ -192,6 +193,7 @@ export async function saveBookmarkAndBookstore(data: FullBookmarkInput): Promise
     acquisitionDate: data.bookmark.acquisitionDate || null,
     acquisitionNotes: data.bookmark.acquisitionNotes || null,
     isFeatured: Boolean(data.bookmark.isFeatured),
+    tradeQuantity: data.bookmark.tradeQuantity !== undefined ? Number(data.bookmark.tradeQuantity) : 0,
     displayOrder: Number(data.bookmark.displayOrder) || 0,
     accentColor: data.bookmark.accentColor || "#881337",
     createdAt: now,
