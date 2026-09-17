@@ -95,11 +95,30 @@ export function TradingHubClient({
     ...initialContent,
   });
 
+  // Restore draft from localStorage on initial load if available
+  useEffect(() => {
+    try {
+      const localDraft = localStorage.getItem("draft_page_trading");
+      if (localDraft) {
+        const parsed = JSON.parse(localDraft);
+        if (parsed && typeof parsed === "object") {
+          setContent((prev) => ({ ...prev, ...parsed }));
+        }
+      }
+    } catch {}
+  }, []);
+
   const hasUnsavedChanges =
     JSON.stringify(content) !== JSON.stringify(savedSnapshot);
 
   const handleUpdateContent = (key: string, value: string) => {
-    setContent((prev) => ({ ...prev, [key]: value }));
+    setContent((prev) => {
+      const next = { ...prev, [key]: value };
+      try {
+        localStorage.setItem("draft_page_trading", JSON.stringify(next));
+      } catch {}
+      return next;
+    });
   };
 
   // Structured FAQs Helper
@@ -151,6 +170,9 @@ export function TradingHubClient({
     if (data.success && data.content) {
       setSavedSnapshot({ ...DEFAULT_CONTENT, ...data.content });
       setContent({ ...DEFAULT_CONTENT, ...data.content });
+      try {
+        localStorage.removeItem("draft_page_trading");
+      } catch {}
     }
   };
 

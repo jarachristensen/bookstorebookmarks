@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
@@ -25,6 +25,13 @@ const DEFAULT_CONTENT = {
   mission_title: "Our Archival Mission:",
   mission_body:
     "The Bookstore Bookmark Archive was established to preserve, catalog, and research these ephemeral pieces of history and learn about the bookstores that distributed them.",
+  mission_p1:
+    "This archive exists to preserve the physical slips of cardstock that bookstores produced to guide our reading and anchor us to their shelves.",
+  mission_p2:
+    "Independent bookstores are vital community anchors. As bookshops navigate shifting economic headwinds, their bookmarks preserve the addresses, graphic designs, telephone numbers, and cultural histories of brick-and-mortar booksellers across the globe.",
+  contribute_title: "Help Us Preserve More Bookmarks",
+  contribute_desc:
+    "Do you have vintage bookstore bookmarks tucked away in your personal library? We welcome contributions from readers, collectors, and booksellers.",
 };
 
 export function EditableAboutPage({
@@ -45,11 +52,30 @@ export function EditableAboutPage({
     ...initialContent,
   });
 
+  // Restore draft from localStorage if available
+  useEffect(() => {
+    try {
+      const draft = localStorage.getItem("draft_page_about");
+      if (draft) {
+        const parsed = JSON.parse(draft);
+        if (parsed && typeof parsed === "object") {
+          setContent((prev) => ({ ...prev, ...parsed }));
+        }
+      }
+    } catch {}
+  }, []);
+
   const hasUnsavedChanges =
     JSON.stringify(content) !== JSON.stringify(savedSnapshot);
 
   const handleChange = (key: string, value: string) => {
-    setContent((prev) => ({ ...prev, [key]: value }));
+    setContent((prev) => {
+      const next = { ...prev, [key]: value };
+      try {
+        localStorage.setItem("draft_page_about", JSON.stringify(next));
+      } catch {}
+      return next;
+    });
   };
 
   const handleSave = async (): Promise<boolean | void> => {
@@ -71,6 +97,9 @@ export function EditableAboutPage({
     if (data.success && data.content) {
       setSavedSnapshot({ ...DEFAULT_CONTENT, ...data.content });
       setContent({ ...DEFAULT_CONTENT, ...data.content });
+      try {
+        localStorage.removeItem("draft_page_about");
+      } catch {}
     }
   };
 

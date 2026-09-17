@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
@@ -56,11 +56,30 @@ export function EditableContactPage({
     ...initialContent,
   });
 
+  // Restore draft from localStorage if available
+  useEffect(() => {
+    try {
+      const draft = localStorage.getItem("draft_page_contact");
+      if (draft) {
+        const parsed = JSON.parse(draft);
+        if (parsed && typeof parsed === "object") {
+          setContent((prev) => ({ ...prev, ...parsed }));
+        }
+      }
+    } catch {}
+  }, []);
+
   const hasUnsavedChanges =
     JSON.stringify(content) !== JSON.stringify(savedSnapshot);
 
   const handleChange = (key: string, value: string) => {
-    setContent((prev) => ({ ...prev, [key]: value }));
+    setContent((prev) => {
+      const next = { ...prev, [key]: value };
+      try {
+        localStorage.setItem("draft_page_contact", JSON.stringify(next));
+      } catch {}
+      return next;
+    });
   };
 
   const handleSave = async (): Promise<boolean | void> => {
@@ -82,6 +101,9 @@ export function EditableContactPage({
     if (data.success && data.content) {
       setSavedSnapshot({ ...DEFAULT_CONTENT, ...data.content });
       setContent({ ...DEFAULT_CONTENT, ...data.content });
+      try {
+        localStorage.removeItem("draft_page_contact");
+      } catch {}
     }
   };
 
