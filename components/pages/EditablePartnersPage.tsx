@@ -9,21 +9,12 @@ import { CuratorPageToolbar } from "@/components/admin/CuratorPageToolbar";
 import { VisualTextarea } from "@/components/ui/VisualTextarea";
 import { FormattedText } from "@/components/ui/FormattedText";
 import {
-  HeartHandshake,
-  BookOpen,
-  Building2,
-  Sparkles,
   ArrowRight,
   Instagram,
-  ShieldCheck,
-  Gift,
-  Library,
-  User,
   Plus,
   Trash2,
   ChevronUp,
   ChevronDown,
-  Search,
   MapPin,
   Mail,
 } from "lucide-react";
@@ -205,26 +196,6 @@ export function EditablePartnersPage({
     }
   };
 
-  // Search & Type Filter State for Public View
-  const [filterType, setFilterType] = useState<"all" | DonorType>("all");
-  const [searchQuery, setSearchQuery] = useState("");
-
-  const filteredDonors = useMemo(() => {
-    return donorsList.filter((entry) => {
-      if (filterType !== "all" && entry.type !== filterType) {
-        return false;
-      }
-      if (searchQuery.trim() !== "") {
-        const q = searchQuery.toLowerCase().trim();
-        const nameMatch = entry.name.toLowerCase().includes(q);
-        const cityMatch = entry.cityState.toLowerCase().includes(q);
-        const contactMatch = entry.contactName?.toLowerCase().includes(q) || false;
-        return nameMatch || cityMatch || contactMatch;
-      }
-      return true;
-    });
-  }, [donorsList, filterType, searchQuery]);
-
   const totalDonatedCount = useMemo(() => {
     return donorsList.reduce((sum, item) => {
       const num = parseInt(String(item.bookmarksDonated), 10);
@@ -271,36 +242,21 @@ export function EditablePartnersPage({
           )}
         </section>
 
-        {/* 3. Community Donors & Partners Directory List Box */}
-        <section className="bg-white rounded-3xl border border-[#E8E2D5] shadow-xs p-6 sm:p-8 space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E8E2D5] pb-5">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <HeartHandshake className="w-5 h-5 text-[#F43F7A]" />
-                <h2 className="font-serif text-xl sm:text-2xl font-bold text-stone-900">
-                  Partners &amp; Donors Directory
-                </h2>
-              </div>
-              <p className="text-xs sm:text-sm font-serif text-stone-500">
-                Recognizing the independent bookstores, readers, and libraries who have contributed bookmarks to the archive.
-              </p>
-            </div>
-
-            {/* Total bookmarks donated pill */}
-            <div className="flex items-center gap-2 self-start sm:self-center">
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-mono font-bold bg-amber-50 text-amber-900 border border-amber-200">
-                <Gift className="w-3.5 h-3.5 text-amber-600" />
-                <span>{totalDonatedCount} Bookmarks Donated</span>
-              </span>
-            </div>
+        {/* 3. Total Donated Bookmarks (Moved to top under text box, styled as a rectangle box with thin black outline) */}
+        <div className="flex justify-center">
+          <div className="border border-stone-900 bg-white px-5 py-2 text-xs font-mono font-bold text-stone-900 uppercase tracking-wider shadow-2xs">
+            <span>{totalDonatedCount} Total Bookmarks Donated</span>
           </div>
+        </div>
 
+        {/* 4. Donors & Partners List Box */}
+        <section className="bg-white rounded-3xl border border-[#E8E2D5] shadow-xs p-6 sm:p-8 space-y-6">
           {isEditing ? (
             /* Curator Edit Mode: Manage Donor List */
             <div className="space-y-5">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-mono text-stone-600 uppercase font-semibold">
-                  Manage Entries ({donorsList.length})
+              <div className="flex items-center justify-between pb-3 border-b border-[#E8E2D5]">
+                <label className="text-xs font-mono text-stone-700 uppercase font-bold">
+                  Manage Directory ({donorsList.length})
                 </label>
                 <div className="flex items-center gap-2">
                   <button
@@ -482,165 +438,62 @@ export function EditablePartnersPage({
               )}
             </div>
           ) : (
-            /* Public View: Filter, Search & Directory List */
-            <div className="space-y-5">
-              {/* Search & Filter Bar */}
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-2 bg-[#FAF8F5] rounded-2xl border border-[#E8E2D5]">
-                {/* Filter Pills */}
-                <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto p-1">
-                  <button
-                    type="button"
-                    onClick={() => setFilterType("all")}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-serif font-bold transition-all cursor-pointer ${
-                      filterType === "all"
-                        ? "bg-stone-900 text-white shadow-xs"
-                        : "bg-white text-stone-600 hover:bg-stone-100 border border-[#E8E2D5]"
-                    }`}
-                  >
-                    All ({donorsList.length})
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setFilterType("bookstore")}
-                    className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-serif font-bold transition-all cursor-pointer ${
-                      filterType === "bookstore"
-                        ? "bg-[#2563EB] text-white shadow-xs"
-                        : "bg-white text-stone-600 hover:bg-stone-100 border border-[#E8E2D5]"
-                    }`}
-                  >
-                    <Building2 className="w-3 h-3" />
-                    <span>
-                      Bookstores ({donorsList.filter((d) => d.type === "bookstore").length})
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setFilterType("individual")}
-                    className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-serif font-bold transition-all cursor-pointer ${
-                      filterType === "individual"
-                        ? "bg-amber-600 text-white shadow-xs"
-                        : "bg-white text-stone-600 hover:bg-stone-100 border border-[#E8E2D5]"
-                    }`}
-                  >
-                    <User className="w-3 h-3" />
-                    <span>
-                      Individuals ({donorsList.filter((d) => d.type === "individual").length})
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setFilterType("library")}
-                    className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-serif font-bold transition-all cursor-pointer ${
-                      filterType === "library"
-                        ? "bg-[#F43F7A] text-white shadow-xs"
-                        : "bg-white text-stone-600 hover:bg-stone-100 border border-[#E8E2D5]"
-                    }`}
-                  >
-                    <Library className="w-3 h-3" />
-                    <span>
-                      Libraries ({donorsList.filter((d) => d.type === "library").length})
-                    </span>
-                  </button>
-                </div>
-
-                {/* Search Bar */}
-                <div className="relative w-full sm:w-64">
-                  <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    placeholder="Search directory..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-8.5 pr-3 py-1.5 text-xs bg-white border border-[#E8E2D5] rounded-xl text-stone-800 focus:outline-hidden focus:border-[#2563EB]"
-                  />
-                </div>
-              </div>
-
-              {/* Directory Items List */}
-              {filteredDonors.length === 0 ? (
-                <div className="p-12 text-center bg-[#FAF8F5] rounded-2xl border border-[#E8E2D5] space-y-2">
+            /* Public View: Clean Directory List (No tabs, no search, no yellow badges, rectangle black-outline badges) */
+            <div className="divide-y divide-[#E8E2D5] border border-[#E8E2D5] rounded-2xl overflow-hidden bg-white">
+              {donorsList.length === 0 ? (
+                <div className="p-12 text-center bg-[#FAF8F5] space-y-2">
                   <p className="font-serif text-sm font-bold text-stone-700">
-                    No entries match your search
-                  </p>
-                  <p className="font-serif text-xs text-stone-500">
-                    Try selecting "All" or clearing the search box.
+                    No donors or partners listed yet.
                   </p>
                 </div>
               ) : (
-                <div className="divide-y divide-[#E8E2D5]/80 border border-[#E8E2D5] rounded-2xl overflow-hidden bg-white">
-                  {filteredDonors.map((entry) => {
-                    const count = parseInt(String(entry.bookmarksDonated), 10) || 1;
-                    return (
-                      <div
-                        key={entry.id}
-                        className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-[#FAF8F5]/80 transition-colors"
-                      >
-                        {/* Left / Center Info */}
-                        <div className="space-y-1.5 flex-1 min-w-0">
-                          <div className="flex flex-wrap items-center gap-2">
-                            {/* Type Badge */}
-                            {entry.type === "bookstore" && (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200">
-                                <Building2 className="w-3 h-3" />
-                                <span>Bookstore</span>
-                              </span>
-                            )}
-                            {entry.type === "individual" && (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-200">
-                                <User className="w-3 h-3" />
-                                <span>Individual</span>
-                              </span>
-                            )}
-                            {entry.type === "library" && (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-pink-50 text-pink-700 border border-pink-200">
-                                <Library className="w-3 h-3" />
-                                <span>Library</span>
-                              </span>
-                            )}
+                donorsList.map((entry) => {
+                  const count = parseInt(String(entry.bookmarksDonated), 10) || 1;
+                  return (
+                    <div
+                      key={entry.id}
+                      className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-[#FAF8F5]/60 transition-colors"
+                    >
+                      {/* Left Info: Name, City & State, Contact Person */}
+                      <div className="space-y-1 flex-1 min-w-0">
+                        <h3 className="font-serif text-base sm:text-lg font-bold text-stone-900 truncate">
+                          {entry.name || "Anonymous Donor"}
+                        </h3>
 
-                            <h3 className="font-serif text-base sm:text-lg font-bold text-stone-900 truncate">
-                              {entry.name || "Anonymous Donor"}
-                            </h3>
-                          </div>
-
-                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-serif text-stone-600">
-                            {entry.cityState && (
-                              <div className="flex items-center gap-1">
-                                <MapPin className="w-3.5 h-3.5 text-stone-400" />
-                                <span>{entry.cityState}</span>
-                              </div>
-                            )}
-                            {entry.contactName && (
-                              <div className="flex items-center gap-1 text-stone-500">
-                                <span className="text-stone-300">·</span>
-                                <span className="font-mono text-[11px] text-stone-500">
-                                  Contact:
-                                </span>
-                                <span className="italic">{entry.contactName}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Right: Bookmarks Donated Count Badge */}
-                        <div className="shrink-0 flex items-center">
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-amber-500/10 text-amber-900 border border-amber-300/60 shadow-2xs">
-                            <span className="text-amber-600 font-bold">✕ {count}</span>
-                            <span className="font-serif font-normal text-stone-700">
-                              {count === 1 ? "bookmark donated" : "bookmarks donated"}
-                            </span>
-                          </span>
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-serif text-stone-600">
+                          {entry.cityState && (
+                            <div className="flex items-center gap-1">
+                              <MapPin className="w-3.5 h-3.5 text-stone-400" />
+                              <span>{entry.cityState}</span>
+                            </div>
+                          )}
+                          {entry.contactName && (
+                            <div className="flex items-center gap-1 text-stone-500">
+                              <span className="text-stone-300">·</span>
+                              <span className="font-mono text-[11px] text-stone-500">
+                                Contact:
+                              </span>
+                              <span className="italic">{entry.contactName}</span>
+                            </div>
+                          )}
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
+
+                      {/* Right: Rectangle box with thin black outline */}
+                      <div className="shrink-0 flex items-center">
+                        <div className="border border-stone-900 bg-white px-3 py-1.5 text-xs font-mono font-medium text-stone-900">
+                          <span>{count} {count === 1 ? "Bookmark Donated" : "Bookmarks Donated"}</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
               )}
             </div>
           )}
         </section>
 
-        {/* 4. Call to Action: Donate or Get in Touch */}
+        {/* 5. Call to Action: Donate or Get in Touch */}
         <section className="p-8 sm:p-10 rounded-2xl bg-stone-900 text-white shadow-lg text-center space-y-6 border border-stone-800">
           <div className="space-y-2 max-w-xl mx-auto">
             {isEditing ? (
