@@ -30,6 +30,7 @@ export function ImageDropzone({
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<string>("");
   const [error, setError] = useState("");
+  const [lastFailedFile, setLastFailedFile] = useState<File | null>(null);
   const [imageLoadError, setImageLoadError] = useState(false);
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [customUrl, setCustomUrl] = useState("");
@@ -46,6 +47,14 @@ export function ImageDropzone({
       }
     };
   }, [localPreviewUrl]);
+
+  // Sync / clear localPreviewUrl when value updates successfully
+  useEffect(() => {
+    if (value && localPreviewUrl && !uploading) {
+      URL.revokeObjectURL(localPreviewUrl);
+      setLocalPreviewUrl(null);
+    }
+  }, [value, uploading, localPreviewUrl]);
 
   // Reset image load error when displayUrl changes
   useEffect(() => {
@@ -64,14 +73,16 @@ export function ImageDropzone({
     if (!rawFile) return;
     setError("");
     setImageLoadError(false);
+    setLastFailedFile(null);
     updateUploading(true, "Auto-trimming transparency & optimizing...");
 
+    let objectUrl: string | null = null;
     try {
       // 1. Automatically detect & crop transparent padding and optimize
       const file = await compressImageIfNeeded(rawFile);
 
       // 2. Instant client-side blob preview with tightly cropped bookmark!
-      const objectUrl = URL.createObjectURL(file);
+      objectUrl = URL.createObjectURL(file);
       setLocalPreviewUrl(objectUrl);
 
       if (onFileSelected) {
@@ -108,14 +119,31 @@ export function ImageDropzone({
         throw new Error(data.error || "Upload failed");
       }
 
-      // 4. Update parent state with permanent uploaded URL and cropped file
+      if (!data.url) {
+        throw new Error("Server did not return a valid file URL");
+      }
+
+      // 4. Clean up local blob preview and update parent state with permanent uploaded URL
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+        setLocalPreviewUrl(null);
+      }
+      setLastFailedFile(null);
+      setError("");
       onChange(data.url, file);
     } catch (err: any) {
       console.error("Image Upload Failed:", err);
+      // Crucial: remove false-positive preview on failure so user does not think it was saved
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+      setLocalPreviewUrl(null);
+      setLastFailedFile(rawFile);
+
       if (err.name === "AbortError") {
         setError("Upload timed out. Please check your connection and try again.");
       } else {
-        setError(err.message || "Failed to upload image");
+        setError(err.message || "Failed to upload image. Please try again.");
       }
     } finally {
       updateUploading(false, "");
@@ -612,7 +640,38 @@ export function ImageDropzone({
         )
       )}
 
-      {error && <p className="text-xs text-rose-700 font-serif">{error}</p>}
+      {error && (
+        <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-serif flex items-start gap-2 shadow-2xs">
+          <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+          <div className="flex-1 space-y-2">
+            <p className="font-semibold text-rose-900 leading-snug">{error}</p>
+            {lastFailedFile && (
+              <div className="flex items-center gap-2 pt-0.5">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleFileUpload(lastFailedFile)}
+                  disabled={uploading}
+                  className="text-[11px] h-7 px-2.5 font-serif bg-white border-rose-300 text-rose-900 hover:bg-rose-100"
+                >
+                  Retry Upload
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  className="text-[11px] h-7 px-2.5 font-serif bg-white border-stone-300 text-stone-700 hover:bg-stone-50"
+                >
+                  Choose Different Scan
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <input
         ref={fileInputRef}

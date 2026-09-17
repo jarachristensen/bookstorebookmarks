@@ -25,7 +25,10 @@ function getBlobToken(): string | undefined {
 export async function POST(req: NextRequest) {
   const isAuth = await getAdminSession();
   if (!isAuth) {
-    return NextResponse.json({ error: "Unauthorized curator session" }, { status: 401 });
+    return NextResponse.json(
+      { error: "Unauthorized curator session. Please refresh and ensure you are logged in." },
+      { status: 401 }
+    );
   }
 
   try {
@@ -33,15 +36,15 @@ export async function POST(req: NextRequest) {
     const file = formData.get("file") as File;
 
     if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 });
+      return NextResponse.json({ error: "No file provided in the upload request" }, { status: 400 });
     }
 
-    const ext = path.extname(file.name) || ".jpg";
+    const ext = path.extname(file.name) || ".webp";
     const baseName = path
       .basename(file.name, ext)
       .toLowerCase()
       .replace(/[^\w-]/g, "");
-    const fileName = `${baseName}-${Date.now()}${ext}`;
+    const fileName = `${baseName || "scan"}-${Date.now()}${ext}`;
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
@@ -65,7 +68,7 @@ export async function POST(req: NextRequest) {
             token: blobToken,
           } as any);
         } else {
-          throw blobErr;
+          throw new Error(`Blob storage upload failed: ${blobErr.message || blobErr}`);
         }
       }
 
@@ -99,12 +102,12 @@ export async function POST(req: NextRequest) {
           { status: 500 }
         );
       }
-      throw fsErr;
+      throw new Error(`Local file system storage failed: ${fsErr.message || fsErr}`);
     }
   } catch (err: any) {
     console.error("Upload Error:", err);
     return NextResponse.json(
-      { error: err.message || "Failed to upload file" },
+      { error: err.message || "Failed to upload file to archive storage." },
       { status: 500 }
     );
   }

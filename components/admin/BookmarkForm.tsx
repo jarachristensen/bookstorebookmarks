@@ -21,6 +21,7 @@ import {
   PlusCircle,
   Link as LinkIcon,
   ArrowLeftRight,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -194,12 +195,17 @@ export function BookmarkForm({
     e.preventDefault();
     setError("");
 
-    if (!formData.bookmark.frontImageUrl) {
-      setError("Please upload at least the front bookmark scan.");
+    if (isUploadingFront || isUploadingBack) {
+      setError("Scans are still uploading. Please wait a moment for the upload to finish before saving.");
       return;
     }
 
-    if (!formData.bookmark.title || !formData.bookstore.name || !formData.bookstore.city) {
+    if (!formData.bookmark.frontImageUrl) {
+      setError("Please upload at least the front bookmark scan. If you recently dropped or selected a scan, please verify it finished uploading above.");
+      return;
+    }
+
+    if (!formData.bookmark.title?.trim() || !formData.bookstore.name?.trim() || !formData.bookstore.city?.trim()) {
       setError("Please fill in the required title, bookstore name, and city fields.");
       return;
     }
@@ -292,10 +298,14 @@ export function BookmarkForm({
             disabled={loading || isUploadingFront || isUploadingBack}
             className="font-serif flex items-center gap-2 bg-[#F43F7A] hover:bg-[#E11D48] text-white"
           >
-            <Save className="w-4 h-4 text-amber-200" />
+            {isUploadingFront || isUploadingBack || loading ? (
+              <Loader2 className="w-4 h-4 animate-spin text-amber-200" />
+            ) : (
+              <Save className="w-4 h-4 text-amber-200" />
+            )}
             <span>
               {isUploadingFront || isUploadingBack
-                ? "Processing Scan..."
+                ? "Uploading Scan..."
                 : loading
                 ? "Cataloging..."
                 : isEditing
