@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import { BookmarkWithDetails } from "@/lib/db/queries";
 import { BookmarkInspector } from "@/components/exhibit/BookmarkInspector";
 import { Header } from "@/components/ui/Header";
@@ -116,6 +117,18 @@ export function TradingHubClient({
 
   // Bookmark Inspector Modal
   const [inspectingBookmark, setInspectingBookmark] = useState<BookmarkWithDetails | null>(null);
+
+  // Lock body scroll when modal or inspector is open
+  useEffect(() => {
+    if (inspectingBookmark || isProposalModalOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [inspectingBookmark, isProposalModalOpen]);
 
   // Unique bookstores represented in trade inventory
   const uniqueBookstores = useMemo(() => {
@@ -416,6 +429,19 @@ export function TradingHubClient({
                       </span>
                     </div>
 
+                    {/* Quick Inspect Button (Top-Right) */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setInspectingBookmark(bookmark);
+                      }}
+                      className="absolute top-3 right-3 z-20 p-1.5 rounded-full bg-white/90 hover:bg-white text-stone-700 hover:text-stone-950 border border-[#E8E2D5] shadow-xs transition-all cursor-pointer hover:scale-105"
+                      title="Inspect & 3D Flip Bookmark"
+                    >
+                      <Eye className="w-3.5 h-3.5 text-[#F43F7A]" />
+                    </button>
+
                     {/* Bookmark Visual Display Container */}
                     <div
                       onClick={() => setInspectingBookmark(bookmark)}
@@ -444,7 +470,11 @@ export function TradingHubClient({
                     {/* Bookmark Metadata & Trade Selector Footer */}
                     <div className="p-4 bg-white border-t border-[#E8E2D5] space-y-3 flex-1 flex flex-col justify-between">
                       <div className="space-y-1">
-                        <h4 className="font-serif text-sm font-bold text-stone-900 leading-snug line-clamp-2">
+                        <h4
+                          onClick={() => setInspectingBookmark(bookmark)}
+                          className="font-serif text-sm font-bold text-stone-900 leading-snug line-clamp-2 hover:text-[#2563EB] cursor-pointer transition-colors"
+                          title="Click to inspect specimen"
+                        >
                           {bookmark.title}
                         </h4>
                         {bookmark.bookstore && (
@@ -695,13 +725,30 @@ export function TradingHubClient({
           </div>
         )}
 
-        {/* 6. Bookmark Inspector Modal */}
-        {inspectingBookmark && (
-          <BookmarkInspector
-            bookmark={inspectingBookmark}
-            onClose={() => setInspectingBookmark(null)}
-          />
-        )}
+        {/* 6. Bookmark Inspector Modal with 3D Flip */}
+        <AnimatePresence>
+          {inspectingBookmark && (
+            <div
+              className="fixed inset-0 z-50 overflow-y-auto bg-stone-950/80 backdrop-blur-md p-2 sm:p-6 lg:p-8 flex items-start sm:items-center justify-center min-h-screen animate-in fade-in duration-200"
+              onClick={(e) => {
+                if (e.target === e.currentTarget) setInspectingBookmark(null);
+              }}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 15 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                className="w-full max-w-5xl my-auto py-4"
+              >
+                <BookmarkInspector
+                  bookmark={inspectingBookmark}
+                  onClose={() => setInspectingBookmark(null)}
+                />
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </main>
 
       {/* Floating Curator Toolbar in Edit Mode */}

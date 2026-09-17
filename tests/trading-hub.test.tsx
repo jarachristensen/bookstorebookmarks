@@ -155,17 +155,29 @@ describe("TradingHubClient Component", () => {
     expect(screen.getByRole("button", { name: /Propose Trade \(2\)/i })).toBeDefined();
   });
 
-  it("opens proposal modal when 'Propose Trade' is clicked", () => {
+  it("opens BookmarkInspector modal on card click and allows 3D flipping", async () => {
     render(<TradingHubClient initialBookmarks={mockTradeBookmarks} />);
 
-    const addButtons = screen.getAllByRole("button", { name: /Add to Trade Proposal/i });
-    fireEvent.click(addButtons[0]);
+    // Click on the title or inspect button of City Lights
+    const inspectBtn = screen.getAllByTitle(/Inspect & 3D Flip Bookmark/i)[0];
+    fireEvent.click(inspectBtn);
 
-    const proposeBtn = screen.getByRole("button", { name: /Propose Trade/i });
-    fireEvent.click(proposeBtn);
+    // Inspector modal should be open showing specifications and flip trigger
+    expect(screen.getByText("Physical Specimen Specifications")).toBeDefined();
+    expect(screen.getByRole("button", { name: /Flip to Verso \(Back\)/i })).toBeDefined();
 
-    expect(screen.getByText("Propose a Bookmark Trade")).toBeDefined();
-    expect(screen.getByPlaceholderText(/Jane Doe/i)).toBeDefined();
-    expect(screen.getByPlaceholderText(/collector@example\.com/i)).toBeDefined();
+    // Click flip button
+    const flipButton = screen.getByRole("button", { name: /Flip to Verso \(Back\)/i });
+    fireEvent.click(flipButton);
+
+    expect(screen.getByRole("button", { name: /Flip to Recto \(Front\)/i })).toBeDefined();
+
+    // Close modal
+    const closeBtn = screen.getByLabelText(/Close Inspector/i);
+    fireEvent.click(closeBtn);
+
+    await waitFor(() => {
+      expect(screen.queryByText("Physical Specimen Specifications")).toBeNull();
+    });
   });
 });
