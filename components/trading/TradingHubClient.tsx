@@ -275,7 +275,7 @@ export function TradingHubClient({
       `Best regards,\n${collectorName}`
     );
 
-    window.location.href = `mailto:curator@bookstorebookmarks.com?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:bookstorebookmarks@gmail.com?subject=${subject}&body=${body}`;
     setProposalSubmitted(true);
   };
 
