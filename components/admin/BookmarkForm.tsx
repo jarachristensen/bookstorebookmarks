@@ -561,7 +561,7 @@ export function BookmarkForm({
           <div>
             <label className="block text-xs font-mono text-stone-600 mb-1 flex items-center justify-between">
               <span>TRADE COPIES AVAILABLE</span>
-              <span className="text-[10px] text-amber-600 font-sans">Trading Hub if &gt; 0</span>
+              <span className="text-[10px] text-amber-600 font-sans">Bookmark Bazaar if &gt; 0</span>
             </label>
             <input
               type="number"

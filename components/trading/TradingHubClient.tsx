@@ -37,7 +37,7 @@ const DEFAULT_CONTENT: Record<string, string> = {
   hero_subtitle:
     "A dedicated exchange for fellow bookmark collectors, ephemera archivists, and indie bookstore lovers to swap duplicate bookmarks.",
   intro_title: "The Collector's Duplicate Exchange",
-  intro_letter: `Welcome to the **Bookmark Bazaar & Trading Hub**! 
+  intro_letter: `Welcome to the **Bookmark Bazaar**! 
 
 Over decades of browsing antiquarian bookshops, library sales, and paper ephemera fairs, I have gathered multiple copies of several cherished bookstore bookmarks. This page is dedicated to fellow collectors, archivist enthusiasts, and independent bookstore lovers who would like to swap duplicates.
 
@@ -182,7 +182,7 @@ export function TradingHubClient({
     );
 
     const body = encodeURIComponent(
-      `Hello Curator,\n\nI am interested in proposing a trade for the following bookmark duplicates from the Trading Hub:\n\n${itemsList}\n\n` +
+      `Hello Curator,\n\nI am interested in proposing a trade for the following bookmark duplicates from the Bookmark Bazaar:\n\n${itemsList}\n\n` +
       `Items I am offering in exchange:\n${offeredItemsText}\n\n` +
       `Collector Contact:\nName: ${collectorName}\nEmail: ${collectorEmail}\n\n` +
       `Best regards,\n${collectorName}`
@@ -199,11 +199,11 @@ export function TradingHubClient({
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10 pb-32">
         {/* Top Header Banner Artwork */}
         <section className="w-full flex flex-col items-center pb-6 border-b border-[#E8E2D5] space-y-4">
-          <h1 className="sr-only">Bookmark Bazaar &amp; Trading Hub — Collector's Duplicate Exchange</h1>
+          <h1 className="sr-only">Bookmark Bazaar — Collector's Duplicate Exchange</h1>
           <div className="relative w-full max-w-4xl aspect-[3750/1103] select-none mx-auto drop-shadow-xs">
             <Image
               src="/images/bookmark-bazaar-header.png"
-              alt="Bookmark Bazaar & Trading Hub"
+              alt="Bookmark Bazaar"
               fill
               unoptimized
               priority
@@ -605,7 +605,7 @@ export function TradingHubClient({
                       }}
                       className="bg-stone-900 text-white text-xs font-serif"
                     >
-                      Back to Trading Hub
+                      Back to Bookmark Bazaar
                     </Button>
                   </div>
                 </div>
@@ -707,7 +707,7 @@ export function TradingHubClient({
       {/* Floating Curator Toolbar in Edit Mode */}
       {isEditing && (
         <CuratorPageToolbar
-          pageName="Trading Hub"
+          pageName="Bookmark Bazaar"
           hasUnsavedChanges={hasUnsavedChanges}
           onSave={handleSave}
         />
@@ -734,7 +734,7 @@ export function TradingHubClient({
             </Link>
             <span>·</span>
             <Link href="/trading" className="hover:text-[#F43F7A] hover:underline font-bold text-[#F43F7A]">
-              Trading Hub
+              Bookmark Bazaar
             </Link>
             <span>·</span>
             <Link href="/contact" className="hover:text-[#F43F7A] hover:underline">

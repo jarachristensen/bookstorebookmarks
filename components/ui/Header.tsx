@@ -61,7 +61,7 @@ export function Header() {
     { href: "/bookstores", label: "Bookstores", icon: Building2 },
     { href: "/partners", label: "Partners & Donors", icon: HeartHandshake },
     { href: "/about", label: "About Archive", icon: Info },
-    { href: "/trading", label: "Trading Hub", icon: ArrowLeftRight },
+    { href: "/trading", label: "Bookmark Bazaar", icon: ArrowLeftRight },
     { href: "/contact", label: "Contact", icon: Mail },
   ];
 
