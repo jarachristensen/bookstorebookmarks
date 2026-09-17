@@ -257,25 +257,41 @@ export function TradingHubClient({
     setProposalSubmitted(true);
   };
 
-  // Group bookmarks into contiguous rows of portrait or landscape orientation
+  // Pack bookmarks into alternating filled rows: 3 portraits per row, 2 landscapes per row
   const groupedRows = useMemo(() => {
-    const groups: { type: "portrait" | "landscape"; items: BookmarkWithDetails[] }[] = [];
-    let currentGroup: { type: "portrait" | "landscape"; items: BookmarkWithDetails[] } | null = null;
+    const portraits: BookmarkWithDetails[] = [];
+    const landscapes: BookmarkWithDetails[] = [];
 
     for (const bm of filteredBookmarks) {
       const dim = parseDimensions(bm.dimensions);
-      const isLandscape = dim.isLandscape;
-      const type = isLandscape ? "landscape" : "portrait";
-
-      if (!currentGroup || currentGroup.type !== type) {
-        currentGroup = { type, items: [bm] };
-        groups.push(currentGroup);
+      if (dim.isLandscape) {
+        landscapes.push(bm);
       } else {
-        currentGroup.items.push(bm);
+        portraits.push(bm);
       }
     }
 
-    return groups;
+    const rows: { type: "portrait" | "landscape"; items: BookmarkWithDetails[] }[] = [];
+    let pIdx = 0;
+    let lIdx = 0;
+
+    while (pIdx < portraits.length || lIdx < landscapes.length) {
+      // 1 full row of up to 3 portrait bookmarks
+      if (pIdx < portraits.length) {
+        const chunk = portraits.slice(pIdx, pIdx + 3);
+        rows.push({ type: "portrait", items: chunk });
+        pIdx += 3;
+      }
+
+      // 1 full row of up to 2 landscape bookmarks
+      if (lIdx < landscapes.length) {
+        const chunk = landscapes.slice(lIdx, lIdx + 2);
+        rows.push({ type: "landscape", items: chunk });
+        lIdx += 2;
+      }
+    }
+
+    return rows;
   }, [filteredBookmarks]);
 
   // Card Renderers
@@ -397,7 +413,7 @@ export function TradingHubClient({
           className="relative w-full h-48 sm:h-52 pt-8 pb-3 px-6 flex items-center justify-center cursor-pointer bg-[#FAF8F5]/80 hover:bg-[#FAF8F5] transition-colors group-hover:scale-[1.01]"
           title="Click to flip and inspect full specimen"
         >
-          <div className="relative w-full h-full max-w-[340px] drop-shadow-md group-hover:drop-shadow-xl transition-all duration-300">
+          <div className="relative w-full h-full max-w-[420px] drop-shadow-md group-hover:drop-shadow-xl transition-all duration-300">
             <Image
               src={bookmark.frontImageUrl}
               alt={bookmark.title}
@@ -461,7 +477,7 @@ export function TradingHubClient({
     <div className="min-h-screen flex flex-col bg-[#FAF8F5]">
       <Header />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 pb-32">
+      <main className="flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 pb-32">
         {/* Top Header Banner Artwork */}
         <section className="w-full flex flex-col items-center pb-6 border-b border-[#E8E2D5] space-y-4">
           <h1 className="sr-only">Bookmark Bazaar — Collector's Duplicate Exchange</h1>
@@ -644,10 +660,10 @@ export function TradingHubClient({
           </div>
         </section>
 
-        {/* 3. Main Body: Catalog on Left + FAQ on Right Side Column */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left Column: Bookmarks Grid */}
-          <section className="lg:col-span-8 xl:col-span-9 space-y-4">
+        {/* 3. Main Body: Catalog on Left/Center + FAQ on Right Side Column */}
+        <div className="flex flex-col lg:flex-row items-start gap-8 xl:gap-10 w-full">
+          {/* Left Column: Bookmarks Grid filling all available middle space */}
+          <section className="flex-1 min-w-0 w-full space-y-4">
             <div className="flex items-center justify-between px-1">
               <div className="flex items-center gap-2">
                 <Layers className="w-4 h-4 text-[#F43F7A]" />
@@ -700,8 +716,8 @@ export function TradingHubClient({
             )}
           </section>
 
-          {/* Right Column: FAQ Questions (Clean side column without blue pills or section titles) */}
-          <aside className="lg:col-span-4 xl:col-span-3 space-y-4">
+          {/* Right Column: FAQ Questions (Clean side column pushed all the way to the right side) */}
+          <aside className="w-full lg:w-72 xl:w-80 shrink-0 lg:sticky lg:top-24 space-y-4">
             {isEditing ? (
               <div className="p-4 rounded-2xl bg-[#FAF8F5] border-2 border-dashed border-[#E8E2D5] space-y-4">
                 <div className="space-y-3">
