@@ -11,6 +11,7 @@ import { BookmarkInspector } from "@/components/exhibit/BookmarkInspector";
 import { Header } from "@/components/ui/Header";
 import { CuratorPageToolbar } from "@/components/admin/CuratorPageToolbar";
 import { VisualTextarea } from "@/components/ui/VisualTextarea";
+import { FormattedText } from "@/components/ui/FormattedText";
 import {
   ArrowLeftRight,
   Search,
@@ -599,8 +600,8 @@ export function TradingHubClient({
                 {content.intro_title}
               </h2>
 
-              {content.intro_p1 && <p>{content.intro_p1}</p>}
-              {content.intro_p2 && <p>{content.intro_p2}</p>}
+              {content.intro_p1 && <FormattedText text={content.intro_p1} />}
+              {content.intro_p2 && <FormattedText text={content.intro_p2} />}
 
               <div className="pt-3 border-t border-[#E8E2D5]/70 space-y-3">
                 <h3 className="font-serif text-base sm:text-lg font-bold text-stone-900">

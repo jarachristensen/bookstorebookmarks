@@ -8,6 +8,7 @@ import { Header } from "@/components/ui/Header";
 import { CuratorPageToolbar } from "@/components/admin/CuratorPageToolbar";
 import { FAQAccordion } from "@/components/ui/FAQAccordion";
 import { VisualTextarea } from "@/components/ui/VisualTextarea";
+import { FormattedText } from "@/components/ui/FormattedText";
 import {
   Mail,
   Send,
@@ -175,9 +176,9 @@ export function EditableContactPage({
                   <h2 className="font-serif text-xl font-bold text-stone-900 group-hover:text-[#F59E0B] transition-colors">
                     {content.card1_title}
                   </h2>
-                  <p className="font-serif text-xs sm:text-sm text-stone-600 leading-relaxed">
-                    {content.card1_body}
-                  </p>
+                  <div className="font-serif text-xs sm:text-sm text-stone-600 leading-relaxed">
+                    <FormattedText text={content.card1_body} />
+                  </div>
                 </>
               )}
             </div>
@@ -243,9 +244,9 @@ export function EditableContactPage({
                   <h2 className="font-serif text-xl font-bold text-stone-900 group-hover:text-[#F43F7A] transition-colors">
                     {content.card2_title}
                   </h2>
-                  <p className="font-serif text-xs sm:text-sm text-stone-600 leading-relaxed">
-                    {content.card2_body}
-                  </p>
+                  <div className="font-serif text-xs sm:text-sm text-stone-600 leading-relaxed">
+                    <FormattedText text={content.card2_body} />
+                  </div>
                 </>
               )}
             </div>

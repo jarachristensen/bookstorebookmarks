@@ -8,6 +8,7 @@ import { Header } from "@/components/ui/Header";
 import { CuratorPageToolbar } from "@/components/admin/CuratorPageToolbar";
 import { FAQAccordion } from "@/components/ui/FAQAccordion";
 import { VisualTextarea } from "@/components/ui/VisualTextarea";
+import { FormattedText } from "@/components/ui/FormattedText";
 import { BookOpen, ArrowRight, Instagram, Edit3 } from "lucide-react";
 
 const DEFAULT_CONTENT = {
@@ -213,19 +214,21 @@ export function EditableAboutPage({
             </div>
           ) : (
             <>
-              <p>{content.essay_p1}</p>
-              <p>{content.essay_p2}</p>
-              <p>{content.essay_p3}</p>
+              <FormattedText text={content.essay_p1} />
+              <FormattedText text={content.essay_p2} />
+              <FormattedText text={content.essay_p3} />
 
-              <div className="p-4 rounded-xl bg-[#FAF8F5] border-l-4 border-[#F43F7A] my-6 font-serif text-stone-800">
-                {content.quote_callout}
-              </div>
+              {content.quote_callout && (
+                <div className="p-4 rounded-xl bg-[#FAF8F5] border-l-4 border-[#F43F7A] my-6 font-serif text-stone-800">
+                  <FormattedText text={content.quote_callout} />
+                </div>
+              )}
 
               <div className="pt-4 border-t border-[#E8E2D5]/70 space-y-3">
                 <h3 className="font-serif text-xl font-bold text-stone-900">
                   {content.mission_title}
                 </h3>
-                <p>{content.mission_body}</p>
+                <FormattedText text={content.mission_body} />
               </div>
             </>
           )}

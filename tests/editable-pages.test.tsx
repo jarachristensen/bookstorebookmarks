@@ -4,6 +4,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { EditablePartnersPage } from "@/components/pages/EditablePartnersPage";
 import { EditableAboutPage } from "@/components/pages/EditableAboutPage";
 import { EditableContactPage } from "@/components/pages/EditableContactPage";
+import { FormattedText } from "@/components/ui/FormattedText";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
@@ -16,20 +17,36 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
+describe("FormattedText Component", () => {
+  it("renders markdown italics, bold, and links properly", () => {
+    const { container } = render(
+      <FormattedText text="There is really only one *reliable* source: **used books**." />
+    );
+
+    const em = container.querySelector("em");
+    const strong = container.querySelector("strong");
+    expect(em?.textContent).toBe("reliable");
+    expect(strong?.textContent).toBe("used books");
+  });
+});
+
 describe("Editable Pages in Curator Edit Mode", () => {
-  it("renders editable inputs on Partners page when edit=true", () => {
+  it("renders editable inputs and donor directory manager on Partners page when edit=true", () => {
     render(
       <EditablePartnersPage
         initialContent={{
-          hero_subtitle: "Custom Partners Subtitle",
+          letter_p1: "Custom appreciation letter with *italics*",
         }}
       />
     );
 
-    const input = screen.getByDisplayValue("Custom Partners Subtitle");
-    expect(input).toBeDefined();
+    const textarea = screen.getByDisplayValue("Custom appreciation letter with *italics*");
+    expect(textarea).toBeDefined();
     expect(screen.getByText(/Curator Mode/i)).toBeDefined();
     expect(screen.getByText(/Save Changes/i)).toBeDefined();
+    expect(screen.getByText(/\+ Add Bookstore/i)).toBeDefined();
+    expect(screen.getByText(/\+ Add Individual/i)).toBeDefined();
+    expect(screen.getByText(/\+ Add Library/i)).toBeDefined();
   });
 
   it("renders editable inputs on About page when edit=true", () => {
