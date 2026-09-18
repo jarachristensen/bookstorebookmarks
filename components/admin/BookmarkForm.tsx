@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ImageDropzone } from "./ImageDropzone";
 import { MediaManager, MediaItem } from "./MediaManager";
@@ -22,6 +22,7 @@ import {
   Link as LinkIcon,
   ArrowLeftRight,
   Loader2,
+  Search,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -81,12 +82,13 @@ export function BookmarkForm({
   const [error, setError] = useState("");
   const [blurbTab, setBlurbTab] = useState<"edit" | "preview">("edit");
 
-  // Existing stores list state
+  // Existing stores list state & Autocomplete Dropdown State
   const [bookstoresList, setBookstoresList] = useState<Bookstore[]>(existingBookstores);
+  const [isStoreDropdownOpen, setIsStoreDropdownOpen] = useState(false);
+  const storeDropdownRef = useRef<HTMLDivElement>(null);
+
   const [selectedStoreMode, setSelectedStoreMode] = useState<"existing" | "new">(
     initialData?.bookstore?.id && existingBookstores.some((s) => s.id === initialData.bookstore.id)
-      ? "existing"
-      : existingBookstores.length > 0 && !isEditing
       ? "existing"
       : "new"
   );
@@ -110,30 +112,38 @@ export function BookmarkForm({
         accentColor: "#881337",
       },
       bookstore: {
-        id: existingBookstores[0]?.id || "",
-        name: existingBookstores[0]?.name || "",
-        city: existingBookstores[0]?.city || "",
-        stateProvince: existingBookstores[0]?.stateProvince || "",
-        country: existingBookstores[0]?.country || "United States",
-        streetAddress: existingBookstores[0]?.streetAddress || "",
-        yearOpened: existingBookstores[0]?.yearOpened || "",
-        yearClosed: existingBookstores[0]?.yearClosed || "",
-        isStillOperating: existingBookstores[0]?.isStillOperating || false,
-        founders: existingBookstores[0]?.founders || "",
-        specialties: existingBookstores[0]?.specialties
-          ? JSON.parse(existingBookstores[0].specialties).join(", ")
-          : "Literature, Rare Books, Poetry",
-        historicalBlurb:
-          existingBookstores[0]?.historicalBlurb ||
-          `### Bookstore Heritage & Cultural Story\n\nWrite your historical research blurb here...`,
-        notablePatronsTrivia: existingBookstores[0]?.notablePatronsTrivia
-          ? JSON.parse(existingBookstores[0].notablePatronsTrivia).join("\n")
-          : "Famous author signing\nHistoric event",
-        websiteUrl: existingBookstores[0]?.websiteUrl || "",
+        id: "",
+        name: "",
+        city: "",
+        stateProvince: "",
+        country: "United States",
+        streetAddress: "",
+        yearOpened: "",
+        yearClosed: "",
+        isStillOperating: false,
+        founders: "",
+        specialties: "Literature, Rare Books, Poetry",
+        historicalBlurb: `### Bookstore Heritage & Cultural Story\n\nWrite your historical research blurb here...`,
+        notablePatronsTrivia: "Famous author signing\nHistoric event",
+        websiteUrl: "",
       },
       archivalMedia: [],
     }
   );
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        storeDropdownRef.current &&
+        !storeDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsStoreDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Fetch bookstores if not provided
   useEffect(() => {
@@ -698,7 +708,7 @@ export function BookmarkForm({
           )}
         </div>
 
-        {/* Existing Store Selector Dropdown */}
+        {/* Existing Store Selector Dropdown (Quick picker when mode is explicitly 'existing') */}
         {selectedStoreMode === "existing" && bookstoresList.length > 0 && (
           <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E8E2D5] space-y-2">
             <label className="block text-xs font-mono font-bold text-stone-800 mb-1 flex items-center gap-1.5">
@@ -713,7 +723,7 @@ export function BookmarkForm({
             >
               {bookstoresList.map((store) => (
                 <option key={store.id} value={store.id}>
-                  {store.name} — {store.city}, {store.country} ({store.yearOpened}–{store.yearClosed || "Present"})
+                  {store.name} — {store.city}{store.stateProvince ? `, ${store.stateProvince}` : ""}, {store.country} ({store.yearOpened}–{store.yearClosed || "Present"})
                 </option>
               ))}
             </select>
@@ -724,25 +734,169 @@ export function BookmarkForm({
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div className="sm:col-span-2">
-            <label className="block text-xs font-mono text-stone-600 mb-1">
-              BOOKSTORE NAME *
+          {/* Bookstore Name with Live Autocomplete Dropdown */}
+          <div className="sm:col-span-2 relative" ref={storeDropdownRef}>
+            <label className="block text-xs font-mono text-stone-600 mb-1 flex items-center justify-between">
+              <span>BOOKSTORE NAME *</span>
+              <span className="text-[10px] text-stone-400 font-sans">Type to search existing stores or add new</span>
             </label>
-            <input
-              type="text"
-              required
-              data-1p-ignore
-              autoComplete="off"
-              placeholder="e.g. Gotham Book Mart"
-              value={formData.bookstore.name}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  bookstore: { ...formData.bookstore, name: e.target.value },
-                })
-              }
-              className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif"
-            />
+            <div className="relative">
+              <input
+                type="text"
+                required
+                data-1p-ignore
+                autoComplete="off"
+                placeholder="e.g. Gotham Book Mart"
+                value={formData.bookstore.name}
+                onFocus={() => setIsStoreDropdownOpen(true)}
+                onChange={(e) => {
+                  const newName = e.target.value;
+                  setFormData((prev) => ({
+                    ...prev,
+                    bookstore: {
+                      ...prev.bookstore,
+                      name: newName,
+                      id: selectedStoreMode === "existing" && prev.bookstore.name !== newName ? undefined : prev.bookstore.id,
+                    },
+                    bookmark: {
+                      ...prev.bookmark,
+                      bookstoreId: selectedStoreMode === "existing" && prev.bookstore.name !== newName ? undefined : prev.bookmark.bookstoreId,
+                    },
+                  }));
+                  if (selectedStoreMode === "existing" && formData.bookstore.name !== newName) {
+                    setSelectedStoreMode("new");
+                  }
+                  setIsStoreDropdownOpen(true);
+                }}
+                className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif pr-8"
+              />
+              <Search className="w-4 h-4 text-stone-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+
+            {/* Live Autocomplete Suggestions Dropdown */}
+            {isStoreDropdownOpen && bookstoresList.length > 0 && (
+              <div className="absolute z-30 left-0 right-0 top-full mt-1 bg-white border border-[#E8E2D5] rounded-xl shadow-xl max-h-72 overflow-y-auto divide-y divide-[#F5F2EB]">
+                {formData.bookstore.name.trim() && (
+                  <div
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      setSelectedStoreMode("new");
+                      setFormData((prev) => ({
+                        ...prev,
+                        bookmark: { ...prev.bookmark, bookstoreId: undefined },
+                        bookstore: { ...prev.bookstore, id: undefined },
+                      }));
+                      setIsStoreDropdownOpen(false);
+                    }}
+                    className="p-3 bg-stone-50 hover:bg-[#FAF8F5] cursor-pointer flex items-center justify-between text-xs transition-colors border-b border-[#E8E2D5]"
+                  >
+                    <div className="flex items-center gap-2 text-stone-800 font-medium">
+                      <PlusCircle className="w-4 h-4 text-[#F43F7A] shrink-0" />
+                      <span>Create as <strong>NEW</strong> bookstore: &ldquo;{formData.bookstore.name}&rdquo;</span>
+                    </div>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-semibold shrink-0">
+                      Separate Record
+                    </span>
+                  </div>
+                )}
+
+                {(() => {
+                  const q = (formData.bookstore.name || "").trim().toLowerCase();
+                  const matches = bookstoresList.filter((s) => {
+                    if (!q) return true;
+                    return (
+                      s.name?.toLowerCase().includes(q) ||
+                      s.city?.toLowerCase().includes(q) ||
+                      (s.stateProvince && s.stateProvince.toLowerCase().includes(q)) ||
+                      (s.streetAddress && s.streetAddress.toLowerCase().includes(q))
+                    );
+                  });
+
+                  if (matches.length === 0) {
+                    return (
+                      <div className="p-3 text-xs text-stone-500 font-serif italic text-center">
+                        No existing bookstores match &ldquo;{formData.bookstore.name}&rdquo;. It will be saved as a new bookstore.
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <>
+                      <div className="px-3 py-1.5 bg-[#FAF8F5] text-[10px] font-mono text-stone-500 uppercase tracking-wider flex items-center justify-between">
+                        <span>Matching Existing Bookstores ({matches.length})</span>
+                        <span className="text-[9px] text-stone-400 font-sans">Click to link &amp; autofill</span>
+                      </div>
+                      {matches.slice(0, 10).map((store) => (
+                        <div
+                          key={store.id}
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            handleSelectExistingStore(store.id);
+                            setSelectedStoreMode("existing");
+                            setIsStoreDropdownOpen(false);
+                          }}
+                          className={`p-3 hover:bg-blue-50/70 cursor-pointer text-xs transition-colors flex items-center justify-between gap-3 ${
+                            store.id === formData.bookstore.id && selectedStoreMode === "existing"
+                              ? "bg-blue-50/50"
+                              : ""
+                          }`}
+                        >
+                          <div>
+                            <div className="font-serif font-bold text-stone-900 flex items-center gap-1.5">
+                              <Building2 className="w-3.5 h-3.5 text-[#2563EB] shrink-0" />
+                              <span>{store.name}</span>
+                              {store.id === formData.bookstore.id && selectedStoreMode === "existing" && (
+                                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-blue-100 text-blue-800">
+                                  Linked
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-[11px] text-stone-500 font-serif">
+                              {store.city}{store.stateProvince ? `, ${store.stateProvince}` : ""}, {store.country}
+                              {store.streetAddress ? ` • ${store.streetAddress}` : ""}
+                            </div>
+                          </div>
+                          <div className="text-[11px] font-mono text-stone-400 shrink-0">
+                            {store.yearOpened}–{store.yearClosed || "Present"}
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  );
+                })()}
+              </div>
+            )}
+
+            {/* Mode & Status Badge Below Bookstore Name */}
+            {selectedStoreMode === "existing" && formData.bookstore.id ? (
+              <div className="mt-2 p-2.5 bg-blue-50/80 border border-blue-200 rounded-lg text-xs font-serif text-blue-900 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <LinkIcon className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                  <span>
+                    Linked to existing archive bookstore: <strong>{formData.bookstore.name}</strong> ({formData.bookstore.city}{formData.bookstore.stateProvince ? `, ${formData.bookstore.stateProvince}` : ""})
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedStoreMode("new");
+                    setFormData((prev) => ({
+                      ...prev,
+                      bookmark: { ...prev.bookmark, bookstoreId: undefined },
+                      bookstore: { ...prev.bookstore, id: undefined },
+                    }));
+                  }}
+                  className="text-[11px] text-blue-700 underline hover:text-blue-900 font-sans font-medium cursor-pointer whitespace-nowrap self-start sm:self-auto"
+                >
+                  + Unlink &amp; Create as New Store Instead
+                </button>
+              </div>
+            ) : (
+              <div className="mt-1.5 flex items-center gap-1.5 text-[11px] font-mono text-emerald-700">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block shrink-0" />
+                <span>Creating new bookstore record (won&apos;t overwrite existing bookstores with the same name).</span>
+              </div>
+            )}
           </div>
 
           <div>

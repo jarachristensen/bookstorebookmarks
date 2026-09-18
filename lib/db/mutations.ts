@@ -108,17 +108,83 @@ export function generateSlug(text: string): string {
 }
 
 /**
+ * Generates a guaranteed unique bookstore ID, incorporating city/state if needed
+ * to allow multiple distinct bookstores with the same name.
+ */
+export async function generateUniqueBookstoreId(
+  name: string,
+  city?: string | null,
+  stateProvince?: string | null
+): Promise<string> {
+  const cleanName = (name || "bookstore").trim();
+  const baseParts = [cleanName];
+  if (city && city.trim()) baseParts.push(city.trim());
+  if (stateProvince && stateProvince.trim()) baseParts.push(stateProvince.trim());
+
+  let baseSlug = generateSlug(baseParts.join("-"));
+  if (!baseSlug) baseSlug = "bookstore";
+
+  const existing = await db.query.bookstores.findFirst({
+    where: eq(bookstores.id, baseSlug),
+  });
+
+  if (!existing) {
+    return baseSlug;
+  }
+
+  // If already exists, append a unique timestamp suffix
+  return `${baseSlug}-${Date.now().toString().slice(-4)}`;
+}
+
+export interface BookmarkBulkUpdateItem {
+  id: string;
+  title: string;
+  dimensions: string;
+}
+
+/**
+ * Bulk update bookmark names and dimensions in a single operation.
+ */
+export async function bulkUpdateBookmarks(updates: BookmarkBulkUpdateItem[]): Promise<number> {
+  await ensureDb();
+  const now = new Date().toISOString();
+  let updatedCount = 0;
+
+  for (const item of updates) {
+    if (!item.id) continue;
+    const updateData: Record<string, any> = { updatedAt: now };
+    if (typeof item.title === "string" && item.title.trim()) {
+      updateData.title = item.title.trim();
+    }
+    if (typeof item.dimensions === "string" && item.dimensions.trim()) {
+      updateData.dimensions = item.dimensions.trim();
+    }
+
+    if (Object.keys(updateData).length > 1) {
+      await db.update(bookmarks).set(updateData).where(eq(bookmarks.id, item.id));
+      updatedCount++;
+    }
+  }
+
+  return updatedCount;
+}
+
+/**
  * Upsert bookstore, bookmark, and associated media in a single transaction/operation.
  */
 export async function saveBookmarkAndBookstore(data: FullBookmarkInput): Promise<string> {
   await ensureDb();
   const now = new Date().toISOString();
 
-  // 1. Prepare Bookstore ID & Data
-  const bookstoreId =
-    data.bookmark.bookstoreId ||
-    data.bookstore.id ||
-    generateSlug(data.bookstore.name);
+  // 1. Prepare Bookstore ID & Data (prevent accidental collisions with same-name stores)
+  let bookstoreId = data.bookmark.bookstoreId || data.bookstore.id;
+  if (!bookstoreId) {
+    bookstoreId = await generateUniqueBookstoreId(
+      data.bookstore.name,
+      data.bookstore.city,
+      data.bookstore.stateProvince
+    );
+  }
 
   // Check if store already exists or needs update
   const existingStore = await db.query.bookstores.findFirst({
@@ -245,7 +311,14 @@ export async function saveBookmarkAndBookstore(data: FullBookmarkInput): Promise
 export async function saveBookstoreDossier(data: BookstoreDossierInput): Promise<string> {
   await ensureDb();
   const now = new Date().toISOString();
-  const bookstoreId = data.bookstore.id || generateSlug(data.bookstore.name);
+  let bookstoreId = data.bookstore.id;
+  if (!bookstoreId) {
+    bookstoreId = await generateUniqueBookstoreId(
+      data.bookstore.name,
+      data.bookstore.city,
+      data.bookstore.stateProvince
+    );
+  }
 
   const existingStore = await db.query.bookstores.findFirst({
     where: eq(bookstores.id, bookstoreId),
