@@ -28,6 +28,7 @@ import {
   CheckCircle2,
   Edit3,
   ChevronDown,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
@@ -186,6 +187,8 @@ export function TradingHubClient({
   const [selectedBookmarks, setSelectedBookmarks] = useState<BookmarkWithDetails[]>([]);
   const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
   const [proposalSubmitted, setProposalSubmitted] = useState(false);
+  const [isSubmittingProposal, setIsSubmittingProposal] = useState(false);
+  const [proposalError, setProposalError] = useState("");
   const [collectorName, setCollectorName] = useState("");
   const [collectorEmail, setCollectorEmail] = useState("");
   const [offeredItemsText, setOfferedItemsText] = useState("");
@@ -258,26 +261,45 @@ export function TradingHubClient({
     setSelectedBookmarks([]);
   };
 
-  // Generate Mailto Link / Form submission
-  const handleSendProposal = (e: React.FormEvent) => {
+  // Submit Trade Proposal directly to the backend database
+  const handleSendProposal = async (e: React.FormEvent) => {
     e.preventDefault();
-    const itemsList = selectedBookmarks
-      .map((b, i) => `${i + 1}. ${b.title} (${b.accessionNo}) - ${b.bookstore?.name || "Bookstore"}`)
-      .join("\n");
+    setProposalError("");
+    setIsSubmittingProposal(true);
 
-    const subject = encodeURIComponent(
-      `[Bookmark Trade Proposal] ${selectedBookmarks.length} Items Selected - from ${collectorName || "Collector"}`
-    );
+    try {
+      const snapshot = selectedBookmarks.map((b) => ({
+        id: b.id,
+        title: b.title,
+        accessionNo: b.accessionNo,
+        bookstoreName: b.bookstore?.name || "Bookstore",
+        frontImageUrl: b.frontImageUrl,
+      }));
 
-    const body = encodeURIComponent(
-      `Hello Curator,\n\nI am interested in proposing a trade for the following bookmark duplicates from the Bookmark Bazaar:\n\n${itemsList}\n\n` +
-      `Items I am offering in exchange:\n${offeredItemsText}\n\n` +
-      `Collector Contact:\nName: ${collectorName}\nEmail: ${collectorEmail}\n\n` +
-      `Best regards,\n${collectorName}`
-    );
+      const res = await fetch("/api/trades", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          collectorName,
+          collectorEmail,
+          offeredItems: offeredItemsText,
+          requestedBookmarkIds: selectedBookmarks.map((b) => b.id),
+          requestedBookmarksSnapshot: snapshot,
+        }),
+      });
 
-    window.location.href = `mailto:bookstorebookmarks@gmail.com?subject=${subject}&body=${body}`;
-    setProposalSubmitted(true);
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to submit trade proposal.");
+      }
+
+      setProposalSubmitted(true);
+    } catch (err: any) {
+      console.error("Trade proposal submission error:", err);
+      setProposalError(err.message || "An error occurred while submitting your proposal. Please try again.");
+    } finally {
+      setIsSubmittingProposal(false);
+    }
   };
 
   // Pack bookmarks into alternating filled rows: 3 portraits per row, 2 landscapes per row
@@ -912,10 +934,10 @@ export function TradingHubClient({
                     <CheckCircle2 className="w-6 h-6" />
                   </div>
                   <h4 className="font-serif text-xl font-bold text-stone-900">
-                    Trade Proposal Ready!
+                    Trade Proposal Received!
                   </h4>
                   <p className="text-xs font-serif text-stone-600 max-w-sm mx-auto leading-relaxed">
-                    Your email client has been opened with your selected bookmarks list. Send the email and the curator will reply shortly!
+                    Thank you, <strong>{collectorName}</strong>! Your trade proposal has been recorded in the archive. The curator will review your offered bookmarks and follow up directly via email at <strong>{collectorEmail}</strong>.
                   </p>
                   <div className="pt-4">
                     <Button
@@ -924,8 +946,11 @@ export function TradingHubClient({
                         setIsProposalModalOpen(false);
                         setProposalSubmitted(false);
                         setSelectedBookmarks([]);
+                        setCollectorName("");
+                        setCollectorEmail("");
+                        setOfferedItemsText("");
                       }}
-                      className="bg-stone-900 text-white text-xs font-serif"
+                      className="bg-stone-900 text-white text-xs font-serif cursor-pointer hover:bg-stone-800"
                     >
                       Back to Bookmark Bazaar
                     </Button>
@@ -933,6 +958,12 @@ export function TradingHubClient({
                 </div>
               ) : (
                 <form onSubmit={handleSendProposal} className="space-y-4">
+                  {proposalError && (
+                    <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-serif">
+                      {proposalError}
+                    </div>
+                  )}
+
                   {/* Selected Bookmarks List Summary */}
                   <div className="p-3.5 rounded-xl bg-[#FAF8F5] border border-[#E8E2D5] space-y-2">
                     <span className="text-[10px] font-mono text-stone-500 uppercase tracking-wider block">
@@ -957,6 +988,7 @@ export function TradingHubClient({
                       <input
                         type="text"
                         required
+                        disabled={isSubmittingProposal}
                         placeholder="Jane Doe"
                         value={collectorName}
                         onChange={(e) => setCollectorName(e.target.value)}
@@ -970,6 +1002,7 @@ export function TradingHubClient({
                       <input
                         type="email"
                         required
+                        disabled={isSubmittingProposal}
                         placeholder="collector@example.com"
                         value={collectorEmail}
                         onChange={(e) => setCollectorEmail(e.target.value)}
@@ -985,6 +1018,7 @@ export function TradingHubClient({
                     <textarea
                       rows={4}
                       required
+                      disabled={isSubmittingProposal}
                       placeholder="Describe the bookstore bookmarks, duplicates, or photos you have available for swap (e.g. City Lights 1980s bookmark, Strand 1970s flyer)..."
                       value={offeredItemsText}
                       onChange={(e) => setOfferedItemsText(e.target.value)}
@@ -997,6 +1031,7 @@ export function TradingHubClient({
                       type="button"
                       variant="outline"
                       size="sm"
+                      disabled={isSubmittingProposal}
                       onClick={() => setIsProposalModalOpen(false)}
                       className="border-[#E8E2D5] cursor-pointer"
                     >
@@ -1005,10 +1040,20 @@ export function TradingHubClient({
                     <Button
                       type="submit"
                       size="sm"
-                      className="bg-[#F43F7A] hover:bg-[#E11D48] text-white font-serif gap-1.5 cursor-pointer"
+                      disabled={isSubmittingProposal}
+                      className="bg-[#F43F7A] hover:bg-[#E11D48] text-white font-serif gap-1.5 cursor-pointer disabled:opacity-50"
                     >
-                      <Send className="w-3.5 h-3.5" />
-                      <span>Submit Proposal via Email</span>
+                      {isSubmittingProposal ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-200" />
+                          <span>Sending Proposal...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-3.5 h-3.5" />
+                          <span>Send Trade Proposal</span>
+                        </>
+                      )}
                     </Button>
                   </div>
                 </form>

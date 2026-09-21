@@ -1,5 +1,14 @@
 import { db, initDb } from "@/db";
-import { bookmarks, bookstores, archivalMedia, Bookmark, Bookstore, ArchivalMedia } from "@/db/schema";
+import {
+  bookmarks,
+  bookstores,
+  archivalMedia,
+  tradeProposals,
+  Bookmark,
+  Bookstore,
+  ArchivalMedia,
+  TradeProposal,
+} from "@/db/schema";
 import { eq, asc, desc } from "drizzle-orm";
 import { autoSyncStorefronts } from "@/lib/utils/storefront-sync";
 
@@ -282,4 +291,23 @@ export async function getFilterOptions(): Promise<{
     ],
     specialties: Array.from(specialtiesSet).sort(),
   };
+}
+
+/**
+ * Fetch all trade proposals ordered by most recent first.
+ */
+export async function getAllTradeProposals(): Promise<TradeProposal[]> {
+  await ensureDb();
+  return db.select().from(tradeProposals).orderBy(desc(tradeProposals.createdAt));
+}
+
+/**
+ * Fetch a single trade proposal by ID.
+ */
+export async function getTradeProposalById(id: string): Promise<TradeProposal | null> {
+  await ensureDb();
+  const proposal = await db.query.tradeProposals.findFirst({
+    where: eq(tradeProposals.id, id),
+  });
+  return proposal || null;
 }

@@ -1,5 +1,12 @@
 import { db } from "@/db";
-import { bookmarks, bookstores, archivalMedia, BookstoreLocation, CustomTimelineEvent } from "@/db/schema";
+import {
+  bookmarks,
+  bookstores,
+  archivalMedia,
+  tradeProposals,
+  BookstoreLocation,
+  CustomTimelineEvent,
+} from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { ensureDb } from "./queries";
 
@@ -430,3 +437,126 @@ export async function toggleBookmarkFeatured(bookmarkId: string, isFeatured: boo
     .where(eq(bookmarks.id, bookmarkId));
   return true;
 }
+
+export interface CreateTradeProposalInput {
+  collectorName: string;
+  collectorEmail: string;
+  offeredItems: string;
+  requestedBookmarkIds: string[];
+  requestedBookmarksSnapshot?: Array<{
+    id: string;
+    title: string;
+    accessionNo: string;
+    bookstoreName?: string;
+    frontImageUrl?: string;
+  }>;
+}
+
+/**
+ * Creates a new trade proposal from a collector.
+ */
+export async function createTradeProposal(data: CreateTradeProposalInput): Promise<string> {
+  await ensureDb();
+  const now = new Date().toISOString();
+  const id = `trade-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+
+  let snapshot = data.requestedBookmarksSnapshot;
+  if (!snapshot || snapshot.length === 0) {
+    const fetchedBookmarks = await db.query.bookmarks.findMany({
+      where: (b, { inArray }) => inArray(b.id, data.requestedBookmarkIds),
+    });
+    const fetchedBookstores = await db.select().from(bookstores);
+    const storeMap = new Map(fetchedBookstores.map((s) => [s.id, s.name]));
+
+    snapshot = fetchedBookmarks.map((b) => ({
+      id: b.id,
+      title: b.title,
+      accessionNo: b.accessionNo,
+      bookstoreName: storeMap.get(b.bookstoreId) || "Bookstore",
+      frontImageUrl: b.frontImageUrl,
+    }));
+  }
+
+  await db.insert(tradeProposals).values({
+    id,
+    collectorName: data.collectorName.trim(),
+    collectorEmail: data.collectorEmail.trim(),
+    offeredItems: data.offeredItems.trim(),
+    requestedBookmarkIds: JSON.stringify(data.requestedBookmarkIds),
+    requestedBookmarksSnapshot: JSON.stringify(snapshot),
+    status: "pending",
+    notes: null,
+    createdAt: now,
+    updatedAt: now,
+  });
+
+  return id;
+}
+
+/**
+ * Updates a trade proposal status.
+ * If transitioning to 'accepted', automatically decrements tradeQuantity by 1
+ * for each requested bookmark in the archive.
+ */
+export async function updateTradeProposalStatus(
+  id: string,
+  status: "pending" | "accepted" | "declined" | "completed",
+  notes?: string
+): Promise<boolean> {
+  await ensureDb();
+  const now = new Date().toISOString();
+
+  const proposal = await db.query.tradeProposals.findFirst({
+    where: eq(tradeProposals.id, id),
+  });
+
+  if (!proposal) return false;
+
+  // If accepting a trade that wasn't already accepted, deduct duplicate copies
+  if (status === "accepted" && proposal.status !== "accepted") {
+    let bookmarkIds: string[] = [];
+    try {
+      bookmarkIds = JSON.parse(proposal.requestedBookmarkIds);
+    } catch {}
+
+    for (const bmId of bookmarkIds) {
+      if (!bmId) continue;
+      const bm = await db.query.bookmarks.findFirst({
+        where: eq(bookmarks.id, bmId),
+      });
+      if (bm) {
+        const currentQty = typeof bm.tradeQuantity === "number" ? bm.tradeQuantity : 0;
+        const newQty = Math.max(0, currentQty - 1);
+        await db
+          .update(bookmarks)
+          .set({ tradeQuantity: newQty, updatedAt: now })
+          .where(eq(bookmarks.id, bmId));
+      }
+    }
+  }
+
+  const updateData: Record<string, any> = {
+    status,
+    updatedAt: now,
+  };
+  if (notes !== undefined) {
+    updateData.notes = notes;
+  }
+
+  await db
+    .update(tradeProposals)
+    .set(updateData)
+    .where(eq(tradeProposals.id, id));
+
+  return true;
+}
+
+/**
+ * Deletes a trade proposal by ID.
+ */
+export async function deleteTradeProposal(id: string): Promise<boolean> {
+  await ensureDb();
+  await db.delete(tradeProposals).where(eq(tradeProposals.id, id));
+  return true;
+}
+

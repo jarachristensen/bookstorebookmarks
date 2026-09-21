@@ -118,6 +118,19 @@ export const pageContent = sqliteTable("page_content", {
   updatedAt: text("updated_at").notNull(),
 });
 
+export const tradeProposals = sqliteTable("trade_proposals", {
+  id: text("id").primaryKey(),
+  collectorName: text("collector_name").notNull(),
+  collectorEmail: text("collector_email").notNull(),
+  offeredItems: text("offered_items").notNull(),
+  requestedBookmarkIds: text("requested_bookmark_ids").notNull(), // JSON stringified array of bookmark IDs
+  requestedBookmarksSnapshot: text("requested_bookmarks_snapshot").notNull(), // JSON stringified array of bookmark objects
+  status: text("status").notNull().default("pending"), // 'pending' | 'accepted' | 'declined' | 'completed'
+  notes: text("notes"),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
 export type Bookstore = typeof bookstores.$inferSelect;
 export type NewBookstore = typeof bookstores.$inferInsert;
 
@@ -129,3 +142,7 @@ export type NewArchivalMedia = typeof archivalMedia.$inferInsert;
 
 export type PageContent = typeof pageContent.$inferSelect;
 export type NewPageContent = typeof pageContent.$inferInsert;
+
+export type TradeProposal = typeof tradeProposals.$inferSelect;
+export type NewTradeProposal = typeof tradeProposals.$inferInsert;
+

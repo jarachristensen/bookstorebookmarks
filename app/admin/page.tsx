@@ -1,7 +1,11 @@
 import React from "react";
 import { getAdminSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { getBookmarksWithBookstores, getAllBookstores } from "@/lib/db/queries";
+import {
+  getBookmarksWithBookstores,
+  getAllBookstores,
+  getAllTradeProposals,
+} from "@/lib/db/queries";
 import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -17,6 +21,7 @@ import {
   Trash2,
   Lock,
   Building2,
+  ArrowLeftRight,
 } from "lucide-react";
 import { AdminTableClient } from "./AdminTableClient";
 
@@ -28,9 +33,10 @@ export default async function AdminDashboardPage() {
     redirect("/admin/login");
   }
 
-  const [bookmarks, bookstores] = await Promise.all([
+  const [bookmarks, bookstores, tradeProposals] = await Promise.all([
     getBookmarksWithBookstores(),
     getAllBookstores(),
+    getAllTradeProposals(),
   ]);
 
   const totalBookstores = bookstores.length;
@@ -38,6 +44,7 @@ export default async function AdminDashboardPage() {
     (acc, b) => acc + (b.bookstore?.archivalMedia.length || 0),
     0
   );
+  const pendingTrades = tradeProposals.filter((t) => t.status === "pending").length;
 
   return (
     <div className="min-h-screen bg-[#FAF8F5] pb-16">
@@ -86,7 +93,7 @@ export default async function AdminDashboardPage() {
       {/* Main Container */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-8">
         {/* Stats Row & Quick Actions */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="p-5 rounded-2xl bg-white border border-[#E8E2D5] shadow-xs flex items-center justify-between">
             <div>
               <p className="text-xs font-mono text-stone-500 uppercase">Cataloged Bookmarks</p>
@@ -116,6 +123,23 @@ export default async function AdminDashboardPage() {
               <Lock className="w-5 h-5" />
             </div>
           </div>
+
+          <div className="p-5 rounded-2xl bg-white border border-[#E8E2D5] shadow-xs flex items-center justify-between">
+            <div>
+              <p className="text-xs font-mono text-stone-500 uppercase">Trade Proposals</p>
+              <div className="flex items-center gap-2 mt-1">
+                <h3 className="font-serif text-3xl font-bold text-stone-900">{tradeProposals.length}</h3>
+                {pendingTrades > 0 && (
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                    {pendingTrades} new
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-[#2563EB]/10 text-[#2563EB] border border-[#2563EB]/20 flex items-center justify-center">
+              <ArrowLeftRight className="w-5 h-5" />
+            </div>
+          </div>
         </div>
 
         {/* Action Bar */}
@@ -123,7 +147,7 @@ export default async function AdminDashboardPage() {
           <div>
             <h2 className="font-serif text-lg font-bold text-stone-900">Archive Collection Index</h2>
             <p className="text-xs text-stone-500 font-serif italic">
-              Manage your collection of bookmarks, historic bookstore dossiers, and multi-location timelines.
+              Manage your collection of bookmarks, historic bookstore dossiers, multi-location timelines, and collector trade proposals.
             </p>
           </div>
 
@@ -152,7 +176,11 @@ export default async function AdminDashboardPage() {
         </div>
 
         {/* Client Table Component */}
-        <AdminTableClient initialBookmarks={bookmarks} initialBookstores={bookstores} />
+        <AdminTableClient
+          initialBookmarks={bookmarks}
+          initialBookstores={bookstores}
+          initialTradeProposals={tradeProposals}
+        />
       </main>
     </div>
   );

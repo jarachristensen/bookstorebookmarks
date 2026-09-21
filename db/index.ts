@@ -178,4 +178,19 @@ export async function initDb() {
       updated_at TEXT NOT NULL
     );
   `);
+
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS trade_proposals (
+      id TEXT PRIMARY KEY,
+      collector_name TEXT NOT NULL,
+      collector_email TEXT NOT NULL,
+      offered_items TEXT NOT NULL,
+      requested_bookmark_ids TEXT NOT NULL,
+      requested_bookmarks_snapshot TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'pending',
+      notes TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+  `);
 }
