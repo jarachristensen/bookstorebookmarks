@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import {
   Upload,
@@ -76,6 +76,25 @@ export function OtherBookmarksBulkUploaderModal({
   const [activeDropdownRowId, setActiveDropdownRowId] = useState<string | null>(null);
 
   const batchFileInputRef = useRef<HTMLInputElement>(null);
+
+  // Automatically reset staged rows to fresh state whenever modal is opened
+  useEffect(() => {
+    if (isOpen) {
+      setRows([createEmptyRow()]);
+      setBatchTags([]);
+      setSubmitError("");
+      setActiveDropdownRowId(null);
+    }
+  }, [isOpen]);
+
+  const handleResetAllRows = () => {
+    if (rows.length > 1 || rows[0]?.frontUrl || rows[0]?.title) {
+      if (!confirm("Clear all staged scans and start with a fresh blank row?")) return;
+    }
+    setRows([createEmptyRow()]);
+    setBatchTags([]);
+    setSubmitError("");
+  };
 
   // Upload an image file to /api/upload
   const uploadImageFile = async (file: File): Promise<string> => {
@@ -298,6 +317,9 @@ export function OtherBookmarksBulkUploaderModal({
         throw new Error(data.error || "Failed to save bookmarks");
       }
 
+      setRows([createEmptyRow()]);
+      setBatchTags([]);
+      setSubmitError("");
       onSuccess();
       onClose();
     } catch (err: any) {
@@ -320,19 +342,28 @@ export function OtherBookmarksBulkUploaderModal({
             </div>
             <div>
               <h2 className="font-serif font-black text-lg text-stone-900">
-                Bulk Bookmark Uploader & Multi-Tag Studio
+                Bulk Bookmark Uploader &amp; Multi-Tag Studio
               </h2>
               <p className="font-serif text-xs text-stone-500">
                 Drag and drop scans, auto-trim margins, assign multiple tags, and set stock quantities in batch.
               </p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-full transition-colors cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleResetAllRows}
+              className="text-xs font-serif font-bold text-stone-500 hover:text-stone-800 px-3 py-1.5 rounded-lg border border-[#E8E2D5] bg-white hover:bg-stone-50 cursor-pointer transition-colors"
+            >
+              Clear Staged Items
+            </button>
+            <button
+              onClick={onClose}
+              className="p-2 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-full transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Modal Body */}

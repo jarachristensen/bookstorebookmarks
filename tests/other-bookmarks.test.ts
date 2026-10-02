@@ -141,12 +141,24 @@ describe("Other Bookmarks (Non-Bookstore Ephemera) & Multi-Tag Studio", () => {
       title: "Updated Title After Verification",
       tags: ["Publishers", "Rare Edition", "Collector's Item"],
       tradeQuantity: 5,
+      frontImageUrl: "/images/other/test-updated.jpg",
+      backImageUrl: "/images/other/test-back.jpg",
+      dimensions: '2.5" × 8"',
+      material: "Laminated Stock",
+      condition: "Mint",
+      notes: "Curator notes updated with provenance details",
     });
     expect(success).toBe(true);
 
     const updated = await getNonBookstoreBookmarkById(id);
     expect(updated?.title).toBe("Updated Title After Verification");
     expect(updated?.tradeQuantity).toBe(5);
+    expect(updated?.frontImageUrl).toBe("/images/other/test-updated.jpg");
+    expect(updated?.backImageUrl).toBe("/images/other/test-back.jpg");
+    expect(updated?.dimensions).toBe('2.5" × 8"');
+    expect(updated?.material).toBe("Laminated Stock");
+    expect(updated?.condition).toBe("Mint");
+    expect(updated?.notes).toBe("Curator notes updated with provenance details");
     const parsedTags = JSON.parse(updated!.tags!);
     expect(parsedTags).toContain("Rare Edition");
   });

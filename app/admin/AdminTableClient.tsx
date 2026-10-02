@@ -39,6 +39,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { OtherBookmarksBulkUploaderModal } from "@/components/admin/OtherBookmarksBulkUploaderModal";
 import { TagManagerModal } from "@/components/admin/TagManagerModal";
+import { EditOtherBookmarkModal } from "@/components/admin/EditOtherBookmarkModal";
 
 export interface AdminTableClientProps {
   initialBookmarks: BookmarkWithDetails[];
@@ -89,6 +90,8 @@ export function AdminTableClient({
   // Other Bookmarks Modal States
   const [isBulkImageUploaderOpen, setIsBulkImageUploaderOpen] = useState(false);
   const [isTagManagerOpen, setIsTagManagerOpen] = useState(false);
+  const [editingOtherBookmark, setEditingOtherBookmark] =
+    useState<NonBookstoreBookmark | null>(null);
   const [isAddingOther, setIsAddingOther] = useState(false);
   const [newOtherTitle, setNewOtherTitle] = useState("");
   const [newOtherCategory, setNewOtherCategory] = useState("Libraries");
@@ -1206,16 +1209,27 @@ export function AdminTableClient({
                         )}
                       </td>
                       <td className="py-3 px-4 text-right">
-                        <button
-                          onClick={() =>
-                            handleDeleteOtherBookmark(obm.id, obm.title)
-                          }
-                          disabled={deletingId === obm.id}
-                          className="p-1.5 rounded-md text-stone-400 hover:text-rose-600 hover:bg-rose-50 disabled:opacity-50 cursor-pointer"
-                          title="Delete Bookmark"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            type="button"
+                            onClick={() => setEditingOtherBookmark(obm)}
+                            className="p-1.5 rounded-md text-stone-500 hover:text-purple-600 hover:bg-purple-50 transition-colors cursor-pointer"
+                            title="Edit Bookmark Details"
+                          >
+                            <Edit className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleDeleteOtherBookmark(obm.id, obm.title)
+                            }
+                            disabled={deletingId === obm.id}
+                            className="p-1.5 rounded-md text-stone-400 hover:text-rose-600 hover:bg-rose-50 disabled:opacity-50 cursor-pointer"
+                            title="Delete Bookmark"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                     );
@@ -1828,6 +1842,21 @@ export function AdminTableClient({
         onClose={() => setIsTagManagerOpen(false)}
         tags={otherBookmarkTags}
         onTagsUpdated={(newTags) => setOtherBookmarkTags(newTags)}
+      />
+
+      {/* MODAL: EDIT OTHER BOOKMARK */}
+      <EditOtherBookmarkModal
+        isOpen={!!editingOtherBookmark}
+        onClose={() => setEditingOtherBookmark(null)}
+        bookmark={editingOtherBookmark}
+        availableTags={otherBookmarkTags}
+        onTagsUpdated={(newTags) => setOtherBookmarkTags(newTags)}
+        onSuccess={(updated) => {
+          setOtherBookmarks((prev) =>
+            prev.map((b) => (b.id === updated.id ? updated : b))
+          );
+          router.refresh();
+        }}
       />
     </div>
   );
