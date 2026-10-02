@@ -50,17 +50,9 @@ export function OtherBookmarksBulkUploaderModal({
   onTagsUpdated,
   onSuccess,
 }: OtherBookmarksBulkUploaderModalProps) {
-  const [rows, setRows] = useState<BulkUploaderRow[]>([createEmptyRow()]);
   const [batchTags, setBatchTags] = useState<string[]>([]);
-  const [newTagInput, setNewTagInput] = useState("");
-  const [isCreatingTag, setIsCreatingTag] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState("");
-  const [activeDropdownRowId, setActiveDropdownRowId] = useState<string | null>(null);
 
-  const batchFileInputRef = useRef<HTMLInputElement>(null);
-
-  function createEmptyRow(): BulkUploaderRow {
+  function createEmptyRow(initialTags?: string[]): BulkUploaderRow {
     return {
       id: `row-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       title: "",
@@ -70,11 +62,20 @@ export function OtherBookmarksBulkUploaderModal({
       backFile: null,
       backUrl: "",
       backUploading: false,
-      tags: batchTags.length > 0 ? [...batchTags] : ["General Ephemera"],
+      tags: initialTags && initialTags.length > 0 ? [...initialTags] : ["General Ephemera"],
       quantity: 1,
       notes: "",
     };
   }
+
+  const [rows, setRows] = useState<BulkUploaderRow[]>(() => [createEmptyRow()]);
+  const [newTagInput, setNewTagInput] = useState("");
+  const [isCreatingTag, setIsCreatingTag] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [activeDropdownRowId, setActiveDropdownRowId] = useState<string | null>(null);
+
+  const batchFileInputRef = useRef<HTMLInputElement>(null);
 
   // Upload an image file to /api/upload
   const uploadImageFile = async (file: File): Promise<string> => {

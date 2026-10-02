@@ -49,8 +49,8 @@ export interface AdminTableClientProps {
 }
 
 export function AdminTableClient({
-  initialBookmarks,
-  initialBookstores,
+  initialBookmarks = [],
+  initialBookstores = [],
   initialTradeProposals = [],
   initialOtherBookmarks = [],
   initialOtherBookmarkTags = [],
@@ -560,25 +560,25 @@ export function AdminTableClient({
     const currentTitle =
       isBulkEditing && bulkEdits[b.id] ? bulkEdits[b.id].title : b.title;
     return (
-      currentTitle.toLowerCase().includes(q) ||
-      b.bookstore?.name.toLowerCase().includes(q) ||
-      b.bookstore?.city.toLowerCase().includes(q)
+      (currentTitle && currentTitle.toLowerCase().includes(q)) ||
+      (b.bookstore?.name && b.bookstore.name.toLowerCase().includes(q)) ||
+      (b.bookstore?.city && b.bookstore.city.toLowerCase().includes(q))
     );
   });
 
   const filteredBookstores = bookstores.filter((s) => {
     const q = search.toLowerCase();
     return (
-      s.name.toLowerCase().includes(q) ||
-      s.city.toLowerCase().includes(q) ||
-      s.historicalBlurb.toLowerCase().includes(q)
+      (s.name && s.name.toLowerCase().includes(q)) ||
+      (s.city && s.city.toLowerCase().includes(q)) ||
+      (s.historicalBlurb && s.historicalBlurb.toLowerCase().includes(q))
     );
   });
 
   const filteredOtherBookmarks = otherBookmarks.filter((b) => {
     const q = search.toLowerCase();
     return (
-      b.title.toLowerCase().includes(q) ||
+      (b.title && b.title.toLowerCase().includes(q)) ||
       (b.category && b.category.toLowerCase().includes(q))
     );
   });
@@ -586,10 +586,10 @@ export function AdminTableClient({
   const filteredTrades = tradeProposals.filter((t) => {
     const q = search.toLowerCase();
     return (
-      t.collectorName.toLowerCase().includes(q) ||
-      t.collectorEmail.toLowerCase().includes(q) ||
-      t.offeredItems.toLowerCase().includes(q) ||
-      t.status.toLowerCase().includes(q)
+      (t.collectorName && t.collectorName.toLowerCase().includes(q)) ||
+      (t.collectorEmail && t.collectorEmail.toLowerCase().includes(q)) ||
+      (t.offeredItems && t.offeredItems.toLowerCase().includes(q)) ||
+      (t.status && t.status.toLowerCase().includes(q))
     );
   });
 
@@ -1423,7 +1423,7 @@ export function AdminTableClient({
                             <span>{proposal.collectorEmail}</span>
                           </a>
                           <span>•</span>
-                          <span className="font-mono text-[11px]">
+                          <span className="font-mono text-[11px]" suppressHydrationWarning>
                             Submitted:{" "}
                             {new Date(proposal.createdAt).toLocaleDateString(
                               "en-US",
