@@ -5,6 +5,7 @@ import {
   getBookmarksWithBookstores,
   getAllBookstores,
   getAllTradeProposals,
+  getAllNonBookstoreBookmarks,
 } from "@/lib/db/queries";
 import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
@@ -33,10 +34,11 @@ export default async function AdminDashboardPage() {
     redirect("/admin/login");
   }
 
-  const [bookmarks, bookstores, tradeProposals] = await Promise.all([
+  const [bookmarks, bookstores, tradeProposals, otherBookmarks] = await Promise.all([
     getBookmarksWithBookstores(),
     getAllBookstores(),
     getAllTradeProposals(),
+    getAllNonBookstoreBookmarks(),
   ]);
 
   const totalBookstores = bookstores.length;
@@ -70,6 +72,12 @@ export default async function AdminDashboardPage() {
             </div>
 
             <div className="flex items-center gap-3">
+              <Link href="/otherbookmarks" target="_blank">
+                <Button variant="outline" size="sm" className="text-xs font-serif bg-white border-purple-200 text-purple-700 hover:bg-purple-50">
+                  Ephemera Bazaar ↗
+                </Button>
+              </Link>
+
               <Link href="/">
                 <Button variant="outline" size="sm" className="text-xs font-serif bg-white border-[#E8E2D5]">
                   Public Exhibit ↗
@@ -93,13 +101,23 @@ export default async function AdminDashboardPage() {
       {/* Main Container */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-8">
         {/* Stats Row & Quick Actions */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <div className="p-5 rounded-2xl bg-white border border-[#E8E2D5] shadow-xs flex items-center justify-between">
             <div>
-              <p className="text-xs font-mono text-stone-500 uppercase">Cataloged Bookmarks</p>
+              <p className="text-xs font-mono text-stone-500 uppercase">Bookstore Bookmarks</p>
               <h3 className="font-serif text-3xl font-bold text-stone-900 mt-1">{bookmarks.length}</h3>
             </div>
             <div className="w-10 h-10 rounded-xl bg-[#F59E0B]/10 text-[#F59E0B] border border-[#F59E0B]/20 flex items-center justify-center">
+              <Sparkles className="w-5 h-5" />
+            </div>
+          </div>
+
+          <div className="p-5 rounded-2xl bg-white border border-[#E8E2D5] shadow-xs flex items-center justify-between">
+            <div>
+              <p className="text-xs font-mono text-stone-500 uppercase">Other Bookmarks</p>
+              <h3 className="font-serif text-3xl font-bold text-stone-900 mt-1">{otherBookmarks.length}</h3>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-600 border border-purple-200 flex items-center justify-center">
               <Sparkles className="w-5 h-5" />
             </div>
           </div>
@@ -116,7 +134,7 @@ export default async function AdminDashboardPage() {
 
           <div className="p-5 rounded-2xl bg-white border border-[#E8E2D5] shadow-xs flex items-center justify-between">
             <div>
-              <p className="text-xs font-mono text-stone-500 uppercase">Archival Press Clippings</p>
+              <p className="text-xs font-mono text-stone-500 uppercase">Archival Press</p>
               <h3 className="font-serif text-3xl font-bold text-stone-900 mt-1">{totalClippings}</h3>
             </div>
             <div className="w-10 h-10 rounded-xl bg-[#F43F7A]/10 text-[#F43F7A] border border-[#F43F7A]/20 flex items-center justify-center">
@@ -147,7 +165,7 @@ export default async function AdminDashboardPage() {
           <div>
             <h2 className="font-serif text-lg font-bold text-stone-900">Archive Collection Index</h2>
             <p className="text-xs text-stone-500 font-serif italic">
-              Manage your collection of bookmarks, historic bookstore dossiers, multi-location timelines, and collector trade proposals.
+              Manage your collection of bookmarks, other ephemera bookmarks, historic bookstore dossiers, and collector trade proposals.
             </p>
           </div>
 
@@ -180,6 +198,7 @@ export default async function AdminDashboardPage() {
           initialBookmarks={bookmarks}
           initialBookstores={bookstores}
           initialTradeProposals={tradeProposals}
+          initialOtherBookmarks={otherBookmarks}
         />
       </main>
     </div>

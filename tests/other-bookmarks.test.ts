@@ -1,0 +1,181 @@
+import { describe, it, expect, beforeAll } from "vitest";
+import { seedDatabase } from "@/db/seed";
+import {
+  createNonBookstoreBookmark,
+  bulkCreateNonBookstoreBookmarks,
+  updateNonBookstoreBookmark,
+  deleteNonBookstoreBookmark,
+  createTradeProposal,
+  updateTradeProposalStatus,
+} from "@/lib/db/mutations";
+import {
+  getAllNonBookstoreBookmarks,
+  getTradeNonBookstoreBookmarks,
+  getNonBookstoreBookmarkById,
+  getNonBookstoreCategories,
+  getTradeProposalById,
+} from "@/lib/db/queries";
+
+describe("Other Bookmarks (Non-Bookstore Ephemera) & Inventory Management", () => {
+  beforeAll(async () => {
+    await seedDatabase();
+  });
+
+  it("should create and retrieve a single non-bookstore bookmark", async () => {
+    const timestamp = Date.now();
+    const id = `other-test-library-${timestamp}`;
+
+    const createdId = await createNonBookstoreBookmark({
+      id,
+      title: "Seattle Public Library Vintage Card",
+      category: "Libraries",
+      frontImageUrl: "/images/other/spl-front.jpg",
+      backImageUrl: "/images/other/spl-back.jpg",
+      tradeQuantity: 3,
+      dimensions: '2" × 6.5"',
+      material: "Heavy Stock",
+      condition: "Near Mint",
+      notes: "Acquired from a library book sale in 1994",
+      displayOrder: 1,
+    });
+
+    expect(createdId).toBe(id);
+
+    const retrieved = await getNonBookstoreBookmarkById(id);
+    expect(retrieved).toBeDefined();
+    expect(retrieved?.title).toBe("Seattle Public Library Vintage Card");
+    expect(retrieved?.category).toBe("Libraries");
+    expect(retrieved?.tradeQuantity).toBe(3);
+    expect(retrieved?.backImageUrl).toBe("/images/other/spl-back.jpg");
+  });
+
+  it("should bulk create non-bookstore bookmarks and retrieve distinct categories", async () => {
+    const timestamp = Date.now();
+    const items = [
+      {
+        id: `other-bulk-1-${timestamp}`,
+        title: "Penguin Classics Orange Spine",
+        category: "Publishers",
+        frontImageUrl: "/images/other/penguin-front.jpg",
+        tradeQuantity: 2,
+      },
+      {
+        id: `other-bulk-2-${timestamp}`,
+        title: "Metropolitan Museum of Art 1988",
+        category: "Museums & Galleries",
+        frontImageUrl: "/images/other/met-front.jpg",
+        tradeQuantity: 1,
+      },
+      {
+        id: `other-bulk-3-${timestamp}`,
+        title: "Vintage Coffee Ad Bookmark",
+        category: "Advertising",
+        frontImageUrl: "/images/other/coffee-front.jpg",
+        tradeQuantity: 0, // Not available for trade
+      },
+    ];
+
+    const result = await bulkCreateNonBookstoreBookmarks(items);
+    expect(result.inserted).toBe(3);
+    expect(result.ids.length).toBe(3);
+
+    // Test queries
+    const all = await getAllNonBookstoreBookmarks();
+    expect(all.some((b) => b.id === `other-bulk-1-${timestamp}`)).toBe(true);
+    expect(all.some((b) => b.id === `other-bulk-3-${timestamp}`)).toBe(true);
+
+    const tradeOnly = await getTradeNonBookstoreBookmarks();
+    expect(tradeOnly.some((b) => b.id === `other-bulk-1-${timestamp}`)).toBe(true);
+    expect(tradeOnly.some((b) => b.id === `other-bulk-2-${timestamp}`)).toBe(true);
+    // Quantity 0 should not be in tradeOnly
+    expect(tradeOnly.some((b) => b.id === `other-bulk-3-${timestamp}`)).toBe(false);
+
+    // Test categories
+    const categories = await getNonBookstoreCategories();
+    expect(categories).toContain("Publishers");
+    expect(categories).toContain("Museums & Galleries");
+  });
+
+  it("should update a non-bookstore bookmark", async () => {
+    const timestamp = Date.now();
+    const id = `other-update-test-${timestamp}`;
+
+    await createNonBookstoreBookmark({
+      id,
+      title: "Original Title",
+      category: "Publishers",
+      frontImageUrl: "/images/other/test.jpg",
+      tradeQuantity: 1,
+    });
+
+    const success = await updateNonBookstoreBookmark(id, {
+      title: "Updated Title After Verification",
+      tradeQuantity: 5,
+    });
+    expect(success).toBe(true);
+
+    const updated = await getNonBookstoreBookmarkById(id);
+    expect(updated?.title).toBe("Updated Title After Verification");
+    expect(updated?.tradeQuantity).toBe(5);
+  });
+
+  it("should delete a non-bookstore bookmark", async () => {
+    const timestamp = Date.now();
+    const id = `other-delete-test-${timestamp}`;
+
+    await createNonBookstoreBookmark({
+      id,
+      title: "To Be Deleted",
+      frontImageUrl: "/images/other/delete.jpg",
+      tradeQuantity: 1,
+    });
+
+    const deleted = await deleteNonBookstoreBookmark(id);
+    expect(deleted).toBe(true);
+
+    const check = await getNonBookstoreBookmarkById(id);
+    expect(check).toBeNull();
+  });
+
+  it("should snapshot and automatically deduct inventory when trading a non-bookstore bookmark", async () => {
+    const timestamp = Date.now();
+    const id = `other-trade-deduct-${timestamp}`;
+
+    await createNonBookstoreBookmark({
+      id,
+      title: "Rare New Yorker Literary Bookmark",
+      category: "Literary Magazines",
+      frontImageUrl: "/images/other/new-yorker.jpg",
+      tradeQuantity: 2,
+    });
+
+    // Create a trade proposal requesting this item
+    const proposalId = await createTradeProposal({
+      collectorName: "Bob Ephemera",
+      collectorEmail: "bob@example.com",
+      offeredItems: "Vintage Paris Review Bookmark",
+      requestedBookmarkIds: [id],
+    });
+
+    const proposal = await getTradeProposalById(proposalId);
+    expect(proposal).toBeDefined();
+
+    const snapshot = JSON.parse(proposal!.requestedBookmarksSnapshot);
+    expect(snapshot.length).toBe(1);
+    expect(snapshot[0].id).toBe(id);
+    expect(snapshot[0].title).toBe("Rare New Yorker Literary Bookmark");
+    expect(snapshot[0].bookstoreName).toBe("Literary Magazines");
+
+    // Accept the trade proposal
+    await updateTradeProposalStatus(proposalId, "accepted");
+
+    // Verify quantity decremented from 2 to 1
+    const itemAfterAccept = await getNonBookstoreBookmarkById(id);
+    expect(itemAfterAccept?.tradeQuantity).toBe(1);
+
+    // Accepting again (e.g. status re-save) should not deduct again
+    await updateTradeProposalStatus(proposalId, "accepted");
+    const itemAfterSecondAccept = await getNonBookstoreBookmarkById(id);
+    expect(itemAfterSecondAccept?.tradeQuantity).toBe(1);
+  });
+});

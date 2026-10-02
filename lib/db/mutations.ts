@@ -4,6 +4,9 @@ import {
   bookstores,
   archivalMedia,
   tradeProposals,
+  nonBookstoreBookmarks,
+  NonBookstoreBookmark,
+  NewNonBookstoreBookmark,
   BookstoreLocation,
   CustomTimelineEvent,
 } from "@/db/schema";
@@ -462,19 +465,47 @@ export async function createTradeProposal(data: CreateTradeProposalInput): Promi
 
   let snapshot = data.requestedBookmarksSnapshot;
   if (!snapshot || snapshot.length === 0) {
-    const fetchedBookmarks = await db.query.bookmarks.findMany({
-      where: (b, { inArray }) => inArray(b.id, data.requestedBookmarkIds),
-    });
+    const fetchedBookmarks = data.requestedBookmarkIds.length > 0
+      ? await db.query.bookmarks.findMany({
+          where: (b, { inArray }) => inArray(b.id, data.requestedBookmarkIds),
+        })
+      : [];
     const fetchedBookstores = await db.select().from(bookstores);
     const storeMap = new Map(fetchedBookstores.map((s) => [s.id, s.name]));
 
-    snapshot = fetchedBookmarks.map((b) => ({
+    const bookstoreSnapshots = fetchedBookmarks.map((b) => ({
       id: b.id,
       title: b.title,
       accessionNo: b.accessionNo,
       bookstoreName: storeMap.get(b.bookstoreId) || "Bookstore",
       frontImageUrl: b.frontImageUrl,
     }));
+
+    const foundBmIds = new Set(fetchedBookmarks.map((b) => b.id));
+    const missingIds = data.requestedBookmarkIds.filter((id) => !foundBmIds.has(id));
+
+    let nonBmSnapshots: Array<{
+      id: string;
+      title: string;
+      accessionNo: string;
+      bookstoreName?: string;
+      frontImageUrl?: string;
+    }> = [];
+
+    if (missingIds.length > 0) {
+      const fetchedNonBms = await db.query.nonBookstoreBookmarks.findMany({
+        where: (nb, { inArray }) => inArray(nb.id, missingIds),
+      });
+      nonBmSnapshots = fetchedNonBms.map((nb) => ({
+        id: nb.id,
+        title: nb.title,
+        accessionNo: nb.id.toUpperCase(),
+        bookstoreName: nb.category || "Other Ephemera",
+        frontImageUrl: nb.frontImageUrl,
+      }));
+    }
+
+    snapshot = [...bookstoreSnapshots, ...nonBmSnapshots];
   }
 
   await db.insert(tradeProposals).values({
@@ -521,6 +552,7 @@ export async function updateTradeProposalStatus(
 
     for (const bmId of bookmarkIds) {
       if (!bmId) continue;
+      // 1. Try bookstore bookmarks
       const bm = await db.query.bookmarks.findFirst({
         where: eq(bookmarks.id, bmId),
       });
@@ -531,6 +563,19 @@ export async function updateTradeProposalStatus(
           .update(bookmarks)
           .set({ tradeQuantity: newQty, updatedAt: now })
           .where(eq(bookmarks.id, bmId));
+      } else {
+        // 2. Try non-bookstore bookmarks
+        const nonBm = await db.query.nonBookstoreBookmarks.findFirst({
+          where: eq(nonBookstoreBookmarks.id, bmId),
+        });
+        if (nonBm) {
+          const currentQty = typeof nonBm.tradeQuantity === "number" ? nonBm.tradeQuantity : 0;
+          const newQty = Math.max(0, currentQty - 1);
+          await db
+            .update(nonBookstoreBookmarks)
+            .set({ tradeQuantity: newQty, updatedAt: now })
+            .where(eq(nonBookstoreBookmarks.id, bmId));
+        }
       }
     }
   }
@@ -557,6 +602,147 @@ export async function updateTradeProposalStatus(
 export async function deleteTradeProposal(id: string): Promise<boolean> {
   await ensureDb();
   await db.delete(tradeProposals).where(eq(tradeProposals.id, id));
+  return true;
+}
+
+/**
+ * Creates a single non-bookstore bookmark.
+ */
+export async function createNonBookstoreBookmark(data: {
+  id?: string;
+  title: string;
+  category?: string;
+  frontImageUrl: string;
+  backImageUrl?: string | null;
+  tradeQuantity?: number;
+  dimensions?: string;
+  material?: string;
+  condition?: string;
+  notes?: string;
+  displayOrder?: number;
+}): Promise<string> {
+  await ensureDb();
+  const now = new Date().toISOString();
+  const id = data.id || generateSlug(`other-${data.title}-${Date.now().toString().slice(-4)}`);
+
+  const entry: NewNonBookstoreBookmark = {
+    id,
+    title: data.title.trim(),
+    category: data.category?.trim() || "General Ephemera",
+    frontImageUrl: data.frontImageUrl.trim(),
+    backImageUrl: data.backImageUrl ? data.backImageUrl.trim() : null,
+    tradeQuantity: typeof data.tradeQuantity === "number" ? Math.max(0, data.tradeQuantity) : 1,
+    dimensions: data.dimensions || '2" × 7"',
+    material: data.material || "Printed Cardstock",
+    condition: data.condition || "Collectible",
+    notes: data.notes || null,
+    displayOrder: typeof data.displayOrder === "number" ? data.displayOrder : 0,
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  await db.insert(nonBookstoreBookmarks).values(entry).onConflictDoUpdate({
+    target: nonBookstoreBookmarks.id,
+    set: {
+      ...entry,
+      createdAt: undefined,
+      updatedAt: now,
+    },
+  });
+
+  return id;
+}
+
+/**
+ * Bulk creates / imports non-bookstore bookmarks from a spreadsheet or array.
+ */
+export async function bulkCreateNonBookstoreBookmarks(
+  items: Array<{
+    id?: string;
+    title: string;
+    category?: string;
+    frontImageUrl: string;
+    backImageUrl?: string | null;
+    tradeQuantity?: number;
+    dimensions?: string;
+    material?: string;
+    condition?: string;
+    notes?: string;
+  }>
+): Promise<{ inserted: number; ids: string[] }> {
+  await ensureDb();
+  const now = new Date().toISOString();
+  let count = 0;
+  const ids: string[] = [];
+
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    if (!item.title || !item.frontImageUrl) continue;
+
+    const id = item.id || generateSlug(`other-${item.title}-${Date.now().toString().slice(-4)}-${i}`);
+    const entry: NewNonBookstoreBookmark = {
+      id,
+      title: item.title.trim(),
+      category: item.category?.trim() || "General Ephemera",
+      frontImageUrl: item.frontImageUrl.trim(),
+      backImageUrl: item.backImageUrl ? item.backImageUrl.trim() : null,
+      tradeQuantity: typeof item.tradeQuantity === "number" ? Math.max(0, item.tradeQuantity) : 1,
+      dimensions: item.dimensions || '2" × 7"',
+      material: item.material || "Printed Cardstock",
+      condition: item.condition || "Collectible",
+      notes: item.notes || null,
+      displayOrder: i,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    await db.insert(nonBookstoreBookmarks).values(entry).onConflictDoUpdate({
+      target: nonBookstoreBookmarks.id,
+      set: {
+        ...entry,
+        createdAt: undefined,
+        updatedAt: now,
+      },
+    });
+
+    ids.push(id);
+    count++;
+  }
+
+  return { inserted: count, ids };
+}
+
+/**
+ * Updates a non-bookstore bookmark.
+ */
+export async function updateNonBookstoreBookmark(
+  id: string,
+  data: Partial<NewNonBookstoreBookmark>
+): Promise<boolean> {
+  await ensureDb();
+  const now = new Date().toISOString();
+
+  const updateData: Record<string, any> = {
+    ...data,
+    updatedAt: now,
+  };
+  delete updateData.id;
+  delete updateData.createdAt;
+
+  await db
+    .update(nonBookstoreBookmarks)
+    .set(updateData)
+    .where(eq(nonBookstoreBookmarks.id, id));
+
+  return true;
+}
+
+/**
+ * Deletes a non-bookstore bookmark.
+ */
+export async function deleteNonBookstoreBookmark(id: string): Promise<boolean> {
+  await ensureDb();
+  await db.delete(nonBookstoreBookmarks).where(eq(nonBookstoreBookmarks.id, id));
   return true;
 }
 

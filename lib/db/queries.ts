@@ -4,12 +4,14 @@ import {
   bookstores,
   archivalMedia,
   tradeProposals,
+  nonBookstoreBookmarks,
   Bookmark,
   Bookstore,
   ArchivalMedia,
   TradeProposal,
+  NonBookstoreBookmark,
 } from "@/db/schema";
-import { eq, asc, desc } from "drizzle-orm";
+import { eq, asc, desc, gt } from "drizzle-orm";
 import { autoSyncStorefronts } from "@/lib/utils/storefront-sync";
 
 let dbInitPromise: Promise<void> | null = null;
@@ -310,4 +312,48 @@ export async function getTradeProposalById(id: string): Promise<TradeProposal | 
     where: eq(tradeProposals.id, id),
   });
   return proposal || null;
+}
+
+/**
+ * Fetch all non-bookstore bookmarks for the curator admin / management.
+ */
+export async function getAllNonBookstoreBookmarks(): Promise<NonBookstoreBookmark[]> {
+  await ensureDb();
+  return db
+    .select()
+    .from(nonBookstoreBookmarks)
+    .orderBy(asc(nonBookstoreBookmarks.displayOrder), asc(nonBookstoreBookmarks.title));
+}
+
+/**
+ * Fetch non-bookstore bookmarks available for trade (tradeQuantity > 0).
+ */
+export async function getTradeNonBookstoreBookmarks(): Promise<NonBookstoreBookmark[]> {
+  await ensureDb();
+  return db
+    .select()
+    .from(nonBookstoreBookmarks)
+    .where(gt(nonBookstoreBookmarks.tradeQuantity, 0))
+    .orderBy(asc(nonBookstoreBookmarks.displayOrder), asc(nonBookstoreBookmarks.title));
+}
+
+/**
+ * Fetch a single non-bookstore bookmark by ID.
+ */
+export async function getNonBookstoreBookmarkById(id: string): Promise<NonBookstoreBookmark | null> {
+  await ensureDb();
+  const item = await db.query.nonBookstoreBookmarks.findFirst({
+    where: eq(nonBookstoreBookmarks.id, id),
+  });
+  return item || null;
+}
+
+/**
+ * Fetch distinct categories from non-bookstore bookmarks.
+ */
+export async function getNonBookstoreCategories(): Promise<string[]> {
+  await ensureDb();
+  const allItems = await db.select({ category: nonBookstoreBookmarks.category }).from(nonBookstoreBookmarks);
+  const categories = Array.from(new Set(allItems.map((i) => i.category))).filter(Boolean).sort();
+  return categories;
 }

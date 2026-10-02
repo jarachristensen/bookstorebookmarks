@@ -193,4 +193,22 @@ export async function initDb() {
       updated_at TEXT NOT NULL
     );
   `);
+
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS non_bookstore_bookmarks (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      category TEXT NOT NULL DEFAULT 'General Ephemera',
+      front_image_url TEXT NOT NULL,
+      back_image_url TEXT,
+      trade_quantity INTEGER NOT NULL DEFAULT 1,
+      dimensions TEXT DEFAULT '2" × 7"',
+      material TEXT DEFAULT 'Printed Cardstock',
+      condition TEXT DEFAULT 'Collectible',
+      notes TEXT,
+      display_order INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+  `);
 }

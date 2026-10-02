@@ -131,11 +131,30 @@ export const tradeProposals = sqliteTable("trade_proposals", {
   updatedAt: text("updated_at").notNull(),
 });
 
+export const nonBookstoreBookmarks = sqliteTable("non_bookstore_bookmarks", {
+  id: text("id").primaryKey(), // slug or nanoid
+  title: text("title").notNull(),
+  category: text("category").notNull().default("General Ephemera"), // e.g. "Library", "Publisher", "Art & Illustration", "Vintage Advertising", etc.
+  frontImageUrl: text("front_image_url").notNull(),
+  backImageUrl: text("back_image_url"),
+  tradeQuantity: integer("trade_quantity").notNull().default(1),
+  dimensions: text("dimensions").default("2\" × 7\""),
+  material: text("material").default("Printed Cardstock"),
+  condition: text("condition").default("Collectible"),
+  notes: text("notes"),
+  displayOrder: integer("display_order").notNull().default(0),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
 export type Bookstore = typeof bookstores.$inferSelect;
 export type NewBookstore = typeof bookstores.$inferInsert;
 
 export type Bookmark = typeof bookmarks.$inferSelect;
 export type NewBookmark = typeof bookmarks.$inferInsert;
+
+export type NonBookstoreBookmark = typeof nonBookstoreBookmarks.$inferSelect;
+export type NewNonBookstoreBookmark = typeof nonBookstoreBookmarks.$inferInsert;
 
 export type ArchivalMedia = typeof archivalMedia.$inferSelect;
 export type NewArchivalMedia = typeof archivalMedia.$inferInsert;
