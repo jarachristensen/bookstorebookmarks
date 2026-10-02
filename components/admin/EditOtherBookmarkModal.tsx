@@ -40,9 +40,6 @@ export function EditOtherBookmarkModal({
   const [tradeQuantity, setTradeQuantity] = useState(1);
   const [frontImageUrl, setFrontImageUrl] = useState("");
   const [backImageUrl, setBackImageUrl] = useState("");
-  const [dimensions, setDimensions] = useState('2" × 7"');
-  const [material, setMaterial] = useState("Printed Cardstock");
-  const [condition, setCondition] = useState("Collectible");
   const [notes, setNotes] = useState("");
 
   const [frontUploading, setFrontUploading] = useState(false);
@@ -74,9 +71,6 @@ export function EditOtherBookmarkModal({
       setTradeQuantity(bookmark.tradeQuantity ?? 1);
       setFrontImageUrl(bookmark.frontImageUrl || "");
       setBackImageUrl(bookmark.backImageUrl || "");
-      setDimensions(bookmark.dimensions || '2" × 7"');
-      setMaterial(bookmark.material || "Printed Cardstock");
-      setCondition(bookmark.condition || "Collectible");
       setNotes(bookmark.notes || "");
       setError("");
       setIsTagDropdownOpen(false);
@@ -193,9 +187,9 @@ export function EditOtherBookmarkModal({
         tradeQuantity: Math.max(0, Number(tradeQuantity) || 0),
         frontImageUrl: frontImageUrl.trim(),
         backImageUrl: backImageUrl.trim() || null,
-        dimensions: dimensions.trim() || '2" × 7"',
-        material: material.trim() || "Printed Cardstock",
-        condition: condition.trim() || "Collectible",
+        dimensions: bookmark.dimensions || '2" × 7"',
+        material: bookmark.material || "Printed Cardstock",
+        condition: bookmark.condition || "Collectible",
         notes: notes.trim() || null,
       };
 
@@ -535,58 +529,21 @@ export function EditOtherBookmarkModal({
             </div>
           </div>
 
-          {/* Physical Attributes & Notes */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-xs font-serif font-bold text-stone-700 mb-1">
-                Dimensions
-              </label>
-              <input
-                type="text"
-                value={dimensions}
-                onChange={(e) => setDimensions(e.target.value)}
-                placeholder='2" × 7"'
-                className="w-full px-3 py-1.5 text-xs bg-white border border-[#E8E2D5] rounded-xl focus:outline-none focus:ring-1 focus:ring-purple-600 font-serif"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-serif font-bold text-stone-700 mb-1">
-                Material
-              </label>
-              <input
-                type="text"
-                value={material}
-                onChange={(e) => setMaterial(e.target.value)}
-                placeholder="Printed Cardstock"
-                className="w-full px-3 py-1.5 text-xs bg-white border border-[#E8E2D5] rounded-xl focus:outline-none focus:ring-1 focus:ring-purple-600 font-serif"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-serif font-bold text-stone-700 mb-1">
-                Condition
-              </label>
-              <input
-                type="text"
-                value={condition}
-                onChange={(e) => setCondition(e.target.value)}
-                placeholder="Collectible"
-                className="w-full px-3 py-1.5 text-xs bg-white border border-[#E8E2D5] rounded-xl focus:outline-none focus:ring-1 focus:ring-purple-600 font-serif"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-serif font-bold text-stone-700 mb-1">
-              Curator Notes / Provenance (Optional)
+          {/* Curator Notes & Provenance */}
+          <div className="p-4 bg-white border border-[#E8E2D5] rounded-2xl space-y-2 shadow-2xs">
+            <label className="block text-xs font-serif font-bold text-stone-800 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+              <span>Curator Notes / Provenance (Shown when bookmark is viewed up close)</span>
             </label>
+            <p className="text-[11px] font-serif text-stone-500">
+              Add any background details, publication context, historical provenance, or printing notes about this ephemera bookmark.
+            </p>
             <textarea
-              rows={3}
+              rows={4}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="e.g. Acquired from an estate sale in Portland, 1992..."
-              className="w-full p-3 text-xs bg-white border border-[#E8E2D5] rounded-xl focus:outline-none focus:ring-1 focus:ring-purple-600 font-serif"
+              placeholder="e.g. Vintage 1980s library catalog promo distributed across Northwest branches. Features original typography and dual-sided letterpress printing..."
+              className="w-full p-3 text-xs bg-[#FAF8F5] border border-[#E8E2D5] rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-purple-600 font-serif leading-relaxed"
             />
           </div>
 

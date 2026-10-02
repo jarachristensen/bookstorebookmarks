@@ -335,7 +335,13 @@ export function OtherBookmarksHubClient({
                   </div>
 
                   {/* Bookmark Image Preview Area */}
-                  <div className="relative p-3 bg-stone-50/50 flex items-center justify-center min-h-[220px] max-h-[260px] overflow-hidden">
+                  <div
+                    onClick={() => {
+                      setInspectingBookmark(bm);
+                      setInspectSide(isFlipped && bm.backImageUrl ? "back" : "front");
+                    }}
+                    className="relative p-3 bg-stone-50/50 flex items-center justify-center min-h-[220px] max-h-[260px] overflow-hidden cursor-pointer"
+                  >
                     <div className="relative w-full h-[220px] flex items-center justify-center">
                       <Image
                         src={currentImageUrl}
@@ -352,7 +358,7 @@ export function OtherBookmarksHubClient({
                       <button
                         type="button"
                         onClick={(e) => toggleFlip(bm.id, e)}
-                        className="absolute bottom-2 right-2 px-2 py-1 rounded bg-white/90 hover:bg-white text-[10px] font-serif text-stone-700 border border-[#E8E2D5] shadow-xs flex items-center gap-1 transition-all"
+                        className="absolute bottom-2 right-2 px-2 py-1 rounded bg-white/90 hover:bg-white text-[10px] font-serif text-stone-700 border border-[#E8E2D5] shadow-xs flex items-center gap-1 transition-all z-10"
                         title="Flip between front and back"
                       >
                         <ArrowLeftRight className="w-2.5 h-2.5" />
@@ -363,11 +369,12 @@ export function OtherBookmarksHubClient({
                     {/* Zoom Inspect Button */}
                     <button
                       type="button"
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         setInspectingBookmark(bm);
                         setInspectSide(isFlipped && bm.backImageUrl ? "back" : "front");
                       }}
-                      className="absolute top-2 right-2 p-1.5 rounded-full bg-white/90 hover:bg-white text-stone-600 border border-[#E8E2D5] shadow-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute top-2 right-2 p-1.5 rounded-full bg-white/90 hover:bg-white text-stone-600 border border-[#E8E2D5] shadow-xs opacity-0 group-hover:opacity-100 transition-opacity z-10"
                       title="Inspect full resolution"
                     >
                       <Eye className="w-3.5 h-3.5" />
@@ -377,12 +384,19 @@ export function OtherBookmarksHubClient({
                   {/* Card Info & Select Button */}
                   <div className="p-3 flex-1 flex flex-col justify-between space-y-3 bg-white">
                     <div>
-                      <h4 className="font-serif font-bold text-xs text-stone-900 line-clamp-2 leading-snug">
+                      <h4
+                        onClick={() => {
+                          setInspectingBookmark(bm);
+                          setInspectSide("front");
+                        }}
+                        className="font-serif font-bold text-xs text-stone-900 line-clamp-2 leading-snug cursor-pointer hover:text-[#2563EB] transition-colors"
+                      >
                         {bm.title}
                       </h4>
-                      {bm.dimensions && (
-                        <p className="text-[10px] font-mono text-stone-500 mt-1">
-                          {bm.dimensions}
+                      {bm.notes && (
+                        <p className="text-[10px] font-serif text-stone-500 italic mt-1 line-clamp-2 flex items-start gap-1">
+                          <Sparkles className="w-2.5 h-2.5 text-amber-500 shrink-0 mt-0.5" />
+                          <span>{bm.notes}</span>
                         </p>
                       )}
                     </div>
@@ -735,27 +749,67 @@ export function OtherBookmarksHubClient({
               {inspectingBookmark.backImageUrl && (
                 <div className="inline-flex rounded-lg border border-[#E8E2D5] p-1 bg-white">
                   <button
+                    type="button"
                     onClick={() => setInspectSide("front")}
-                    className={`px-3 py-1 rounded text-xs font-serif ${
+                    className={`px-3 py-1 rounded text-xs font-serif cursor-pointer transition-colors ${
                       inspectSide === "front"
                         ? "bg-[#18181B] text-white font-bold"
-                        : "text-stone-600"
+                        : "text-stone-600 hover:text-stone-900"
                     }`}
                   >
                     Front View
                   </button>
                   <button
+                    type="button"
                     onClick={() => setInspectSide("back")}
-                    className={`px-3 py-1 rounded text-xs font-serif ${
+                    className={`px-3 py-1 rounded text-xs font-serif cursor-pointer transition-colors ${
                       inspectSide === "back"
                         ? "bg-[#18181B] text-white font-bold"
-                        : "text-stone-600"
+                        : "text-stone-600 hover:text-stone-900"
                     }`}
                   >
                     Back View
                   </button>
                 </div>
               )}
+
+              {/* Curator Notes & Provenance Callout */}
+              {inspectingBookmark.notes && (
+                <div className="w-full max-w-xl bg-amber-50/90 border border-amber-200/90 rounded-2xl p-4 text-left shadow-2xs space-y-1.5">
+                  <div className="flex items-center gap-1.5 text-amber-900 font-serif font-bold text-xs">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                    <span>Curator Notes &amp; Provenance</span>
+                  </div>
+                  <p className="font-serif text-xs text-stone-800 leading-relaxed whitespace-pre-wrap">
+                    {inspectingBookmark.notes}
+                  </p>
+                </div>
+              )}
+
+              {/* Modal Swap Action */}
+              <div className="pt-2 w-full max-w-xs">
+                <button
+                  type="button"
+                  onClick={() => toggleSelectBookmark(inspectingBookmark.id)}
+                  className={`w-full py-2 px-4 rounded-xl text-xs font-serif font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                    selectedBookmarkIds.includes(inspectingBookmark.id)
+                      ? "bg-[#2563EB] text-white shadow-xs"
+                      : "bg-[#18181B] hover:bg-black text-white"
+                  }`}
+                >
+                  {selectedBookmarkIds.includes(inspectingBookmark.id) ? (
+                    <>
+                      <Check className="w-4 h-4" />
+                      <span>Added to Swap Proposal</span>
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-4 h-4" />
+                      <span>+ Add This Bookmark to Swap</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         )}
