@@ -5,8 +5,11 @@ import {
   archivalMedia,
   tradeProposals,
   nonBookstoreBookmarks,
+  nonBookstoreTags,
   NonBookstoreBookmark,
   NewNonBookstoreBookmark,
+  NonBookstoreTag,
+  NewNonBookstoreTag,
   BookstoreLocation,
   CustomTimelineEvent,
 } from "@/db/schema";
@@ -606,12 +609,38 @@ export async function deleteTradeProposal(id: string): Promise<boolean> {
 }
 
 /**
+ * Helper to normalize tags into a JSON stringified array.
+ */
+function normalizeTags(tags?: string[] | string | null, fallbackCategory?: string): string {
+  if (Array.isArray(tags)) {
+    const cleaned = tags.map((t) => (typeof t === "string" ? t.trim() : "")).filter(Boolean);
+    if (cleaned.length > 0) return JSON.stringify(cleaned);
+  } else if (typeof tags === "string" && tags.trim()) {
+    try {
+      const parsed = JSON.parse(tags);
+      if (Array.isArray(parsed)) {
+        return JSON.stringify(parsed.map((t) => (typeof t === "string" ? t.trim() : "")).filter(Boolean));
+      }
+    } catch {}
+    // Comma-separated string
+    const split = tags.split(",").map((t) => t.trim()).filter(Boolean);
+    if (split.length > 0) return JSON.stringify(split);
+  }
+
+  if (fallbackCategory && fallbackCategory.trim() && fallbackCategory.trim() !== "General Ephemera") {
+    return JSON.stringify([fallbackCategory.trim()]);
+  }
+  return JSON.stringify(["General Ephemera"]);
+}
+
+/**
  * Creates a single non-bookstore bookmark.
  */
 export async function createNonBookstoreBookmark(data: {
   id?: string;
   title: string;
   category?: string;
+  tags?: string[] | string | null;
   frontImageUrl: string;
   backImageUrl?: string | null;
   tradeQuantity?: number;
@@ -625,10 +654,22 @@ export async function createNonBookstoreBookmark(data: {
   const now = new Date().toISOString();
   const id = data.id || generateSlug(`other-${data.title}-${Date.now().toString().slice(-4)}`);
 
+  const tagsJson = normalizeTags(data.tags, data.category);
+  let primaryCategory = data.category?.trim();
+  if (!primaryCategory || primaryCategory === "General Ephemera") {
+    try {
+      const parsedTags = JSON.parse(tagsJson);
+      if (Array.isArray(parsedTags) && parsedTags.length > 0) {
+        primaryCategory = parsedTags[0];
+      }
+    } catch {}
+  }
+
   const entry: NewNonBookstoreBookmark = {
     id,
     title: data.title.trim(),
-    category: data.category?.trim() || "General Ephemera",
+    category: primaryCategory || "General Ephemera",
+    tags: tagsJson,
     frontImageUrl: data.frontImageUrl.trim(),
     backImageUrl: data.backImageUrl ? data.backImageUrl.trim() : null,
     tradeQuantity: typeof data.tradeQuantity === "number" ? Math.max(0, data.tradeQuantity) : 1,
@@ -661,6 +702,7 @@ export async function bulkCreateNonBookstoreBookmarks(
     id?: string;
     title: string;
     category?: string;
+    tags?: string[] | string | null;
     frontImageUrl: string;
     backImageUrl?: string | null;
     tradeQuantity?: number;
@@ -680,10 +722,22 @@ export async function bulkCreateNonBookstoreBookmarks(
     if (!item.title || !item.frontImageUrl) continue;
 
     const id = item.id || generateSlug(`other-${item.title}-${Date.now().toString().slice(-4)}-${i}`);
+    const tagsJson = normalizeTags(item.tags, item.category);
+    let primaryCategory = item.category?.trim();
+    if (!primaryCategory || primaryCategory === "General Ephemera") {
+      try {
+        const parsedTags = JSON.parse(tagsJson);
+        if (Array.isArray(parsedTags) && parsedTags.length > 0) {
+          primaryCategory = parsedTags[0];
+        }
+      } catch {}
+    }
+
     const entry: NewNonBookstoreBookmark = {
       id,
       title: item.title.trim(),
-      category: item.category?.trim() || "General Ephemera",
+      category: primaryCategory || "General Ephemera",
+      tags: tagsJson,
       frontImageUrl: item.frontImageUrl.trim(),
       backImageUrl: item.backImageUrl ? item.backImageUrl.trim() : null,
       tradeQuantity: typeof item.tradeQuantity === "number" ? Math.max(0, item.tradeQuantity) : 1,
@@ -717,7 +771,7 @@ export async function bulkCreateNonBookstoreBookmarks(
  */
 export async function updateNonBookstoreBookmark(
   id: string,
-  data: Partial<NewNonBookstoreBookmark>
+  data: Partial<Omit<NewNonBookstoreBookmark, "tags"> & { tags?: string[] | string | null }>
 ): Promise<boolean> {
   await ensureDb();
   const now = new Date().toISOString();
@@ -726,6 +780,11 @@ export async function updateNonBookstoreBookmark(
     ...data,
     updatedAt: now,
   };
+
+  if (data.tags !== undefined) {
+    updateData.tags = normalizeTags(data.tags, data.category);
+  }
+
   delete updateData.id;
   delete updateData.createdAt;
 
@@ -743,6 +802,55 @@ export async function updateNonBookstoreBookmark(
 export async function deleteNonBookstoreBookmark(id: string): Promise<boolean> {
   await ensureDb();
   await db.delete(nonBookstoreBookmarks).where(eq(nonBookstoreBookmarks.id, id));
+  return true;
+}
+
+/**
+ * Creates a new custom tag for non-bookstore bookmarks.
+ */
+export async function createNonBookstoreTag(name: string, color?: string): Promise<string> {
+  await ensureDb();
+  const trimmedName = name.trim();
+  if (!trimmedName) throw new Error("Tag name is required");
+
+  const existing = await db.query.nonBookstoreTags.findFirst({
+    where: eq(nonBookstoreTags.name, trimmedName),
+  });
+
+  if (existing) {
+    if (color && color !== existing.color) {
+      await db
+        .update(nonBookstoreTags)
+        .set({ color })
+        .where(eq(nonBookstoreTags.name, trimmedName));
+    }
+    return existing.id;
+  }
+
+  const now = new Date().toISOString();
+  const id = `tag-${generateSlug(trimmedName)}`;
+
+  const entry: NewNonBookstoreTag = {
+    id,
+    name: trimmedName,
+    color: color || null,
+    createdAt: now,
+  };
+
+  await db.insert(nonBookstoreTags).values(entry);
+
+  return id;
+}
+
+/**
+ * Deletes a custom tag for non-bookstore bookmarks.
+ */
+export async function deleteNonBookstoreTag(name: string): Promise<boolean> {
+  await ensureDb();
+  const trimmed = name.trim();
+  if (!trimmed) return false;
+
+  await db.delete(nonBookstoreTags).where(eq(nonBookstoreTags.name, trimmed));
   return true;
 }
 

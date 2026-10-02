@@ -199,6 +199,7 @@ export async function initDb() {
       id TEXT PRIMARY KEY,
       title TEXT NOT NULL,
       category TEXT NOT NULL DEFAULT 'General Ephemera',
+      tags TEXT,
       front_image_url TEXT NOT NULL,
       back_image_url TEXT,
       trade_quantity INTEGER NOT NULL DEFAULT 1,
@@ -209,6 +210,19 @@ export async function initDb() {
       display_order INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
+    );
+  `);
+
+  try {
+    await client.execute(`ALTER TABLE non_bookstore_bookmarks ADD COLUMN tags TEXT;`);
+  } catch (_) {}
+
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS non_bookstore_tags (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL UNIQUE,
+      color TEXT,
+      created_at TEXT NOT NULL
     );
   `);
 }

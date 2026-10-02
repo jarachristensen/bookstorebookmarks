@@ -7,28 +7,31 @@ import {
   deleteNonBookstoreBookmark,
   createTradeProposal,
   updateTradeProposalStatus,
+  createNonBookstoreTag,
+  deleteNonBookstoreTag,
 } from "@/lib/db/mutations";
 import {
   getAllNonBookstoreBookmarks,
   getTradeNonBookstoreBookmarks,
   getNonBookstoreBookmarkById,
   getNonBookstoreCategories,
+  getAllNonBookstoreTags,
   getTradeProposalById,
 } from "@/lib/db/queries";
 
-describe("Other Bookmarks (Non-Bookstore Ephemera) & Inventory Management", () => {
+describe("Other Bookmarks (Non-Bookstore Ephemera) & Multi-Tag Studio", () => {
   beforeAll(async () => {
     await seedDatabase();
   });
 
-  it("should create and retrieve a single non-bookstore bookmark", async () => {
+  it("should create and retrieve a single non-bookstore bookmark with multiple tags", async () => {
     const timestamp = Date.now();
     const id = `other-test-library-${timestamp}`;
 
     const createdId = await createNonBookstoreBookmark({
       id,
       title: "Seattle Public Library Vintage Card",
-      category: "Libraries",
+      tags: ["Libraries", "Pacific Northwest", "Vintage 1980s"],
       frontImageUrl: "/images/other/spl-front.jpg",
       backImageUrl: "/images/other/spl-back.jpg",
       tradeQuantity: 3,
@@ -44,32 +47,56 @@ describe("Other Bookmarks (Non-Bookstore Ephemera) & Inventory Management", () =
     const retrieved = await getNonBookstoreBookmarkById(id);
     expect(retrieved).toBeDefined();
     expect(retrieved?.title).toBe("Seattle Public Library Vintage Card");
-    expect(retrieved?.category).toBe("Libraries");
     expect(retrieved?.tradeQuantity).toBe(3);
     expect(retrieved?.backImageUrl).toBe("/images/other/spl-back.jpg");
+
+    // Verify tags JSON array
+    const parsedTags = JSON.parse(retrieved!.tags!);
+    expect(parsedTags).toEqual(["Libraries", "Pacific Northwest", "Vintage 1980s"]);
+    expect(retrieved?.category).toBe("Libraries"); // Primary category fallback
   });
 
-  it("should bulk create non-bookstore bookmarks and retrieve distinct categories", async () => {
+  it("should create, aggregate, and delete custom tags", async () => {
+    const timestamp = Date.now();
+    const customTagName = `Author Signings ${timestamp}`;
+
+    // Create custom tag
+    const tagId = await createNonBookstoreTag(customTagName);
+    expect(tagId).toBeDefined();
+
+    // Verify tag is returned in getAllNonBookstoreTags
+    let allTags = await getAllNonBookstoreTags();
+    expect(allTags).toContain(customTagName);
+
+    // Delete custom tag
+    const deleted = await deleteNonBookstoreTag(customTagName);
+    expect(deleted).toBe(true);
+
+    allTags = await getAllNonBookstoreTags();
+    expect(allTags).not.toContain(customTagName);
+  });
+
+  it("should bulk create non-bookstore bookmarks with tags and retrieve distinct categories", async () => {
     const timestamp = Date.now();
     const items = [
       {
         id: `other-bulk-1-${timestamp}`,
         title: "Penguin Classics Orange Spine",
-        category: "Publishers",
+        tags: ["Publishers", "Penguin Books", "Paperback Ephemera"],
         frontImageUrl: "/images/other/penguin-front.jpg",
         tradeQuantity: 2,
       },
       {
         id: `other-bulk-2-${timestamp}`,
         title: "Metropolitan Museum of Art 1988",
-        category: "Museums & Galleries",
+        tags: ["Museums & Galleries", "New York Art"],
         frontImageUrl: "/images/other/met-front.jpg",
         tradeQuantity: 1,
       },
       {
         id: `other-bulk-3-${timestamp}`,
         title: "Vintage Coffee Ad Bookmark",
-        category: "Advertising",
+        tags: ["Advertising", "Food & Drink"],
         frontImageUrl: "/images/other/coffee-front.jpg",
         tradeQuantity: 0, // Not available for trade
       },
@@ -90,26 +117,29 @@ describe("Other Bookmarks (Non-Bookstore Ephemera) & Inventory Management", () =
     // Quantity 0 should not be in tradeOnly
     expect(tradeOnly.some((b) => b.id === `other-bulk-3-${timestamp}`)).toBe(false);
 
-    // Test categories
-    const categories = await getNonBookstoreCategories();
-    expect(categories).toContain("Publishers");
-    expect(categories).toContain("Museums & Galleries");
+    // Test tags aggregation
+    const tags = await getAllNonBookstoreTags();
+    expect(tags).toContain("Publishers");
+    expect(tags).toContain("Penguin Books");
+    expect(tags).toContain("Museums & Galleries");
+    expect(tags).toContain("Advertising");
   });
 
-  it("should update a non-bookstore bookmark", async () => {
+  it("should update a non-bookstore bookmark tags and quantity", async () => {
     const timestamp = Date.now();
     const id = `other-update-test-${timestamp}`;
 
     await createNonBookstoreBookmark({
       id,
       title: "Original Title",
-      category: "Publishers",
+      tags: ["Publishers"],
       frontImageUrl: "/images/other/test.jpg",
       tradeQuantity: 1,
     });
 
     const success = await updateNonBookstoreBookmark(id, {
       title: "Updated Title After Verification",
+      tags: ["Publishers", "Rare Edition", "Collector's Item"],
       tradeQuantity: 5,
     });
     expect(success).toBe(true);
@@ -117,6 +147,8 @@ describe("Other Bookmarks (Non-Bookstore Ephemera) & Inventory Management", () =
     const updated = await getNonBookstoreBookmarkById(id);
     expect(updated?.title).toBe("Updated Title After Verification");
     expect(updated?.tradeQuantity).toBe(5);
+    const parsedTags = JSON.parse(updated!.tags!);
+    expect(parsedTags).toContain("Rare Edition");
   });
 
   it("should delete a non-bookstore bookmark", async () => {
@@ -144,7 +176,7 @@ describe("Other Bookmarks (Non-Bookstore Ephemera) & Inventory Management", () =
     await createNonBookstoreBookmark({
       id,
       title: "Rare New Yorker Literary Bookmark",
-      category: "Literary Magazines",
+      tags: ["Literary Magazines", "New York City"],
       frontImageUrl: "/images/other/new-yorker.jpg",
       tradeQuantity: 2,
     });
@@ -164,7 +196,6 @@ describe("Other Bookmarks (Non-Bookstore Ephemera) & Inventory Management", () =
     expect(snapshot.length).toBe(1);
     expect(snapshot[0].id).toBe(id);
     expect(snapshot[0].title).toBe("Rare New Yorker Literary Bookmark");
-    expect(snapshot[0].bookstoreName).toBe("Literary Magazines");
 
     // Accept the trade proposal
     await updateTradeProposalStatus(proposalId, "accepted");

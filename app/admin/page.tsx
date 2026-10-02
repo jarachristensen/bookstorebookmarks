@@ -6,6 +6,7 @@ import {
   getAllBookstores,
   getAllTradeProposals,
   getAllNonBookstoreBookmarks,
+  getAllNonBookstoreTags,
 } from "@/lib/db/queries";
 import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
@@ -34,11 +35,12 @@ export default async function AdminDashboardPage() {
     redirect("/admin/login");
   }
 
-  const [bookmarks, bookstores, tradeProposals, otherBookmarks] = await Promise.all([
+  const [bookmarks, bookstores, tradeProposals, otherBookmarks, otherBookmarkTags] = await Promise.all([
     getBookmarksWithBookstores(),
     getAllBookstores(),
     getAllTradeProposals(),
     getAllNonBookstoreBookmarks(),
+    getAllNonBookstoreTags(),
   ]);
 
   const totalBookstores = bookstores.length;
@@ -199,6 +201,7 @@ export default async function AdminDashboardPage() {
           initialBookstores={bookstores}
           initialTradeProposals={tradeProposals}
           initialOtherBookmarks={otherBookmarks}
+          initialOtherBookmarkTags={otherBookmarkTags}
         />
       </main>
     </div>

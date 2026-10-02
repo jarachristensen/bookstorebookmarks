@@ -5,11 +5,13 @@ import {
   archivalMedia,
   tradeProposals,
   nonBookstoreBookmarks,
+  nonBookstoreTags,
   Bookmark,
   Bookstore,
   ArchivalMedia,
   TradeProposal,
   NonBookstoreBookmark,
+  NonBookstoreTag,
 } from "@/db/schema";
 import { eq, asc, desc, gt } from "drizzle-orm";
 import { autoSyncStorefronts } from "@/lib/utils/storefront-sync";
@@ -349,11 +351,51 @@ export async function getNonBookstoreBookmarkById(id: string): Promise<NonBookst
 }
 
 /**
+ * Fetch all available tags for non-bookstore bookmarks (aggregating both custom tags table and all tags attached to items).
+ */
+export async function getAllNonBookstoreTags(): Promise<string[]> {
+  await ensureDb();
+  const tagSet = new Set<string>();
+
+  // 1. Fetch tags from dedicated nonBookstoreTags table
+  try {
+    const customTags = await db.select().from(nonBookstoreTags);
+    customTags.forEach((t) => tagSet.add(t.name));
+  } catch {}
+
+  // 2. Fetch tags from bookmarks
+  const items = await db.select({
+    tags: nonBookstoreBookmarks.tags,
+    category: nonBookstoreBookmarks.category,
+  }).from(nonBookstoreBookmarks);
+
+  for (const item of items) {
+    if (item.tags) {
+      try {
+        const parsed: string[] = JSON.parse(item.tags);
+        if (Array.isArray(parsed)) {
+          parsed.forEach((t) => {
+            if (t && typeof t === "string") tagSet.add(t.trim());
+          });
+        }
+      } catch {}
+    }
+    if (item.category && item.category !== "General Ephemera") {
+      tagSet.add(item.category.trim());
+    }
+  }
+
+  // Always have default base tags if empty
+  if (tagSet.size === 0) {
+    ["Libraries", "Publishers", "Authors", "Art & Illustration", "Vintage Advertising"].forEach((t) => tagSet.add(t));
+  }
+
+  return Array.from(tagSet).sort((a, b) => a.localeCompare(b));
+}
+
+/**
  * Fetch distinct categories from non-bookstore bookmarks.
  */
 export async function getNonBookstoreCategories(): Promise<string[]> {
-  await ensureDb();
-  const allItems = await db.select({ category: nonBookstoreBookmarks.category }).from(nonBookstoreBookmarks);
-  const categories = Array.from(new Set(allItems.map((i) => i.category))).filter(Boolean).sort();
-  return categories;
+  return getAllNonBookstoreTags();
 }

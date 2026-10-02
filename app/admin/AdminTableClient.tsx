@@ -33,15 +33,19 @@ import {
   Upload,
   FileSpreadsheet,
   Layers,
+  Sliders,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
+import { OtherBookmarksBulkUploaderModal } from "@/components/admin/OtherBookmarksBulkUploaderModal";
+import { TagManagerModal } from "@/components/admin/TagManagerModal";
 
 export interface AdminTableClientProps {
   initialBookmarks: BookmarkWithDetails[];
   initialBookstores: BookstoreWithDetails[];
   initialTradeProposals?: TradeProposal[];
   initialOtherBookmarks?: NonBookstoreBookmark[];
+  initialOtherBookmarkTags?: string[];
 }
 
 export function AdminTableClient({
@@ -49,6 +53,7 @@ export function AdminTableClient({
   initialBookstores,
   initialTradeProposals = [],
   initialOtherBookmarks = [],
+  initialOtherBookmarkTags = [],
 }: AdminTableClientProps) {
   const [activeTab, setActiveTab] = useState<
     "bookmarks" | "bookstores" | "other" | "trades"
@@ -57,6 +62,11 @@ export function AdminTableClient({
   const [bookstores, setBookstores] = useState(initialBookstores);
   const [otherBookmarks, setOtherBookmarks] = useState<NonBookstoreBookmark[]>(
     initialOtherBookmarks
+  );
+  const [otherBookmarkTags, setOtherBookmarkTags] = useState<string[]>(
+    initialOtherBookmarkTags && initialOtherBookmarkTags.length > 0
+      ? initialOtherBookmarkTags
+      : ["Libraries", "Publishers", "Authors", "Art & Illustration", "Vintage Advertising"]
   );
   const [tradeProposals, setTradeProposals] = useState<TradeProposal[]>(
     initialTradeProposals
@@ -77,9 +87,12 @@ export function AdminTableClient({
   const [bulkErrorMsg, setBulkErrorMsg] = useState("");
 
   // Other Bookmarks Modal States
+  const [isBulkImageUploaderOpen, setIsBulkImageUploaderOpen] = useState(false);
+  const [isTagManagerOpen, setIsTagManagerOpen] = useState(false);
   const [isAddingOther, setIsAddingOther] = useState(false);
   const [newOtherTitle, setNewOtherTitle] = useState("");
-  const [newOtherCategory, setNewOtherCategory] = useState("Library");
+  const [newOtherCategory, setNewOtherCategory] = useState("Libraries");
+  const [newOtherTags, setNewOtherTags] = useState<string[]>(["Libraries"]);
   const [newOtherFrontImage, setNewOtherFrontImage] = useState("");
   const [newOtherBackImage, setNewOtherBackImage] = useState("");
   const [newOtherQuantity, setNewOtherQuantity] = useState(1);
@@ -352,12 +365,16 @@ export function AdminTableClient({
 
     setIsSubmittingOther(true);
     try {
+      const selectedTags = newOtherTags.length > 0 ? newOtherTags : ["General Ephemera"];
+      const primaryCategory = selectedTags[0] || "General Ephemera";
+
       const res = await fetch("/api/other-bookmarks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: newOtherTitle.trim(),
-          category: newOtherCategory.trim() || "General Ephemera",
+          category: primaryCategory,
+          tags: selectedTags,
           frontImageUrl: newOtherFrontImage.trim(),
           backImageUrl: newOtherBackImage.trim() || null,
           tradeQuantity: Number(newOtherQuantity) || 1,
@@ -370,7 +387,8 @@ export function AdminTableClient({
       const newItem: NonBookstoreBookmark = {
         id: data.id,
         title: newOtherTitle.trim(),
-        category: newOtherCategory.trim() || "General Ephemera",
+        category: primaryCategory,
+        tags: JSON.stringify(selectedTags),
         frontImageUrl: newOtherFrontImage.trim(),
         backImageUrl: newOtherBackImage.trim() || null,
         tradeQuantity: Number(newOtherQuantity) || 1,
@@ -389,6 +407,7 @@ export function AdminTableClient({
       setNewOtherFrontImage("");
       setNewOtherBackImage("");
       setNewOtherQuantity(1);
+      setNewOtherTags(["Libraries"]);
       router.refresh();
     } catch (err: any) {
       alert(err.message || "Error creating bookmark");
@@ -686,7 +705,18 @@ export function AdminTableClient({
         {/* Right side controls */}
         <div className="flex items-center gap-2.5 w-full sm:w-auto">
           {activeTab === "other" && (
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsTagManagerOpen(true)}
+                className="text-xs font-serif flex items-center gap-1.5 bg-white border-stone-300 text-stone-700 hover:bg-stone-50 shadow-2xs cursor-pointer"
+              >
+                <Tag className="w-3.5 h-3.5 text-purple-600" />
+                <span>Manage Tags ({otherBookmarkTags.length})</span>
+              </Button>
+
               <Button
                 type="button"
                 variant="outline"
@@ -695,7 +725,17 @@ export function AdminTableClient({
                 className="text-xs font-serif flex items-center gap-1.5 bg-white border-purple-200 text-purple-700 hover:bg-purple-50 shadow-2xs cursor-pointer"
               >
                 <FileSpreadsheet className="w-3.5 h-3.5" />
-                <span>Bulk Spreadsheet Import</span>
+                <span>Spreadsheet Paste</span>
+              </Button>
+
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => setIsBulkImageUploaderOpen(true)}
+                className="text-xs font-serif flex items-center gap-1.5 bg-[#2563EB] hover:bg-blue-700 text-white shadow-xs cursor-pointer"
+              >
+                <Upload className="w-3.5 h-3.5" />
+                <span>Bulk Image Uploader</span>
               </Button>
 
               <Button
@@ -1052,7 +1092,7 @@ export function AdminTableClient({
                 <tr>
                   <th className="py-3 px-4">Preview</th>
                   <th className="py-3 px-4 min-w-[240px]">Bookmark Title</th>
-                  <th className="py-3 px-4">Category</th>
+                  <th className="py-3 px-4">Tags</th>
                   <th className="py-3 px-4">Available Trade Copies</th>
                   <th className="py-3 px-4">Back Preview</th>
                   <th className="py-3 px-4 text-right">Actions</th>
@@ -1070,38 +1110,55 @@ export function AdminTableClient({
                         No Other Bookmarks Added Yet
                       </p>
                       <p className="text-xs text-stone-500 max-w-sm mx-auto">
-                        Use the "Bulk Spreadsheet Import" button above to paste your spreadsheet rows or click "+ Add Single" to add one manually.
+                        Use the "Bulk Image Uploader" or "Spreadsheet Paste" buttons above to add bookmarks to your bazaar.
                       </p>
                     </td>
                   </tr>
                 ) : (
-                  filteredOtherBookmarks.map((obm) => (
-                    <tr key={obm.id} className="hover:bg-[#FAF8F5]/60 transition-colors">
-                      <td className="py-3 px-4">
-                        <div className="relative w-9 h-20 rounded bg-[#FAF8F5] overflow-hidden border border-[#E8E2D5] shadow-2xs">
-                          <Image
-                            src={obm.frontImageUrl}
-                            alt={obm.title}
-                            fill
-                            unoptimized
-                            className="object-cover object-top"
-                          />
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 font-medium text-stone-900">
-                        <div className="font-serif font-bold text-sm">
-                          {obm.title}
-                        </div>
-                        <span className="font-mono text-[10px] text-stone-400">
-                          ID: {obm.id}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-serif font-semibold bg-purple-100 text-purple-800 border border-purple-200">
-                          <Tag className="w-3 h-3 text-purple-600" />
-                          <span>{obm.category || "General Ephemera"}</span>
-                        </span>
-                      </td>
+                  filteredOtherBookmarks.map((obm) => {
+                    let itemTags: string[] = [];
+                    if (obm.tags) {
+                      try {
+                        const parsed = JSON.parse(obm.tags);
+                        if (Array.isArray(parsed) && parsed.length > 0) itemTags = parsed;
+                      } catch {}
+                    }
+                    if (itemTags.length === 0) itemTags = [obm.category || "General Ephemera"];
+
+                    return (
+                      <tr key={obm.id} className="hover:bg-[#FAF8F5]/60 transition-colors">
+                        <td className="py-3 px-4">
+                          <div className="relative w-9 h-20 rounded bg-[#FAF8F5] overflow-hidden border border-[#E8E2D5] shadow-2xs">
+                            <Image
+                              src={obm.frontImageUrl}
+                              alt={obm.title}
+                              fill
+                              unoptimized
+                              className="object-cover object-top"
+                            />
+                          </div>
+                        </td>
+                        <td className="py-3 px-4 font-medium text-stone-900">
+                          <div className="font-serif font-bold text-sm">
+                            {obm.title}
+                          </div>
+                          <span className="font-mono text-[10px] text-stone-400">
+                            ID: {obm.id}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="flex flex-wrap items-center gap-1 max-w-[240px]">
+                            {itemTags.map((t) => (
+                              <span
+                                key={t}
+                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-serif font-bold bg-purple-100 text-purple-800 border border-purple-200"
+                              >
+                                <Tag className="w-2.5 h-2.5 text-purple-600" />
+                                <span>{t}</span>
+                              </span>
+                            ))}
+                          </div>
+                        </td>
                       <td className="py-3 px-4">
                         <div className="inline-flex items-center gap-1.5 border border-[#E8E2D5] rounded-lg p-1 bg-white">
                           <button
@@ -1161,7 +1218,8 @@ export function AdminTableClient({
                         </button>
                       </td>
                     </tr>
-                  ))
+                    );
+                  })
                 )}
               </tbody>
             </table>
@@ -1549,33 +1607,46 @@ export function AdminTableClient({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-serif font-bold text-stone-700 mb-1">
-                    Category *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Library, Publisher, Art"
-                    value={newOtherCategory}
-                    onChange={(e) => setNewOtherCategory(e.target.value)}
-                    className="w-full px-3 py-1.5 text-xs border border-[#E8E2D5] rounded-lg focus:outline-none focus:ring-1 focus:ring-purple-500 font-serif"
-                  />
+              <div>
+                <label className="block text-xs font-serif font-bold text-stone-700 mb-1.5">
+                  Select Tags (Multi-select)
+                </label>
+                <div className="flex flex-wrap items-center gap-1.5 mb-2">
+                  {otherBookmarkTags.map((tag) => {
+                    const isSelected = newOtherTags.includes(tag);
+                    return (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() =>
+                          setNewOtherTags((prev) =>
+                            prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+                          )
+                        }
+                        className={`px-2.5 py-1 rounded-lg text-xs font-serif transition-colors cursor-pointer ${
+                          isSelected
+                            ? "bg-[#2563EB] text-white font-bold shadow-xs"
+                            : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+                        }`}
+                      >
+                        {tag} {isSelected && "✓"}
+                      </button>
+                    );
+                  })}
                 </div>
+              </div>
 
-                <div>
-                  <label className="block text-xs font-serif font-bold text-stone-700 mb-1">
-                    Available Copies
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={newOtherQuantity}
-                    onChange={(e) => setNewOtherQuantity(parseInt(e.target.value) || 0)}
-                    className="w-full px-3 py-1.5 text-xs border border-[#E8E2D5] rounded-lg focus:outline-none focus:ring-1 focus:ring-purple-500 font-mono"
-                  />
-                </div>
+              <div>
+                <label className="block text-xs font-serif font-bold text-stone-700 mb-1">
+                  Available Copies
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={newOtherQuantity}
+                  onChange={(e) => setNewOtherQuantity(parseInt(e.target.value) || 0)}
+                  className="w-full px-3 py-1.5 text-xs border border-[#E8E2D5] rounded-lg focus:outline-none focus:ring-1 focus:ring-purple-500 font-mono"
+                />
               </div>
 
               <div>
@@ -1729,6 +1800,35 @@ export function AdminTableClient({
           </div>
         </div>
       )}
+
+      {/* MODAL: BULK IMAGE UPLOADER & TAG STUDIO */}
+      <OtherBookmarksBulkUploaderModal
+        isOpen={isBulkImageUploaderOpen}
+        onClose={() => setIsBulkImageUploaderOpen(false)}
+        availableTags={otherBookmarkTags}
+        onTagsUpdated={(newTags) => setOtherBookmarkTags(newTags)}
+        onSuccess={async () => {
+          const res = await fetch("/api/other-bookmarks");
+          if (res.ok) {
+            const data = await res.json();
+            setOtherBookmarks(data);
+          }
+          const tagsRes = await fetch("/api/other-bookmarks/tags");
+          if (tagsRes.ok) {
+            const tagsData = await tagsRes.json();
+            if (tagsData.tags) setOtherBookmarkTags(tagsData.tags);
+          }
+          router.refresh();
+        }}
+      />
+
+      {/* MODAL: MANAGE TAGS */}
+      <TagManagerModal
+        isOpen={isTagManagerOpen}
+        onClose={() => setIsTagManagerOpen(false)}
+        tags={otherBookmarkTags}
+        onTagsUpdated={(newTags) => setOtherBookmarkTags(newTags)}
+      />
     </div>
   );
 }

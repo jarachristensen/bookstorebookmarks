@@ -134,7 +134,8 @@ export const tradeProposals = sqliteTable("trade_proposals", {
 export const nonBookstoreBookmarks = sqliteTable("non_bookstore_bookmarks", {
   id: text("id").primaryKey(), // slug or nanoid
   title: text("title").notNull(),
-  category: text("category").notNull().default("General Ephemera"), // e.g. "Library", "Publisher", "Art & Illustration", "Vintage Advertising", etc.
+  category: text("category").notNull().default("General Ephemera"), // Legacy single category
+  tags: text("tags"), // JSON array of tag strings e.g. '["Libraries", "Vintage"]'
   frontImageUrl: text("front_image_url").notNull(),
   backImageUrl: text("back_image_url"),
   tradeQuantity: integer("trade_quantity").notNull().default(1),
@@ -147,6 +148,13 @@ export const nonBookstoreBookmarks = sqliteTable("non_bookstore_bookmarks", {
   updatedAt: text("updated_at").notNull(),
 });
 
+export const nonBookstoreTags = sqliteTable("non_bookstore_tags", {
+  id: text("id").primaryKey(), // slug or nanoid
+  name: text("name").notNull().unique(),
+  color: text("color"),
+  createdAt: text("created_at").notNull(),
+});
+
 export type Bookstore = typeof bookstores.$inferSelect;
 export type NewBookstore = typeof bookstores.$inferInsert;
 
@@ -156,6 +164,9 @@ export type NewBookmark = typeof bookmarks.$inferInsert;
 export type NonBookstoreBookmark = typeof nonBookstoreBookmarks.$inferSelect;
 export type NewNonBookstoreBookmark = typeof nonBookstoreBookmarks.$inferInsert;
 
+export type NonBookstoreTag = typeof nonBookstoreTags.$inferSelect;
+export type NewNonBookstoreTag = typeof nonBookstoreTags.$inferInsert;
+
 export type ArchivalMedia = typeof archivalMedia.$inferSelect;
 export type NewArchivalMedia = typeof archivalMedia.$inferInsert;
 
@@ -164,4 +175,5 @@ export type NewPageContent = typeof pageContent.$inferInsert;
 
 export type TradeProposal = typeof tradeProposals.$inferSelect;
 export type NewTradeProposal = typeof tradeProposals.$inferInsert;
+
 

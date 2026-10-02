@@ -84,11 +84,24 @@ export function OtherBookmarksHubClient({
   const [proposalSuccess, setProposalSuccess] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
-  // Categories extraction
-  const categories = useMemo(() => {
+  // Helper to extract tags safely
+  const getBookmarkTags = (bm: NonBookstoreBookmark): string[] => {
+    if (bm.tags) {
+      try {
+        const parsed = JSON.parse(bm.tags);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.filter((t) => typeof t === "string" && t.trim().length > 0);
+        }
+      } catch {}
+    }
+    return [bm.category || "General Ephemera"];
+  };
+
+  // Tags extraction across all bookmarks
+  const allTags = useMemo(() => {
     const set = new Set<string>();
     bookmarks.forEach((b) => {
-      if (b.category) set.add(b.category);
+      getBookmarkTags(b).forEach((t) => set.add(t));
     });
     return Array.from(set).sort();
   }, [bookmarks]);
@@ -96,14 +109,15 @@ export function OtherBookmarksHubClient({
   // Filtered bookmarks
   const filteredBookmarks = useMemo(() => {
     return bookmarks.filter((bm) => {
+      const tags = getBookmarkTags(bm);
       const matchesCategory =
         selectedCategory === "all" ||
-        (bm.category && bm.category.toLowerCase() === selectedCategory.toLowerCase());
+        tags.some((t) => t.toLowerCase() === selectedCategory.toLowerCase());
 
       const matchesSearch =
         !searchQuery.trim() ||
         bm.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (bm.category && bm.category.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        tags.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase())) ||
         (bm.notes && bm.notes.toLowerCase().includes(searchQuery.toLowerCase()));
 
       return matchesCategory && matchesSearch;
@@ -212,7 +226,7 @@ export function OtherBookmarksHubClient({
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-8">
         {/* Filter & Search Bar */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-2xl border border-[#E8E2D5] bg-white shadow-2xs">
-          {/* Category Filter Pills */}
+          {/* Tag Filter Pills */}
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setSelectedCategory("all")}
@@ -222,22 +236,24 @@ export function OtherBookmarksHubClient({
                   : "bg-stone-100 text-stone-600 hover:bg-stone-200"
               }`}
             >
-              All Categories ({bookmarks.length})
+              All Tags ({bookmarks.length})
             </button>
-            {categories.map((cat) => {
-              const count = bookmarks.filter((b) => b.category === cat).length;
+            {allTags.map((tag) => {
+              const count = bookmarks.filter((b) =>
+                getBookmarkTags(b).some((t) => t.toLowerCase() === tag.toLowerCase())
+              ).length;
               return (
                 <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
+                  key={tag}
+                  onClick={() => setSelectedCategory(tag)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-serif transition-all cursor-pointer flex items-center gap-1 ${
-                    selectedCategory === cat
+                    selectedCategory === tag
                       ? "bg-[#2563EB] text-white font-bold shadow-xs"
                       : "bg-stone-100 text-stone-600 hover:bg-stone-200"
                   }`}
                 >
                   <Tag className="w-3 h-3" />
-                  <span>{cat}</span>
+                  <span>{tag}</span>
                   <span className="opacity-75">({count})</span>
                 </button>
               );
@@ -249,7 +265,7 @@ export function OtherBookmarksHubClient({
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
             <input
               type="text"
-              placeholder="Search bookmarks or notes..."
+              placeholder="Search bookmarks or tags..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-3 py-1.5 text-xs bg-stone-50 border border-[#E8E2D5] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#2563EB] focus:bg-white text-stone-800 placeholder-stone-400"
@@ -263,7 +279,7 @@ export function OtherBookmarksHubClient({
             <Layers className="w-10 h-10 text-stone-300 mx-auto" />
             <h3 className="font-serif text-lg font-bold text-stone-700">No bookmarks found</h3>
             <p className="font-serif text-xs text-stone-500 max-w-md mx-auto">
-              No bookmarks matched your category or search query. Try choosing another category or clearing your search.
+              No bookmarks matched your tag or search query. Try choosing another tag or clearing your search.
             </p>
             <Button
               variant="outline"
@@ -283,6 +299,7 @@ export function OtherBookmarksHubClient({
               const isFlipped = Boolean(flippedCards[bm.id]);
               const currentImageUrl = isFlipped && bm.backImageUrl ? bm.backImageUrl : bm.frontImageUrl;
               const hasBack = Boolean(bm.backImageUrl);
+              const tagsList = getBookmarkTags(bm);
 
               return (
                 <div
@@ -295,12 +312,24 @@ export function OtherBookmarksHubClient({
                 >
                   {/* Top Badge Strip */}
                   <div className="p-2.5 bg-[#FAF8F5]/80 border-b border-[#E8E2D5] flex items-center justify-between gap-1 text-[10px] font-serif">
-                    <span className="inline-flex items-center gap-1 font-semibold text-stone-700 bg-white px-2 py-0.5 rounded border border-[#E8E2D5] truncate max-w-[110px]">
-                      <Tag className="w-2.5 h-2.5 text-[#2563EB]" />
-                      <span className="truncate">{bm.category || "Ephemera"}</span>
-                    </span>
+                    <div className="flex flex-wrap items-center gap-1 overflow-hidden">
+                      {tagsList.slice(0, 2).map((tag) => (
+                        <span
+                          key={tag}
+                          className="inline-flex items-center gap-1 font-semibold text-stone-700 bg-white px-2 py-0.5 rounded border border-[#E8E2D5] truncate max-w-[110px]"
+                        >
+                          <Tag className="w-2.5 h-2.5 text-[#2563EB]" />
+                          <span className="truncate">{tag}</span>
+                        </span>
+                      ))}
+                      {tagsList.length > 2 && (
+                        <span className="text-stone-400 text-[9px] font-mono">
+                          +{tagsList.length - 2}
+                        </span>
+                      )}
+                    </div>
 
-                    <span className="text-stone-500 font-medium whitespace-nowrap">
+                    <span className="text-stone-500 font-medium whitespace-nowrap shrink-0">
                       {bm.tradeQuantity} avail
                     </span>
                   </div>
@@ -669,10 +698,18 @@ export function OtherBookmarksHubClient({
                 <X className="w-5 h-5" />
               </button>
 
-              <div className="text-center space-y-1">
-                <span className="text-xs font-serif text-[#2563EB] font-bold">
-                  {inspectingBookmark.category}
-                </span>
+              <div className="text-center space-y-2">
+                <div className="flex flex-wrap items-center justify-center gap-1.5">
+                  {getBookmarkTags(inspectingBookmark).map((t) => (
+                    <span
+                      key={t}
+                      className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-serif font-bold bg-[#2563EB]/10 text-[#2563EB] border border-[#2563EB]/20"
+                    >
+                      <Tag className="w-3 h-3" />
+                      <span>{t}</span>
+                    </span>
+                  ))}
+                </div>
                 <h3 className="font-serif font-black text-xl text-stone-900">
                   {inspectingBookmark.title}
                 </h3>
