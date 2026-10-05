@@ -17,7 +17,6 @@ import {
   Send,
   X,
   Layers,
-  HelpCircle,
   Eye,
   Mail,
   CheckCircle2,
@@ -32,29 +31,6 @@ export interface OtherBookmarksHubClientProps {
   initialBookmarks: NonBookstoreBookmark[];
   initialContent?: Record<string, string>;
 }
-
-export interface FAQItem {
-  question: string;
-  answer: string;
-}
-
-const DEFAULT_FAQS: FAQItem[] = [
-  {
-    question: "What kind of non-bookstore bookmarks are in this exchange?",
-    answer:
-      "This unlisted exchange contains special paper ephemera bookmarks from libraries, publishers, authors, art galleries, museums, and vintage advertising campaigns that we have duplicate copies of.",
-  },
-  {
-    question: "What condition are these bookmarks in?",
-    answer:
-      "All specimens are in collectible, authentic condition (Very Good to Mint) and stored in protective archival sleeves.",
-  },
-  {
-    question: "How do we complete the swap?",
-    answer:
-      "Select the bookmarks you'd like, describe what ephemera you have to trade, and submit your proposal. The curator will review it and reply directly by email to confirm the swap!",
-  },
-];
 
 export function OtherBookmarksHubClient({
   initialBookmarks,
@@ -428,38 +404,6 @@ export function OtherBookmarksHubClient({
             })}
           </div>
         )}
-
-        {/* FAQ Section */}
-        <section className="mt-16 pt-10 border-t border-[#E8E2D5] space-y-6">
-          <div className="text-center space-y-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#E8E2D5] bg-white text-xs font-serif text-stone-600">
-              <HelpCircle className="w-3.5 h-3.5 text-[#F43F7A]" />
-              <span>Collector FAQ</span>
-            </div>
-            <h3 className="text-2xl font-serif font-bold text-stone-900">
-              Frequently Asked Questions
-            </h3>
-          </div>
-
-          <div className="max-w-3xl mx-auto grid gap-4">
-            {DEFAULT_FAQS.map((faq, idx) => (
-              <div
-                key={idx}
-                className="bg-white border border-[#E8E2D5] rounded-2xl p-5 shadow-2xs space-y-2"
-              >
-                <h4 className="font-serif font-bold text-sm text-stone-900 flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-full bg-stone-100 text-stone-600 text-xs flex items-center justify-center font-mono">
-                    {idx + 1}
-                  </span>
-                  {faq.question}
-                </h4>
-                <p className="font-serif text-xs sm:text-sm text-stone-600 pl-7 leading-relaxed">
-                  {faq.answer}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
       </main>
 
       {/* Floating Selection Drawer / Swap Strip */}
