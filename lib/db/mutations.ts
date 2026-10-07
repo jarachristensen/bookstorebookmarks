@@ -187,6 +187,56 @@ export async function bulkUpdateBookmarks(updates: BookmarkBulkUpdateItem[]): Pr
   return updatedCount;
 }
 
+export interface NonBookstoreBookmarkBulkUpdateItem {
+  id: string;
+  title?: string;
+  category?: string;
+  tags?: string[] | string | null;
+  tradeQuantity?: number;
+}
+
+/**
+ * Bulk update non-bookstore bookmark names, tags, and trade quantities.
+ */
+export async function bulkUpdateNonBookstoreBookmarks(
+  updates: NonBookstoreBookmarkBulkUpdateItem[]
+): Promise<number> {
+  await ensureDb();
+  const now = new Date().toISOString();
+  let updatedCount = 0;
+
+  for (const item of updates) {
+    if (!item.id) continue;
+    const updateData: Record<string, any> = { updatedAt: now };
+
+    if (typeof item.title === "string" && item.title.trim()) {
+      updateData.title = item.title.trim();
+    }
+    if (typeof item.tradeQuantity === "number") {
+      updateData.tradeQuantity = Math.max(0, item.tradeQuantity);
+    }
+    if (item.tags !== undefined) {
+      updateData.tags = normalizeTags(item.tags, item.category);
+      if (item.category) {
+        updateData.category = item.category;
+      }
+    } else if (item.category) {
+      updateData.category = item.category;
+    }
+
+    if (Object.keys(updateData).length > 1) {
+      await db
+        .update(nonBookstoreBookmarks)
+        .set(updateData)
+        .where(eq(nonBookstoreBookmarks.id, item.id));
+      updatedCount++;
+    }
+  }
+
+  return updatedCount;
+}
+
+
 /**
  * Upsert bookstore, bookmark, and associated media in a single transaction/operation.
  */

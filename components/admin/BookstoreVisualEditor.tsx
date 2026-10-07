@@ -41,9 +41,12 @@ import {
   PlusCircle,
   Building2,
   Network,
+  Search,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { marked } from "marked";
+import { FindImagesModal, SelectedImagePayload } from "./FindImagesModal";
+
 
 export interface BookstoreVisualEditorProps {
   initialData: BookstoreWithDetails;
@@ -185,6 +188,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
   const [photoIsCarousel, setPhotoIsCarousel] = useState<boolean>(true);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [activeMediaTab, setActiveMediaTab] = useState<"clippings" | "photos">("clippings");
+  const [isFindImagesOpen, setIsFindImagesOpen] = useState(false);
 
   // Timeline Events State
   const [timelineEvents, setTimelineEvents] = useState<CustomTimelineEvent[]>(() => {
@@ -424,6 +428,28 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
       setIsUploadingPhoto(false);
     }
   };
+
+  const handleAddImagesFromSearch = (selected: SelectedImagePayload[]) => {
+    const newMediaItems: ArchivalMedia[] = selected.map((item, idx) => ({
+      id: `media-search-${Date.now()}-${idx}`,
+      bookstoreId: initialData.id,
+      mediaType: "photo",
+      imageUrl: item.url,
+      caption: item.title,
+      sourcePublication: item.source || null,
+      publicationDate: item.year || String(yearOpened || ""),
+      transcriptionText: item.description || null,
+      isStorefront: item.mediaTag === "storefront" || item.mediaTag === "interior",
+      mediaTag: item.mediaTag,
+      displayOrder: mediaList.length + idx,
+      createdAt: new Date().toISOString(),
+    }));
+
+    setMediaList((prev) => [...newMediaItems, ...prev]);
+    setActivePhotoIdx(0);
+    setActiveMediaTab("photos");
+  };
+
 
   // Bulk Media Drag and Drop
   const handleBulkMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1158,16 +1184,29 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
               <span className="text-xs font-serif text-stone-500">Add a storefront or interior photo to showcase on the dossier.</span>
             )}
 
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setIsPhotoModalOpen(true)}
-              className="gap-1.5 shrink-0 border-[#F43F7A]/30 text-[#F43F7A] hover:bg-[#F43F7A]/10"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Add Storefront / Inside Photo</span>
-            </Button>
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsFindImagesOpen(true)}
+                className="gap-1.5 shrink-0 border-[#2563EB]/40 text-[#2563EB] hover:bg-[#2563EB]/10 cursor-pointer shadow-2xs"
+              >
+                <Search className="w-3.5 h-3.5" />
+                <span>Find Images</span>
+              </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsPhotoModalOpen(true)}
+                className="gap-1.5 shrink-0 border-[#F43F7A]/30 text-[#F43F7A] hover:bg-[#F43F7A]/10 cursor-pointer shadow-2xs"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Add Storefront / Inside Photo</span>
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -2035,6 +2074,17 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
           </div>
         </div>
       )}
+
+
+      {/* Find Images Web Search Modal */}
+      <FindImagesModal
+        isOpen={isFindImagesOpen}
+        onClose={() => setIsFindImagesOpen(false)}
+        initialQuery={`${name} ${streetAddress ? streetAddress + " " : ""}${city} bookstore`.trim()}
+        bookstoreName={name}
+        onAddImages={handleAddImagesFromSearch}
+      />
     </div>
   );
 }
+

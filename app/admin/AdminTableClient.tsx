@@ -39,6 +39,8 @@ import { Button } from "@/components/ui/Button";
 import { OtherBookmarksBulkUploaderModal } from "@/components/admin/OtherBookmarksBulkUploaderModal";
 import { TagManagerModal } from "@/components/admin/TagManagerModal";
 import { EditOtherBookmarkModal } from "@/components/admin/EditOtherBookmarkModal";
+import { ImageDropzone } from "@/components/admin/ImageDropzone";
+
 
 export interface AdminTableClientProps {
   initialBookmarks: BookmarkWithDetails[];
@@ -85,6 +87,16 @@ export function AdminTableClient({
   const [isSavingBulk, setIsSavingBulk] = useState(false);
   const [bulkSuccessMsg, setBulkSuccessMsg] = useState("");
   const [bulkErrorMsg, setBulkErrorMsg] = useState("");
+
+  // Bulk Edit States for Other Bookmarks
+  const [isOtherBulkEditing, setIsOtherBulkEditing] = useState(false);
+  const [otherBulkEdits, setOtherBulkEdits] = useState<
+    Record<string, { title: string; category: string; tags: string[]; tradeQuantity: number }>
+  >({});
+  const [isSavingOtherBulk, setIsSavingOtherBulk] = useState(false);
+  const [otherBulkSuccessMsg, setOtherBulkSuccessMsg] = useState("");
+  const [otherBulkErrorMsg, setOtherBulkErrorMsg] = useState("");
+
 
   // Other Bookmarks Modal States
   const [isBulkImageUploaderOpen, setIsBulkImageUploaderOpen] = useState(false);
@@ -350,7 +362,183 @@ export function AdminTableClient({
     }
   };
 
+  // Other Bookmarks Bulk Editing Actions
+  const handleStartOtherBulkEdit = () => {
+    const initial: Record<
+      string,
+      { title: string; category: string; tags: string[]; tradeQuantity: number }
+    > = {};
+    otherBookmarks.forEach((obm) => {
+      let parsedTags: string[] = [];
+      if (obm.tags) {
+        try {
+          const p = JSON.parse(obm.tags);
+          if (Array.isArray(p) && p.length > 0) parsedTags = p;
+        } catch {}
+      }
+      if (parsedTags.length === 0) parsedTags = [obm.category || "General Ephemera"];
+      initial[obm.id] = {
+        title: obm.title,
+        category: obm.category || parsedTags[0] || "General Ephemera",
+        tags: parsedTags,
+        tradeQuantity: obm.tradeQuantity ?? 1,
+      };
+    });
+    setOtherBulkEdits(initial);
+    setIsOtherBulkEditing(true);
+    setOtherBulkErrorMsg("");
+    setOtherBulkSuccessMsg("");
+  };
+
+  const handleCancelOtherBulkEdit = () => {
+    setIsOtherBulkEditing(false);
+    setOtherBulkEdits({});
+    setOtherBulkErrorMsg("");
+  };
+
+  const handleOtherBulkTitleChange = (id: string, newTitle: string) => {
+    setOtherBulkEdits((prev) => ({
+      ...prev,
+      [id]: {
+        ...(prev[id] || {
+          title: "",
+          category: "General Ephemera",
+          tags: ["General Ephemera"],
+          tradeQuantity: 1,
+        }),
+        title: newTitle,
+      },
+    }));
+  };
+
+  const handleOtherBulkQuantityChange = (id: string, newQty: number) => {
+    setOtherBulkEdits((prev) => ({
+      ...prev,
+      [id]: {
+        ...(prev[id] || {
+          title: "",
+          category: "General Ephemera",
+          tags: ["General Ephemera"],
+          tradeQuantity: 1,
+        }),
+        tradeQuantity: Math.max(0, newQty),
+      },
+    }));
+  };
+
+  const handleOtherBulkTagToggle = (id: string, tag: string) => {
+    setOtherBulkEdits((prev) => {
+      const current = prev[id] || {
+        title: "",
+        category: "General Ephemera",
+        tags: ["General Ephemera"],
+        tradeQuantity: 1,
+      };
+      const existingTags = current.tags || [];
+      const updatedTags = existingTags.includes(tag)
+        ? existingTags.filter((t) => t !== tag)
+        : [...existingTags, tag];
+      const finalTags = updatedTags.length > 0 ? updatedTags : [tag];
+      return {
+        ...prev,
+        [id]: {
+          ...current,
+          tags: finalTags,
+          category: finalTags[0] || "General Ephemera",
+        },
+      };
+    });
+  };
+
+  const modifiedOtherItems = Object.entries(otherBulkEdits).filter(([id, values]) => {
+    const original = otherBookmarks.find((b) => b.id === id);
+    if (!original) return false;
+    let originalTags: string[] = [];
+    if (original.tags) {
+      try {
+        const p = JSON.parse(original.tags);
+        if (Array.isArray(p)) originalTags = p;
+      } catch {}
+    }
+    if (originalTags.length === 0) originalTags = [original.category || "General Ephemera"];
+    const tagsChanged =
+      JSON.stringify([...values.tags].sort()) !== JSON.stringify([...originalTags].sort());
+    return (
+      values.title !== original.title ||
+      values.tradeQuantity !== (original.tradeQuantity ?? 1) ||
+      tagsChanged
+    );
+  });
+  const modifiedOtherCount = modifiedOtherItems.length;
+
+  const handleSaveOtherBulkEdits = async () => {
+    if (modifiedOtherCount === 0) {
+      setIsOtherBulkEditing(false);
+      return;
+    }
+
+    setIsSavingOtherBulk(true);
+    setOtherBulkErrorMsg("");
+    setOtherBulkSuccessMsg("");
+
+    try {
+      const updates = modifiedOtherItems.map(([id, values]) => ({
+        id,
+        title: values.title,
+        tags: values.tags,
+        category: values.category,
+        tradeQuantity: values.tradeQuantity,
+      }));
+
+      const res = await fetch("/api/other-bookmarks/bulk", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ updates }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to update other bookmarks in bulk");
+      }
+
+      setOtherBookmarks((prev) =>
+        prev.map((b) => {
+          if (otherBulkEdits[b.id]) {
+            const ed = otherBulkEdits[b.id];
+            return {
+              ...b,
+              title: ed.title,
+              category: ed.category,
+              tags: JSON.stringify(ed.tags),
+              tradeQuantity: ed.tradeQuantity,
+            };
+          }
+          return b;
+        })
+      );
+
+      setIsOtherBulkEditing(false);
+      setOtherBulkEdits({});
+      setOtherBulkSuccessMsg(
+        `Successfully updated ${updates.length} bookmark${
+          updates.length === 1 ? "" : "s"
+        }.`
+      );
+      router.refresh();
+
+      setTimeout(() => {
+        setOtherBulkSuccessMsg("");
+      }, 5000);
+    } catch (err: any) {
+      console.error("Bulk save error:", err);
+      setOtherBulkErrorMsg(err.message || "Failed to save bulk changes.");
+    } finally {
+      setIsSavingOtherBulk(false);
+    }
+  };
+
   // Other Bookmarks Actions
+
   const handleCreateOtherBookmark = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newOtherTitle.trim() || !newOtherFrontImage.trim()) {
@@ -611,15 +799,48 @@ export function AdminTableClient({
                 <span>Manage Tags ({otherBookmarkTags.length})</span>
               </Button>
 
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => setIsBulkImageUploaderOpen(true)}
-                className="text-xs font-serif flex items-center gap-1.5 bg-[#2563EB] hover:bg-blue-700 text-white shadow-xs cursor-pointer"
-              >
-                <Upload className="w-3.5 h-3.5" />
-                <span>Bulk Image Uploader</span>
-              </Button>
+              {!isOtherBulkEditing ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleStartOtherBulkEdit}
+                  className="text-xs font-serif flex items-center gap-1.5 bg-white border-[#E8E2D5] text-stone-800 hover:text-purple-600 shrink-0 cursor-pointer shadow-2xs"
+                >
+                  <Edit className="w-3.5 h-3.5 text-purple-600" />
+                  <span>Bulk Edit</span>
+                </Button>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCancelOtherBulkEdit}
+                    className="text-xs font-serif flex items-center gap-1.5 bg-white border-stone-300 text-stone-700 hover:bg-stone-100 cursor-pointer shadow-2xs"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                    <span>Cancel</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleSaveOtherBulkEdits}
+                    disabled={isSavingOtherBulk}
+                    className="text-xs font-serif flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700 text-white shadow-xs cursor-pointer"
+                  >
+                    {isSavingOtherBulk ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Save className="w-3.5 h-3.5" />
+                    )}
+                    <span>
+                      Save {modifiedOtherCount > 0 ? `(${modifiedOtherCount})` : "Edits"}
+                    </span>
+                  </Button>
+                </div>
+              )}
+
 
               <Button
                 type="button"
@@ -949,6 +1170,20 @@ export function AdminTableClient({
       {/* 2. OTHER BOOKMARKS TAB */}
       {activeTab === "other" && (
         <div className="p-4 space-y-4">
+          {/* Success / Error Banners for Other Bookmarks Bulk Edit */}
+          {otherBulkSuccessMsg && (
+            <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs font-serif text-emerald-900 flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>{otherBulkSuccessMsg}</span>
+            </div>
+          )}
+          {otherBulkErrorMsg && (
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs font-serif text-rose-900 flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+              <span>{otherBulkErrorMsg}</span>
+            </div>
+          )}
+
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-purple-50/60 border border-purple-200 rounded-xl text-xs font-serif text-purple-950">
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-purple-600 shrink-0" />
@@ -998,7 +1233,7 @@ export function AdminTableClient({
                         No Other Bookmarks Added Yet
                       </p>
                       <p className="text-xs text-stone-500 max-w-sm mx-auto">
-                        Use the "Bulk Image Uploader" or "Spreadsheet Paste" buttons above to add bookmarks to your bazaar.
+                        Use the "+ Add Single" button above to add bookmarks to your bazaar.
                       </p>
                     </td>
                   </tr>
@@ -1013,8 +1248,20 @@ export function AdminTableClient({
                     }
                     if (itemTags.length === 0) itemTags = [obm.category || "General Ephemera"];
 
+                    const isModified =
+                      otherBulkEdits[obm.id] &&
+                      (otherBulkEdits[obm.id].title !== obm.title ||
+                        otherBulkEdits[obm.id].tradeQuantity !== (obm.tradeQuantity ?? 1) ||
+                        JSON.stringify([...otherBulkEdits[obm.id].tags].sort()) !==
+                          JSON.stringify([...itemTags].sort()));
+
                     return (
-                      <tr key={obm.id} className="hover:bg-[#FAF8F5]/60 transition-colors">
+                      <tr
+                        key={obm.id}
+                        className={`transition-colors ${
+                          isModified ? "bg-purple-50/50" : "hover:bg-[#FAF8F5]/60"
+                        }`}
+                      >
                         <td className="py-3 px-4">
                           <div className="relative w-9 h-20 rounded bg-[#FAF8F5] overflow-hidden border border-[#E8E2D5] shadow-2xs">
                             <Image
@@ -1027,96 +1274,170 @@ export function AdminTableClient({
                           </div>
                         </td>
                         <td className="py-3 px-4 font-medium text-stone-900">
-                          <div className="font-serif font-bold text-sm">
-                            {obm.title}
-                          </div>
-                          <span className="font-mono text-[10px] text-stone-400">
-                            ID: {obm.id}
-                          </span>
+                          {isOtherBulkEditing ? (
+                            <div className="space-y-1">
+                              <input
+                                type="text"
+                                value={otherBulkEdits[obm.id]?.title ?? obm.title}
+                                onChange={(e) =>
+                                  handleOtherBulkTitleChange(obm.id, e.target.value)
+                                }
+                                className="w-full px-2.5 py-1.5 text-xs font-serif font-bold text-stone-900 bg-white border border-purple-400 focus:border-purple-600 focus:ring-1 focus:ring-purple-600 rounded-md outline-none shadow-2xs"
+                                placeholder="Bookmark title..."
+                              />
+                              <span className="font-mono text-[10px] text-stone-400 block">
+                                ID: {obm.id}
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="space-y-0.5">
+                              <div className="font-serif font-bold text-sm">
+                                {obm.title}
+                              </div>
+                              <span className="font-mono text-[10px] text-stone-400 block">
+                                ID: {obm.id}
+                              </span>
+                            </div>
+                          )}
                         </td>
                         <td className="py-3 px-4">
-                          <div className="flex flex-wrap items-center gap-1 max-w-[240px]">
-                            {itemTags.map((t) => (
-                              <span
-                                key={t}
-                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-serif font-bold bg-purple-100 text-purple-800 border border-purple-200"
-                              >
-                                <Tag className="w-2.5 h-2.5 text-purple-600" />
-                                <span>{t}</span>
-                              </span>
-                            ))}
-                          </div>
+                          {isOtherBulkEditing ? (
+                            <div className="space-y-1 max-w-[280px]">
+                              <div className="flex flex-wrap items-center gap-1">
+                                {otherBookmarkTags.map((tag) => {
+                                  const currentTags =
+                                    otherBulkEdits[obm.id]?.tags ?? itemTags;
+                                  const isSelected = currentTags.includes(tag);
+                                  return (
+                                    <button
+                                      key={tag}
+                                      type="button"
+                                      onClick={() =>
+                                        handleOtherBulkTagToggle(obm.id, tag)
+                                      }
+                                      className={`px-1.5 py-0.5 rounded text-[10px] font-serif transition-colors cursor-pointer ${
+                                        isSelected
+                                          ? "bg-purple-600 text-white font-bold"
+                                          : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+                                      }`}
+                                    >
+                                      {tag} {isSelected && "✓"}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex flex-wrap items-center gap-1 max-w-[240px]">
+                              {itemTags.map((t) => (
+                                <span
+                                  key={t}
+                                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-serif font-bold bg-purple-100 text-purple-800 border border-purple-200"
+                                >
+                                  <Tag className="w-2.5 h-2.5 text-purple-600" />
+                                  <span>{t}</span>
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </td>
-                      <td className="py-3 px-4">
-                        <div className="inline-flex items-center gap-1.5 border border-[#E8E2D5] rounded-lg p-1 bg-white">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleUpdateOtherQuantity(
-                                obm.id,
-                                (obm.tradeQuantity || 1) - 1
-                              )
-                            }
-                            className="w-6 h-6 rounded bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold flex items-center justify-center cursor-pointer text-xs"
-                          >
-                            -
-                          </button>
-                          <span className="font-mono font-bold text-xs px-2 min-w-[24px] text-center">
-                            {obm.tradeQuantity}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleUpdateOtherQuantity(
-                                obm.id,
-                                (obm.tradeQuantity || 0) + 1
-                              )
-                            }
-                            className="w-6 h-6 rounded bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold flex items-center justify-center cursor-pointer text-xs"
-                          >
-                            +
-                          </button>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 font-serif text-stone-600">
-                        {obm.backImageUrl ? (
-                          <div className="relative w-8 h-16 rounded bg-stone-100 overflow-hidden border border-stone-200">
-                            <Image
-                              src={obm.backImageUrl}
-                              alt="Back Preview"
-                              fill
-                              unoptimized
-                              className="object-cover object-top"
-                            />
-                          </div>
-                        ) : (
-                          <span className="text-stone-400 italic">No back</span>
-                        )}
-                      </td>
-                      <td className="py-3 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <button
-                            type="button"
-                            onClick={() => setEditingOtherBookmark(obm)}
-                            className="p-1.5 rounded-md text-stone-500 hover:text-purple-600 hover:bg-purple-50 transition-colors cursor-pointer"
-                            title="Edit Bookmark Details"
-                          >
-                            <Edit className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleDeleteOtherBookmark(obm.id, obm.title)
-                            }
-                            disabled={deletingId === obm.id}
-                            className="p-1.5 rounded-md text-stone-400 hover:text-rose-600 hover:bg-rose-50 disabled:opacity-50 cursor-pointer"
-                            title="Delete Bookmark"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
+                        <td className="py-3 px-4">
+                          {isOtherBulkEditing ? (
+                            <div className="w-24">
+                              <input
+                                type="number"
+                                min="0"
+                                value={
+                                  otherBulkEdits[obm.id]?.tradeQuantity ??
+                                  obm.tradeQuantity ??
+                                  1
+                                }
+                                onChange={(e) =>
+                                  handleOtherBulkQuantityChange(
+                                    obm.id,
+                                    parseInt(e.target.value) || 0
+                                  )
+                                }
+                                className="w-full px-2 py-1 text-xs font-mono font-bold text-stone-900 bg-white border border-purple-400 focus:border-purple-600 focus:ring-1 focus:ring-purple-600 rounded-md outline-none shadow-2xs"
+                              />
+                            </div>
+                          ) : (
+                            <div className="inline-flex items-center gap-1.5 border border-[#E8E2D5] rounded-lg p-1 bg-white">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleUpdateOtherQuantity(
+                                    obm.id,
+                                    (obm.tradeQuantity || 1) - 1
+                                  )
+                                }
+                                className="w-6 h-6 rounded bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold flex items-center justify-center cursor-pointer text-xs"
+                              >
+                                -
+                              </button>
+                              <span className="font-mono font-bold text-xs px-2 min-w-[24px] text-center">
+                                {obm.tradeQuantity}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleUpdateOtherQuantity(
+                                    obm.id,
+                                    (obm.tradeQuantity || 0) + 1
+                                  )
+                                }
+                                className="w-6 h-6 rounded bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold flex items-center justify-center cursor-pointer text-xs"
+                              >
+                                +
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 font-serif text-stone-600">
+                          {obm.backImageUrl ? (
+                            <div className="relative w-8 h-16 rounded bg-stone-100 overflow-hidden border border-stone-200">
+                              <Image
+                                src={obm.backImageUrl}
+                                alt="Back Preview"
+                                fill
+                                unoptimized
+                                className="object-cover object-top"
+                              />
+                            </div>
+                          ) : (
+                            <span className="text-stone-400 italic">No back</span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          {isOtherBulkEditing ? (
+                            <span className="text-[10px] font-mono text-purple-600 font-bold uppercase">
+                              Editing
+                            </span>
+                          ) : (
+                            <div className="flex items-center justify-end gap-1">
+                              <button
+                                type="button"
+                                onClick={() => setEditingOtherBookmark(obm)}
+                                className="p-1.5 rounded-md text-stone-500 hover:text-purple-600 hover:bg-purple-50 transition-colors cursor-pointer"
+                                title="Edit Bookmark Details"
+                              >
+                                <Edit className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleDeleteOtherBookmark(obm.id, obm.title)
+                                }
+                                disabled={deletingId === obm.id}
+                                className="p-1.5 rounded-md text-stone-400 hover:text-rose-600 hover:bg-rose-50 disabled:opacity-50 cursor-pointer"
+                                title="Delete Bookmark"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
                     );
                   })
                 )}
@@ -1477,7 +1798,7 @@ export function AdminTableClient({
       {/* MODAL: ADD SINGLE OTHER BOOKMARK */}
       {isAddingOther && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="relative w-full max-w-md bg-white border border-[#E8E2D5] rounded-2xl shadow-2xl p-6 space-y-4">
+          <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white border border-[#E8E2D5] rounded-2xl shadow-2xl p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-[#E8E2D5] pb-3">
               <h3 className="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-purple-600" />
@@ -1491,7 +1812,7 @@ export function AdminTableClient({
               </button>
             </div>
 
-            <form onSubmit={handleCreateOtherBookmark} className="space-y-3">
+            <form onSubmit={handleCreateOtherBookmark} className="space-y-4">
               <div>
                 <label className="block text-xs font-serif font-bold text-stone-700 mb-1">
                   Bookmark Title *
@@ -1548,32 +1869,22 @@ export function AdminTableClient({
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-serif font-bold text-stone-700 mb-1">
-                  Front Image URL *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="https://... or /seed-images/..."
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                <ImageDropzone
+                  label="Front Bookmark Scan *"
                   value={newOtherFrontImage}
-                  onChange={(e) => setNewOtherFrontImage(e.target.value)}
-                  className="w-full px-3 py-1.5 text-xs border border-[#E8E2D5] rounded-lg focus:outline-none focus:ring-1 focus:ring-purple-500 font-mono"
+                  onChange={(url) => setNewOtherFrontImage(url)}
+                  aspectRatio="bookmark"
+                  required
+                />
+                <ImageDropzone
+                  label="Back / Verso Scan (Optional)"
+                  value={newOtherBackImage}
+                  onChange={(url) => setNewOtherBackImage(url)}
+                  aspectRatio="bookmark"
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-serif font-bold text-stone-700 mb-1">
-                  Back Image URL (optional)
-                </label>
-                <input
-                  type="text"
-                  placeholder="https://... or /seed-images/..."
-                  value={newOtherBackImage}
-                  onChange={(e) => setNewOtherBackImage(e.target.value)}
-                  className="w-full px-3 py-1.5 text-xs border border-[#E8E2D5] rounded-lg focus:outline-none focus:ring-1 focus:ring-purple-500 font-mono"
-                />
-              </div>
 
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#E8E2D5]">
                 <Button
