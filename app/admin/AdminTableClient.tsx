@@ -83,6 +83,7 @@ export function AdminTableClient({
   const [tradeSuccessMsg, setTradeSuccessMsg] = useState("");
   const [tradeErrorMsg, setTradeErrorMsg] = useState("");
   const [selectedTradeZoomImage, setSelectedTradeZoomImage] = useState<string | null>(null);
+  const [selectedTradeCollector, setSelectedTradeCollector] = useState<string>("");
 
 
   // Bulk Edit States for Bookstore Bookmarks
@@ -1801,30 +1802,42 @@ export function AdminTableClient({
                             if (offeredPhotos.length === 0) return null;
 
                             return (
-                              <div className="p-2.5 bg-white rounded-lg border border-[#E8E2D5] space-y-2">
+                              <div className="p-3 bg-white rounded-xl border border-[#E8E2D5] space-y-2.5 shadow-2xs">
                                 <div className="flex items-center justify-between">
-                                  <span className="text-[10px] font-mono text-stone-600 uppercase tracking-wider font-bold flex items-center gap-1.5">
+                                  <span className="text-[11px] font-mono text-stone-700 uppercase tracking-wider font-bold flex items-center gap-1.5">
                                     <Camera className="w-3.5 h-3.5 text-[#2563EB]" />
                                     <span>Photos Attached by Collector ({offeredPhotos.length})</span>
                                   </span>
-                                  <span className="text-[9px] font-mono text-stone-400">Click to zoom</span>
+                                  <span className="text-[10px] font-mono text-[#2563EB] font-bold">
+                                    Click any photo to zoom &amp; inspect
+                                  </span>
                                 </div>
-                                <div className="flex flex-wrap items-center gap-2">
+                                <div className="flex flex-wrap items-center gap-3 pt-1">
                                   {offeredPhotos.map((imgUrl, pIdx) => (
                                     <div
                                       key={`${imgUrl}-${pIdx}`}
-                                      onClick={() => setSelectedTradeZoomImage(imgUrl)}
-                                      className="group relative w-16 h-22 rounded-lg overflow-hidden border border-[#E8E2D5] bg-stone-100 shadow-2xs hover:border-[#2563EB] hover:scale-105 transition-all cursor-pointer"
+                                      onClick={() => {
+                                        setSelectedTradeZoomImage(imgUrl);
+                                        setSelectedTradeCollector(proposal.collectorName);
+                                      }}
+                                      style={{ width: "88px", height: "120px" }}
+                                      className="group relative w-[88px] h-[120px] rounded-xl overflow-hidden border-2 border-[#E8E2D5] bg-stone-100 shadow-xs hover:border-[#2563EB] hover:shadow-md hover:scale-105 transition-all cursor-pointer shrink-0"
+                                      title="Click to zoom specimen photo"
                                     >
-                                      <Image
+                                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                                      <img
                                         src={imgUrl}
-                                        alt={`Offered photo ${pIdx + 1}`}
-                                        fill
-                                        unoptimized
-                                        className="object-cover object-center"
+                                        alt={`Offered photo ${pIdx + 1} by ${proposal.collectorName}`}
+                                        className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-200"
+                                        loading="lazy"
                                       />
-                                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 flex items-center justify-center transition-colors">
-                                        <ZoomIn className="w-4 h-4 text-white opacity-0 group-hover:opacity-100 drop-shadow-md transition-opacity" />
+                                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 flex items-center justify-center transition-colors">
+                                        <div className="p-1 rounded-full bg-white/90 text-stone-900 opacity-0 group-hover:opacity-100 shadow-md transition-opacity">
+                                          <ZoomIn className="w-4 h-4 text-[#2563EB]" />
+                                        </div>
+                                      </div>
+                                      <div className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded text-[8px] font-mono font-bold bg-black/75 text-white backdrop-blur-2xs">
+                                        #{pIdx + 1}
                                       </div>
                                     </div>
                                   ))}
@@ -2009,8 +2022,18 @@ export function AdminTableClient({
       {/* Lightbox for Zooming Collector Uploaded Trade Photos */}
       <BookmarkZoomLightbox
         isOpen={!!selectedTradeZoomImage}
-        onClose={() => setSelectedTradeZoomImage(null)}
+        onClose={() => {
+          setSelectedTradeZoomImage(null);
+          setSelectedTradeCollector("");
+        }}
         imageUrl={selectedTradeZoomImage || ""}
+        alt="Collector offered trade specimen"
+        title="Collector Offered Specimen"
+        subtitle={
+          selectedTradeCollector
+            ? `Submitted by ${selectedTradeCollector}`
+            : undefined
+        }
       />
     </div>
   );
