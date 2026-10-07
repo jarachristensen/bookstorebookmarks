@@ -31,7 +31,6 @@ import {
   AlertCircle,
   Tag,
   Upload,
-  FileSpreadsheet,
   Layers,
   Sliders,
 } from "lucide-react";
@@ -100,13 +99,6 @@ export function AdminTableClient({
   const [newOtherBackImage, setNewOtherBackImage] = useState("");
   const [newOtherQuantity, setNewOtherQuantity] = useState(1);
   const [isSubmittingOther, setIsSubmittingOther] = useState(false);
-
-  // Spreadsheet Importer Modal State
-  const [isSpreadsheetModal, setIsSpreadsheetModal] = useState(false);
-  const [spreadsheetText, setSpreadsheetText] = useState("");
-  const [isImportingSpreadsheet, setIsImportingSpreadsheet] = useState(false);
-  const [importResultMsg, setImportResultMsg] = useState("");
-  const [importErrorMsg, setImportErrorMsg] = useState("");
 
   const router = useRouter();
 
@@ -457,107 +449,6 @@ export function AdminTableClient({
     }
   };
 
-  // Bulk Spreadsheet Importer
-  const handleImportSpreadsheet = async () => {
-    if (!spreadsheetText.trim()) {
-      setImportErrorMsg("Please paste spreadsheet rows or CSV data.");
-      return;
-    }
-
-    setIsImportingSpreadsheet(true);
-    setImportErrorMsg("");
-    setImportResultMsg("");
-
-    try {
-      const rawLines = spreadsheetText.split(/\r?\n/).filter((l) => l.trim().length > 0);
-      if (rawLines.length === 0) throw new Error("No data found.");
-
-      // Parse lines (support tab-separated, comma-separated, or pipe-separated)
-      const parsedRows: Array<{
-        title: string;
-        frontImageUrl: string;
-        backImageUrl?: string | null;
-        category?: string;
-        tradeQuantity?: number;
-      }> = [];
-
-      for (let i = 0; i < rawLines.length; i++) {
-        const line = rawLines[i].trim();
-        // Skip header if it contains words like 'title' or 'front'
-        if (
-          i === 0 &&
-          (line.toLowerCase().includes("title") ||
-            line.toLowerCase().includes("preview") ||
-            line.toLowerCase().includes("category"))
-        ) {
-          continue;
-        }
-
-        let parts = line.split("\t");
-        if (parts.length < 2) {
-          parts = line.split(",");
-        }
-        if (parts.length < 2) {
-          parts = line.split("|");
-        }
-
-        const title = parts[0]?.replace(/^["']|["']$/g, "").trim();
-        const front = parts[1]?.replace(/^["']|["']$/g, "").trim();
-        const back = parts[2]?.replace(/^["']|["']$/g, "").trim() || null;
-        const cat = parts[3]?.replace(/^["']|["']$/g, "").trim() || "General Ephemera";
-        const qtyStr = parts[4]?.replace(/^["']|["']$/g, "").trim();
-        const qty = qtyStr ? parseInt(qtyStr, 10) || 1 : 1;
-
-        if (title && front) {
-          parsedRows.push({
-            title,
-            frontImageUrl: front,
-            backImageUrl: back && back !== "-" ? back : null,
-            category: cat,
-            tradeQuantity: qty,
-          });
-        }
-      }
-
-      if (parsedRows.length === 0) {
-        throw new Error(
-          "Could not parse valid bookmark rows. Ensure each line has at least Title and Front Image URL."
-        );
-      }
-
-      const res = await fetch("/api/other-bookmarks", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(parsedRows),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Import failed.");
-
-      setImportResultMsg(
-        `Successfully imported ${data.inserted || parsedRows.length} bookmarks into the Ephemera Bazaar!`
-      );
-      setSpreadsheetText("");
-
-      // Fetch fresh list
-      const freshRes = await fetch("/api/other-bookmarks");
-      if (freshRes.ok) {
-        const freshData = await freshRes.json();
-        setOtherBookmarks(freshData);
-      }
-
-      router.refresh();
-      setTimeout(() => {
-        setIsSpreadsheetModal(false);
-        setImportResultMsg("");
-      }, 2500);
-    } catch (err: any) {
-      setImportErrorMsg(err.message || "Failed to process spreadsheet.");
-    } finally {
-      setIsImportingSpreadsheet(false);
-    }
-  };
-
   const filteredBookmarks = bookmarks.filter((b) => {
     const q = search.toLowerCase();
     const currentTitle =
@@ -718,17 +609,6 @@ export function AdminTableClient({
               >
                 <Tag className="w-3.5 h-3.5 text-purple-600" />
                 <span>Manage Tags ({otherBookmarkTags.length})</span>
-              </Button>
-
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setIsSpreadsheetModal(true)}
-                className="text-xs font-serif flex items-center gap-1.5 bg-white border-purple-200 text-purple-700 hover:bg-purple-50 shadow-2xs cursor-pointer"
-              >
-                <FileSpreadsheet className="w-3.5 h-3.5" />
-                <span>Spreadsheet Paste</span>
               </Button>
 
               <Button
@@ -1709,108 +1589,6 @@ export function AdminTableClient({
                 </Button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL: BULK SPREADSHEET IMPORTER */}
-      {isSpreadsheetModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
-          <div className="relative w-full max-w-2xl bg-white border border-[#E8E2D5] rounded-2xl shadow-2xl p-6 space-y-4 my-8">
-            <div className="flex items-start justify-between border-b border-[#E8E2D5] pb-3">
-              <div>
-                <span className="text-[10px] font-mono text-purple-600 uppercase font-bold tracking-wider">
-                  Bulk Data Loader
-                </span>
-                <h3 className="font-serif font-bold text-lg text-stone-900 flex items-center gap-2">
-                  <FileSpreadsheet className="w-5 h-5 text-purple-600" />
-                  <span>Import Spreadsheet of Bookmarks</span>
-                </h3>
-              </div>
-              <button
-                onClick={() => setIsSpreadsheetModal(false)}
-                className="text-stone-400 hover:text-stone-700"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="space-y-2 text-xs font-serif text-stone-600 leading-relaxed bg-[#FAF8F5] p-3 rounded-xl border border-[#E8E2D5]">
-              <p className="font-bold text-stone-900">
-                How to format your spreadsheet:
-              </p>
-              <p>
-                Copy and paste your spreadsheet rows directly from Google Sheets, Excel, or CSV. Each line should contain:
-              </p>
-              <div className="font-mono text-[11px] bg-white p-2 rounded border border-stone-200 text-stone-800">
-                <strong>Title</strong> [tab or comma] <strong>Front Image URL</strong> [tab or comma] <strong>Back Image URL</strong> [tab or comma] <strong>Category</strong> [tab or comma] <strong>Quantity</strong>
-              </div>
-              <p className="text-[11px] text-stone-500 italic">
-                * Header rows (Title, Category, etc.) are automatically skipped if detected.
-              </p>
-            </div>
-
-            <div className="space-y-1">
-              <label className="block text-xs font-serif font-bold text-stone-700">
-                Paste Spreadsheet Rows or CSV:
-              </label>
-              <textarea
-                rows={8}
-                value={spreadsheetText}
-                onChange={(e) => setSpreadsheetText(e.target.value)}
-                placeholder={`1950s Public Library Card\thttps://example.com/front1.jpg\thttps://example.com/back1.jpg\tLibrary\t3\nPenguin Classics Publisher Promo\thttps://example.com/front2.jpg\t-\tPublisher\t2`}
-                className="w-full p-3 font-mono text-xs bg-stone-50 border border-[#E8E2D5] rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-purple-500"
-              />
-            </div>
-
-            {importErrorMsg && (
-              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-serif">
-                {importErrorMsg}
-              </div>
-            )}
-
-            {importResultMsg && (
-              <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-serif flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-emerald-600" />
-                <span>{importResultMsg}</span>
-              </div>
-            )}
-
-            <div className="flex items-center justify-between pt-2 border-t border-[#E8E2D5]">
-              <span className="text-[11px] font-mono text-stone-400">
-                {spreadsheetText.split(/\r?\n/).filter((l) => l.trim().length > 0).length} lines entered
-              </span>
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsSpreadsheetModal(false)}
-                  disabled={isImportingSpreadsheet}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  disabled={isImportingSpreadsheet || !spreadsheetText.trim()}
-                  onClick={handleImportSpreadsheet}
-                  className="bg-purple-600 hover:bg-purple-700 text-white font-bold"
-                >
-                  {isImportingSpreadsheet ? (
-                    <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
-                      <span>Importing...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="w-3.5 h-3.5 mr-1.5" />
-                      <span>Import All Bookmarks</span>
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
           </div>
         </div>
       )}

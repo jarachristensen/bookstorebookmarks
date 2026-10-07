@@ -301,7 +301,7 @@ export function BookstoreHorizontalTimeline({
           )}
 
           {/* Horizontal Timeline Rail with Alternating Stalks */}
-          <div className="flex-1 relative flex items-center min-h-[220px]">
+          <div className="flex-1 relative flex flex-col justify-center min-h-[240px]">
             {/* Center Axis Line */}
             <div className="absolute left-0 right-0 h-[3px] bg-stone-900 rounded-full top-1/2 -translate-y-1/2 z-0" />
 
@@ -317,175 +317,170 @@ export function BookstoreHorizontalTimeline({
                     key={ev.id}
                     className="flex-1 flex flex-col items-center relative text-center min-w-[110px] max-w-[150px]"
                   >
-                    {/* Top Content (Even Index) */}
-                    {isTop ? (
-                      <div className="mb-2 flex flex-col items-center justify-end h-[84px]">
-                        {isEditable ? (
-                          <div className="flex flex-col items-center gap-1">
-                            <p className="font-serif text-[11px] text-stone-900 font-bold leading-tight line-clamp-2">
-                              {ev.description || ev.label}
-                            </p>
-                            <div className="flex items-center gap-1">
-                              {onEditEvent && (
-                                <button
-                                  type="button"
-                                  onClick={() => onEditEvent(ev)}
-                                  className="p-1 rounded bg-stone-100 hover:bg-stone-200 text-stone-700 hover:text-[#F43F7A] transition-colors cursor-pointer"
-                                  title="Edit Event"
-                                >
-                                  <Pencil className="w-2.5 h-2.5" />
-                                </button>
-                              )}
-                              {onDeleteEvent && (
-                                <button
-                                  type="button"
-                                  onClick={() => onDeleteEvent(ev.id)}
-                                  className="p-1 rounded bg-stone-100 hover:bg-rose-100 text-stone-700 hover:text-[#F43F7A] transition-colors cursor-pointer"
-                                  title="Delete Event"
-                                >
-                                  <Trash2 className="w-2.5 h-2.5" />
-                                </button>
-                              )}
+                    {/* Top Content Area (Fixed Height 96px) */}
+                    <div className="h-[96px] w-full flex flex-col items-center justify-end">
+                      {isTop && (
+                        <div className="flex flex-col items-center w-full">
+                          <span className="font-serif font-bold text-xs text-stone-900 tracking-tight mb-0.5">
+                            {ev.year}
+                          </span>
+                          {isEditable ? (
+                            <div className="flex flex-col items-center gap-1">
+                              <p className="font-serif text-[11px] text-stone-900 font-bold leading-tight line-clamp-2">
+                                {ev.description || ev.label}
+                              </p>
+                              <div className="flex items-center gap-1">
+                                {onEditEvent && (
+                                  <button
+                                    type="button"
+                                    onClick={() => onEditEvent(ev)}
+                                    className="p-1 rounded bg-stone-100 hover:bg-stone-200 text-stone-700 hover:text-[#F43F7A] transition-colors cursor-pointer"
+                                    title="Edit Event"
+                                  >
+                                    <Pencil className="w-2.5 h-2.5" />
+                                  </button>
+                                )}
+                                {onDeleteEvent && (
+                                  <button
+                                    type="button"
+                                    onClick={() => onDeleteEvent(ev.id)}
+                                    className="p-1 rounded bg-stone-100 hover:bg-rose-100 text-stone-700 hover:text-[#F43F7A] transition-colors cursor-pointer"
+                                    title="Delete Event"
+                                  >
+                                    <Trash2 className="w-2.5 h-2.5" />
+                                  </button>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        ) : isClickable ? (
-                          <button
-                            type="button"
-                            onClick={() => onSelectMedia!(ev.media!)}
-                            title={`Click to view clipping/photo: ${ev.description || ev.label}`}
-                            className="group flex flex-col items-center cursor-pointer focus:outline-none"
-                          >
-                            <p className="font-serif text-[11px] text-stone-900 group-hover:text-[#F43F7A] font-bold leading-tight line-clamp-2 group-hover:underline transition-colors">
+                          ) : isClickable ? (
+                            <button
+                              type="button"
+                              onClick={() => onSelectMedia!(ev.media!)}
+                              title={`Click to view clipping/photo: ${ev.description || ev.label}`}
+                              className="group flex flex-col items-center cursor-pointer focus:outline-none"
+                            >
+                              <p className="font-serif text-[11px] text-stone-900 group-hover:text-[#F43F7A] font-bold leading-tight line-clamp-2 group-hover:underline transition-colors">
+                                {ev.description || ev.label}
+                              </p>
+                              <span className="inline-flex items-center gap-0.5 text-[9px] font-mono text-[#F43F7A] mt-0.5 opacity-80 group-hover:opacity-100 font-semibold">
+                                {ev.media?.mediaType === "newspaper" ? (
+                                  <>
+                                    <Newspaper className="w-2.5 h-2.5" />
+                                    <span>Clipping</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Camera className="w-2.5 h-2.5" />
+                                    <span>Photo</span>
+                                  </>
+                                )}
+                              </span>
+                            </button>
+                          ) : (
+                            <p className="font-serif text-[11px] text-stone-900 font-semibold leading-tight line-clamp-2">
                               {ev.description || ev.label}
                             </p>
-                            <span className="inline-flex items-center gap-0.5 text-[9px] font-mono text-[#F43F7A] mt-0.5 opacity-80 group-hover:opacity-100 font-semibold">
-                              {ev.media?.mediaType === "newspaper" ? (
-                                <>
-                                  <Newspaper className="w-2.5 h-2.5" />
-                                  <span>Clipping</span>
-                                </>
-                              ) : (
-                                <>
-                                  <Camera className="w-2.5 h-2.5" />
-                                  <span>Photo</span>
-                                </>
-                              )}
-                            </span>
-                          </button>
-                        ) : (
-                          <p className="font-serif text-[11px] text-stone-900 font-semibold leading-tight line-clamp-2">
-                            {ev.description || ev.label}
-                          </p>
-                        )}
-                        {/* Stalk down to axis */}
-                        <div className="w-[2px] h-3.5 bg-stone-900 mt-1" />
-                      </div>
-                    ) : (
-                      <div className="h-[84px]" />
-                    )}
+                          )}
+                          {/* Stalk down to axis */}
+                          <div className="w-[2px] h-3 bg-stone-900 mt-1" />
+                        </div>
+                      )}
+                    </div>
 
-                    {/* Milestone Node on Center Rail */}
-                    <div className="flex flex-col items-center justify-center my-[-4px]">
+                    {/* Milestone Node on Center Rail (Fixed Height 24px - Dot dead-centered on axis) */}
+                    <div className="h-6 flex items-center justify-center relative z-20">
                       {isEditable && onEditEvent ? (
                         <button
                           type="button"
                           onClick={() => onEditEvent(ev)}
                           title="Click to edit milestone"
-                          className="group focus:outline-none flex flex-col items-center cursor-pointer"
+                          className="group focus:outline-none flex items-center justify-center cursor-pointer"
                         >
                           <div className="w-4 h-4 rounded-full bg-stone-900 group-hover:bg-[#F43F7A] group-hover:scale-125 border-2 border-white shadow-xs transition-transform duration-150" />
-                          <span className="font-serif font-bold text-xs text-stone-900 group-hover:text-[#F43F7A] mt-1 tracking-tight underline transition-colors">
-                            {ev.year}
-                          </span>
                         </button>
                       ) : isClickable ? (
                         <button
                           type="button"
                           onClick={() => onSelectMedia!(ev.media!)}
-                          title="View attached archival clipping/photo"
-                          className="group focus:outline-none flex flex-col items-center cursor-pointer"
+                          title={`View attached archival clipping/photo (${ev.year})`}
+                          className="group focus:outline-none flex items-center justify-center cursor-pointer"
                         >
                           <div className="w-4 h-4 rounded-full bg-stone-900 group-hover:bg-[#F43F7A] group-hover:scale-125 border-2 border-white shadow-xs transition-transform duration-150" />
-                          <span className="font-serif font-bold text-xs text-stone-900 group-hover:text-[#F43F7A] mt-1 tracking-tight group-hover:underline transition-colors">
-                            {ev.year}
-                          </span>
                         </button>
                       ) : (
-                        <div className="flex flex-col items-center">
-                          <div className="w-3.5 h-3.5 rounded-full bg-stone-900 border-2 border-white shadow-xs" />
-                          <span className="font-serif font-bold text-xs text-stone-900 mt-1 tracking-tight">
-                            {ev.year}
-                          </span>
-                        </div>
+                        <div className="w-3.5 h-3.5 rounded-full bg-stone-900 border-2 border-white shadow-xs" />
                       )}
                     </div>
 
-                    {/* Bottom Content (Odd Index) */}
-                    {!isTop ? (
-                      <div className="mt-2 flex flex-col items-center justify-start h-[84px]">
-                        {/* Stalk up to axis */}
-                        <div className="w-[2px] h-3.5 bg-stone-900 mb-1" />
-                        {isEditable ? (
-                          <div className="flex flex-col items-center gap-1">
-                            <p className="font-serif text-[11px] text-stone-900 font-bold leading-tight line-clamp-2">
-                              {ev.description || ev.label}
-                            </p>
-                            <div className="flex items-center gap-1">
-                              {onEditEvent && (
-                                <button
-                                  type="button"
-                                  onClick={() => onEditEvent(ev)}
-                                  className="p-1 rounded bg-stone-100 hover:bg-stone-200 text-stone-700 hover:text-[#F43F7A] transition-colors cursor-pointer"
-                                  title="Edit Event"
-                                >
-                                  <Pencil className="w-2.5 h-2.5" />
-                                </button>
-                              )}
-                              {onDeleteEvent && (
-                                <button
-                                  type="button"
-                                  onClick={() => onDeleteEvent(ev.id)}
-                                  className="p-1 rounded bg-stone-100 hover:bg-rose-100 text-stone-700 hover:text-rose-700 transition-colors cursor-pointer"
-                                  title="Delete Event"
-                                >
-                                  <Trash2 className="w-2.5 h-2.5" />
-                                </button>
-                              )}
+                    {/* Bottom Content Area (Fixed Height 96px) */}
+                    <div className="h-[96px] w-full flex flex-col items-center justify-start">
+                      {!isTop && (
+                        <div className="flex flex-col items-center w-full">
+                          {/* Stalk up to axis */}
+                          <div className="w-[2px] h-3 bg-stone-900 mb-1" />
+                          <span className="font-serif font-bold text-xs text-stone-900 tracking-tight mb-0.5">
+                            {ev.year}
+                          </span>
+                          {isEditable ? (
+                            <div className="flex flex-col items-center gap-1">
+                              <p className="font-serif text-[11px] text-stone-900 font-bold leading-tight line-clamp-2">
+                                {ev.description || ev.label}
+                              </p>
+                              <div className="flex items-center gap-1">
+                                {onEditEvent && (
+                                  <button
+                                    type="button"
+                                    onClick={() => onEditEvent(ev)}
+                                    className="p-1 rounded bg-stone-100 hover:bg-stone-200 text-stone-700 hover:text-[#F43F7A] transition-colors cursor-pointer"
+                                    title="Edit Event"
+                                  >
+                                    <Pencil className="w-2.5 h-2.5" />
+                                  </button>
+                                )}
+                                {onDeleteEvent && (
+                                  <button
+                                    type="button"
+                                    onClick={() => onDeleteEvent(ev.id)}
+                                    className="p-1 rounded bg-stone-100 hover:bg-rose-100 text-stone-700 hover:text-rose-700 transition-colors cursor-pointer"
+                                    title="Delete Event"
+                                  >
+                                    <Trash2 className="w-2.5 h-2.5" />
+                                  </button>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        ) : isClickable ? (
-                          <button
-                            type="button"
-                            onClick={() => onSelectMedia!(ev.media!)}
-                            title={`Click to view clipping/photo: ${ev.description || ev.label}`}
-                            className="group flex flex-col items-center cursor-pointer focus:outline-none"
-                          >
-                            <p className="font-serif text-[11px] text-stone-900 group-hover:text-[#F43F7A] font-bold leading-tight line-clamp-2 group-hover:underline transition-colors">
+                          ) : isClickable ? (
+                            <button
+                              type="button"
+                              onClick={() => onSelectMedia!(ev.media!)}
+                              title={`Click to view clipping/photo: ${ev.description || ev.label}`}
+                              className="group flex flex-col items-center cursor-pointer focus:outline-none"
+                            >
+                              <p className="font-serif text-[11px] text-stone-900 group-hover:text-[#F43F7A] font-bold leading-tight line-clamp-2 group-hover:underline transition-colors">
+                                {ev.description || ev.label}
+                              </p>
+                              <span className="inline-flex items-center gap-0.5 text-[9px] font-mono text-[#F43F7A] mt-0.5 opacity-80 group-hover:opacity-100 font-semibold">
+                                {ev.media?.mediaType === "newspaper" ? (
+                                  <>
+                                    <Newspaper className="w-2.5 h-2.5" />
+                                    <span>Clipping</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Camera className="w-2.5 h-2.5" />
+                                    <span>Photo</span>
+                                  </>
+                                )}
+                              </span>
+                            </button>
+                          ) : (
+                            <p className="font-serif text-[11px] text-stone-900 font-semibold leading-tight line-clamp-2">
                               {ev.description || ev.label}
                             </p>
-                            <span className="inline-flex items-center gap-0.5 text-[9px] font-mono text-[#F43F7A] mt-0.5 opacity-80 group-hover:opacity-100 font-semibold">
-                              {ev.media?.mediaType === "newspaper" ? (
-                                <>
-                                  <Newspaper className="w-2.5 h-2.5" />
-                                  <span>Clipping</span>
-                                </>
-                              ) : (
-                                <>
-                                  <Camera className="w-2.5 h-2.5" />
-                                  <span>Photo</span>
-                                </>
-                              )}
-                            </span>
-                          </button>
-                        ) : (
-                          <p className="font-serif text-[11px] text-stone-900 font-semibold leading-tight line-clamp-2">
-                            {ev.description || ev.label}
-                          </p>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="h-[84px]" />
-                    )}
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 );
               })}

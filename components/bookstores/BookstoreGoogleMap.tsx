@@ -6,10 +6,7 @@ import {
   MapPin,
   Navigation,
   ExternalLink,
-  Copy,
-  Check,
   Building2,
-  Route,
 } from "lucide-react";
 
 export interface BookstoreGoogleMapProps {
@@ -53,7 +50,6 @@ export function BookstoreGoogleMap({ bookstore, className = "" }: BookstoreGoogl
   }, [bookstore.locations, bookstore.streetAddress, bookstore.city, bookstore.stateProvince, bookstore.country]);
 
   const [activeLocationIdx, setActiveLocationIdx] = useState(0);
-  const [copied, setCopied] = useState(false);
 
   const currentLocation = parsedLocations[activeLocationIdx] || parsedLocations[0];
 
@@ -80,17 +76,6 @@ export function BookstoreGoogleMap({ bookstore, className = "" }: BookstoreGoogl
       : `${bookstore.name}, ${bookstore.city}, ${bookstore.country}`
   )}`;
 
-  const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
-    formattedAddress || `${bookstore.name}, ${bookstore.city}`
-  )}`;
-
-  const handleCopyAddress = () => {
-    if (!formattedAddress) return;
-    navigator.clipboard.writeText(formattedAddress);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   return (
     <section className={`p-6 sm:p-8 rounded-2xl bg-white border border-[#E8E2D5] shadow-xs space-y-6 ${className}`}>
       {/* Header with Title & Action Links */}
@@ -106,17 +91,6 @@ export function BookstoreGoogleMap({ bookstore, className = "" }: BookstoreGoogl
         </div>
 
         <div className="flex items-center gap-2">
-          <a
-            href={directionsUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-serif font-medium bg-[#FAF8F5] hover:bg-white text-stone-700 hover:text-stone-900 border border-[#E8E2D5] shadow-2xs transition-all"
-            title="Get directions in Google Maps"
-          >
-            <Route className="w-3.5 h-3.5 text-[#2563EB]" />
-            <span>Directions</span>
-          </a>
-
           <a
             href={externalMapUrl}
             target="_blank"
@@ -191,27 +165,6 @@ export function BookstoreGoogleMap({ bookstore, className = "" }: BookstoreGoogl
             </p>
           </div>
         </div>
-
-        {formattedAddress && (
-          <button
-            type="button"
-            onClick={handleCopyAddress}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-serif text-stone-600 hover:text-stone-900 bg-white border border-[#E8E2D5] hover:border-stone-400 shadow-2xs transition-all cursor-pointer shrink-0 self-start sm:self-center"
-            title="Copy address to clipboard"
-          >
-            {copied ? (
-              <>
-                <Check className="w-3.5 h-3.5 text-[#10B981]" />
-                <span className="text-[#10B981] font-medium">Copied Address</span>
-              </>
-            ) : (
-              <>
-                <Copy className="w-3.5 h-3.5 text-stone-400" />
-                <span>Copy Address</span>
-              </>
-            )}
-          </button>
-        )}
       </div>
 
       {/* Embedded Google Map Iframe */}

@@ -103,7 +103,7 @@ export default async function AdminDashboardPage() {
       {/* Main Container */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-8">
         {/* Stats Row & Quick Actions */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="p-5 rounded-2xl bg-white border border-[#E8E2D5] shadow-xs flex items-center justify-between">
             <div>
               <p className="text-xs font-mono text-stone-500 uppercase">Bookstore Bookmarks</p>
@@ -131,16 +131,6 @@ export default async function AdminDashboardPage() {
             </div>
             <div className="w-10 h-10 rounded-xl bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20 flex items-center justify-center">
               <BookOpen className="w-5 h-5" />
-            </div>
-          </div>
-
-          <div className="p-5 rounded-2xl bg-white border border-[#E8E2D5] shadow-xs flex items-center justify-between">
-            <div>
-              <p className="text-xs font-mono text-stone-500 uppercase">Archival Press</p>
-              <h3 className="font-serif text-3xl font-bold text-stone-900 mt-1">{totalClippings}</h3>
-            </div>
-            <div className="w-10 h-10 rounded-xl bg-[#F43F7A]/10 text-[#F43F7A] border border-[#F43F7A]/20 flex items-center justify-center">
-              <Lock className="w-5 h-5" />
             </div>
           </div>
 

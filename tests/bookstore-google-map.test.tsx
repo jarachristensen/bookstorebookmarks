@@ -57,7 +57,8 @@ describe("BookstoreGoogleMap Component", () => {
     expect(screen.getByText("261 Columbus Avenue")).toBeDefined();
     expect(screen.getByText("San Francisco, CA, United States")).toBeDefined();
     expect(screen.getByText("Open in Google Maps")).toBeDefined();
-    expect(screen.getByText("Directions")).toBeDefined();
+    expect(screen.queryByText("Directions")).toBeNull();
+    expect(screen.queryByText("Copy Address")).toBeNull();
   });
 
   it("renders multi-location tabs and allows switching active address", () => {

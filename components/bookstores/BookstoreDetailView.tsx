@@ -58,24 +58,28 @@ export function BookstoreDetailView({ bookstore, availableStorefronts }: Booksto
   const [selectedLightboxMedia, setSelectedLightboxMedia] = useState<ArchivalMedia | null>(null);
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
 
-  // Split media into newspaper clippings and photos
+  // Helper to identify directory cutout images that belong only on directory view
+  const isDirectoryCutout = (m: ArchivalMedia) =>
+    Boolean(m.imageUrl?.startsWith("/images/storefronts/"));
+
+  // Split media into newspaper clippings and authentic photos (excluding directory cutouts)
   const newspaperClippings = React.useMemo(
     () =>
       bookstore.archivalMedia.filter(
         (m) =>
-          m.mediaType === "newspaper" ||
-          (!m.isStorefront && m.mediaType !== "photo" && m.mediaTag !== "interior" && m.mediaTag !== "storefront")
+          (m.mediaType === "newspaper" ||
+            (!m.isStorefront && m.mediaType !== "photo" && m.mediaTag !== "interior" && m.mediaTag !== "storefront")) &&
+          !isDirectoryCutout(m)
       ),
     [bookstore.archivalMedia]
   );
+
   const photosList = React.useMemo(
     () =>
       bookstore.archivalMedia.filter(
         (m) =>
-          m.mediaType === "photo" ||
-          Boolean(m.isStorefront) ||
-          m.mediaTag === "interior" ||
-          m.mediaTag === "storefront"
+          (m.mediaType === "photo" || m.mediaTag === "interior" || m.mediaTag === "storefront") &&
+          !isDirectoryCutout(m)
       ),
     [bookstore.archivalMedia]
   );
@@ -90,45 +94,18 @@ export function BookstoreDetailView({ bookstore, availableStorefronts }: Booksto
     if (bookstore.locations) parsedLocations = JSON.parse(bookstore.locations);
   } catch {}
 
-  // Find all storefront / exterior / inside photos, sorted by most recent first
-  const rawPhotos = bookstore.archivalMedia.filter(
-    (m) =>
-      Boolean(m.isStorefront) ||
-      m.mediaType === "photo" ||
-      m.mediaTag === "interior" ||
-      m.mediaTag === "storefront"
+  // Find all authentic archival photos (excluding directory cutouts)
+  const rawPhotos = React.useMemo(
+    () =>
+      bookstore.archivalMedia.filter(
+        (m) =>
+          (m.mediaType === "photo" || m.mediaTag === "interior" || m.mediaTag === "storefront") &&
+          !isDirectoryCutout(m)
+      ),
+    [bookstore.archivalMedia]
   );
 
-  const fallbackStorefront = React.useMemo(() => {
-    if (rawPhotos.length === 0) {
-      const resolved = resolveStorefrontImage(bookstore, availableStorefronts);
-      if (resolved && resolved !== DEFAULT_STOREFRONT_IMAGE) {
-        return {
-          id: `fallback-storefront-${bookstore.id}`,
-          bookstoreId: bookstore.id,
-          mediaType: "photo",
-          imageUrl: resolved,
-          caption: `${bookstore.name} Storefront Photo`,
-          sourcePublication: null,
-          publicationDate: null,
-          transcriptionText: null,
-          isStorefront: true,
-          mediaTag: "storefront",
-          displayOrder: 0,
-          createdAt: "",
-        } as ArchivalMedia;
-      }
-    }
-    return null;
-  }, [rawPhotos.length, bookstore, availableStorefronts]);
-
-  const effectivePhotos = React.useMemo(() => {
-    if (rawPhotos.length > 0) return rawPhotos;
-    if (fallbackStorefront) return [fallbackStorefront];
-    return [];
-  }, [rawPhotos, fallbackStorefront]);
-
-  const storefrontPhotos = React.useMemo(() => sortMediaByMostRecent(effectivePhotos), [effectivePhotos]);
+  const storefrontPhotos = React.useMemo(() => sortMediaByMostRecent(rawPhotos), [rawPhotos]);
   const currentPhoto = storefrontPhotos[activePhotoIdx] || storefrontPhotos[0] || null;
 
   const nextPhoto = () => {
@@ -310,16 +287,19 @@ export function BookstoreDetailView({ bookstore, availableStorefronts }: Booksto
                 )}
               </div>
             ) : (
-              <div className="w-full h-72 flex items-center justify-center text-xs font-sans text-stone-400 italic">
-                No storefront photo cataloged
+              <div className="w-full h-72 flex flex-col items-center justify-center text-xs font-serif text-stone-400 italic space-y-1">
+                <Camera className="w-6 h-6 text-stone-600 mb-1 opacity-40" />
+                <span>No archival photograph cataloged for this location</span>
               </div>
             )}
           </div>
 
           {/* Photo Year / Caption below */}
-          <div className="mt-2 text-center text-xs font-serif italic text-stone-500">
-            {currentPhoto?.publicationDate || getCleanCaption(currentPhoto?.caption) || bookstore.yearOpened}
-          </div>
+          {currentPhoto && (
+            <div className="mt-2 text-center text-xs font-serif italic text-stone-500">
+              {currentPhoto.publicationDate || getCleanCaption(currentPhoto.caption) || bookstore.yearOpened}
+            </div>
+          )}
         </div>
 
         {/* Right Column: Cataloged Bookmarks (~42% on desktop) */}

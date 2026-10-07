@@ -528,7 +528,7 @@ export function EditablePartnersPage({
               href="/contact"
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#F43F7A] hover:bg-[#E11D48] text-white text-xs sm:text-sm font-serif font-bold shadow-md transition-all group"
             >
-              <span>Donate Bookmarks &amp; Contact Us</span>
+              <span>Contact Us</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
             </Link>
 
