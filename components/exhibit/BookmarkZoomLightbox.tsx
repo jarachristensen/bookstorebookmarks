@@ -40,17 +40,21 @@ export function BookmarkZoomLightbox({
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const dragStartRef = useRef({ x: 0, y: 0 });
   const positionStartRef = useRef({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
   const touchStartDistRef = useRef<number | null>(null);
   const touchStartScaleRef = useRef<number>(1);
 
-  // Reset zoom & pan when opening or switching images
+  // Reset zoom, pan & load states when opening or switching images
   useEffect(() => {
     if (isOpen) {
       setScale(1);
       setPosition({ x: 0, y: 0 });
+      setImageLoaded(false);
+      setImageError(false);
     }
   }, [isOpen, imageUrl]);
 
@@ -291,13 +295,15 @@ export function BookmarkZoomLightbox({
               transform: `translate3d(${position.x}px, ${position.y}px, 0) scale(${scale})`,
               transition: isDragging ? "none" : "transform 0.15s ease-out",
             }}
-            className="relative max-w-[90vw] max-h-[80vh] flex items-center justify-center pointer-events-none"
+            className="relative flex items-center justify-center pointer-events-none"
           >
             {/* The High-Resolution Specimen Image mounted on solid paper backing with clean box shadow */}
             <div className="relative flex items-center justify-center bg-white rounded-[4px] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.85)] ring-1 ring-black/20 overflow-hidden">
               <img
                 src={imageUrl}
                 alt={alt}
+                onLoad={() => setImageLoaded(true)}
+                onError={() => setImageError(true)}
                 className="max-h-[75vh] max-w-[85vw] w-auto h-auto object-contain block select-none"
                 draggable={false}
               />
