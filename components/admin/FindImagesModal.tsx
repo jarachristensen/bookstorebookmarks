@@ -189,10 +189,23 @@ export function FindImagesModal({
               ) : (
                 <>
                   <Search className="w-3.5 h-3.5" />
-                  <span>Search</span>
+                  <span>Search Archives</span>
                 </>
               )}
             </Button>
+
+            <a
+              href={`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(
+                query.trim() || bookstoreName
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[#E8E2D5] bg-[#FAF8F5] hover:bg-stone-100 text-stone-700 text-xs font-serif shrink-0 transition-colors cursor-pointer"
+              title="Open Google Images search in new tab"
+            >
+              <ExternalLink className="w-3.5 h-3.5 text-stone-500" />
+              <span>Google Images ↗</span>
+            </a>
           </form>
 
           {/* Quick Selection Bar */}

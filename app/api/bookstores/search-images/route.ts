@@ -34,6 +34,48 @@ export async function GET(req: NextRequest) {
   const results: ImageSearchResult[] = [];
   const seenUrls = new Set<string>();
 
+  // 0. Optional: Google Custom Search API (if configured in environment)
+  const googleApiKey = process.env.GOOGLE_SEARCH_API_KEY;
+  const googleCseId =
+    process.env.GOOGLE_SEARCH_ENGINE_ID || process.env.GOOGLE_CSE_ID;
+
+  if (googleApiKey && googleCseId) {
+    try {
+      const googleEndpoint = `https://customsearch.googleapis.com/customsearch/v1?key=${googleApiKey}&cx=${googleCseId}&q=${encodeURIComponent(
+        query
+      )}&searchType=image&num=10`;
+
+      const gRes = await fetch(googleEndpoint, {
+        next: { revalidate: 3600 },
+      });
+
+      if (gRes.ok) {
+        const gData = await gRes.json();
+        if (Array.isArray(gData.items)) {
+          for (let i = 0; i < gData.items.length; i++) {
+            const item = gData.items[i];
+            const fullUrl = item.link;
+            if (!fullUrl || seenUrls.has(fullUrl)) continue;
+            seenUrls.add(fullUrl);
+
+            results.push({
+              id: `google-${i}-${Date.now()}`,
+              title: item.title || query,
+              url: fullUrl,
+              thumbnailUrl: item.image?.thumbnailLink || fullUrl,
+              source: `Google (${item.displayLink || "Web"})`,
+              description: item.snippet || undefined,
+              width: item.image?.width,
+              height: item.image?.height,
+            });
+          }
+        }
+      }
+    } catch (gErr) {
+      console.warn("Google Image Search API error:", gErr);
+    }
+  }
+
   // 1. Search Wikimedia Commons (Rich public domain & CC cultural heritage)
   try {
     const commonsEndpoint = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(

@@ -97,6 +97,26 @@ describe("FindImagesModal Component", () => {
 
     expect(screen.getByText("Find Web & Archival Images")).toBeDefined();
   });
+
+  it("renders the direct Google Images external link button", () => {
+    const onAddImages = vi.fn();
+    const onClose = vi.fn();
+
+    render(
+      <FindImagesModal
+        isOpen={true}
+        onClose={onClose}
+        initialQuery="Strand Bookstore NYC"
+        bookstoreName="Strand Bookstore"
+        onAddImages={onAddImages}
+      />
+    );
+
+    const googleBtn = screen.getByTitle("Open Google Images search in new tab");
+    expect(googleBtn).toBeDefined();
+    expect(googleBtn.getAttribute("href")).toContain("google.com/search?tbm=isch");
+    expect(googleBtn.getAttribute("href")).toContain("Strand");
+  });
 });
 
 describe("GET /api/bookstores/search-images", () => {
