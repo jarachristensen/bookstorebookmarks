@@ -24,8 +24,10 @@ import {
   Loader2,
   Tag,
   Sparkles,
+  ZoomIn,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { BookmarkZoomLightbox } from "@/components/exhibit/BookmarkZoomLightbox";
 
 export interface OtherBookmarksHubClientProps {
   initialBookmarks: NonBookstoreBookmark[];
@@ -51,6 +53,7 @@ export function OtherBookmarksHubClient({
   // Inspector Modal state
   const [inspectingBookmark, setInspectingBookmark] = useState<NonBookstoreBookmark | null>(null);
   const [inspectSide, setInspectSide] = useState<"front" | "back">("front");
+  const [isZoomLightboxOpen, setIsZoomLightboxOpen] = useState(false);
 
   // Proposal Submission State
   const [collectorName, setCollectorName] = useState("");
@@ -674,7 +677,10 @@ export function OtherBookmarksHubClient({
               </div>
 
               {/* Image Container */}
-              <div className="relative w-full max-h-[60vh] flex items-center justify-center p-4 bg-stone-100/50 rounded-2xl">
+              <div
+                onClick={() => setIsZoomLightboxOpen(true)}
+                className="relative w-full max-h-[60vh] flex items-center justify-center p-4 bg-stone-100/50 rounded-2xl cursor-zoom-in group select-none"
+              >
                 <Image
                   src={
                     inspectSide === "back" && inspectingBookmark.backImageUrl
@@ -685,37 +691,60 @@ export function OtherBookmarksHubClient({
                   width={500}
                   height={700}
                   unoptimized
-                  className="max-h-[50vh] w-auto object-contain drop-shadow-md"
+                  className="max-h-[50vh] w-auto object-contain drop-shadow-md group-hover:scale-[1.02] transition-transform"
                 />
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsZoomLightboxOpen(true);
+                  }}
+                  aria-label="Zoom Specimen Fullscreen"
+                  className="absolute top-3 right-3 p-1.5 sm:p-2 rounded-full bg-black/65 hover:bg-black/90 backdrop-blur-xs text-white shadow-sm z-10 transition-transform hover:scale-105 cursor-pointer flex items-center gap-1 text-xs font-serif"
+                  title="Inspect in Fullscreen Zoom"
+                >
+                  <ZoomIn className="w-3.5 h-3.5" />
+                  <span className="text-[10px] font-mono pr-0.5">Zoom</span>
+                </button>
               </div>
 
-              {/* Toggle Sides */}
-              {inspectingBookmark.backImageUrl && (
-                <div className="inline-flex rounded-lg border border-[#E8E2D5] p-1 bg-white">
-                  <button
-                    type="button"
-                    onClick={() => setInspectSide("front")}
-                    className={`px-3 py-1 rounded text-xs font-serif cursor-pointer transition-colors ${
-                      inspectSide === "front"
-                        ? "bg-[#18181B] text-white font-bold"
-                        : "text-stone-600 hover:text-stone-900"
-                    }`}
-                  >
-                    Front View
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setInspectSide("back")}
-                    className={`px-3 py-1 rounded text-xs font-serif cursor-pointer transition-colors ${
-                      inspectSide === "back"
-                        ? "bg-[#18181B] text-white font-bold"
-                        : "text-stone-600 hover:text-stone-900"
-                    }`}
-                  >
-                    Back View
-                  </button>
-                </div>
-              )}
+              {/* Controls: Toggle Sides & Zoom Specimen */}
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                {inspectingBookmark.backImageUrl && (
+                  <div className="inline-flex rounded-lg border border-[#E8E2D5] p-1 bg-white">
+                    <button
+                      type="button"
+                      onClick={() => setInspectSide("front")}
+                      className={`px-3 py-1 rounded text-xs font-serif cursor-pointer transition-colors ${
+                        inspectSide === "front"
+                          ? "bg-[#18181B] text-white font-bold"
+                          : "text-stone-600 hover:text-stone-900"
+                      }`}
+                    >
+                      Front View
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setInspectSide("back")}
+                      className={`px-3 py-1 rounded text-xs font-serif cursor-pointer transition-colors ${
+                        inspectSide === "back"
+                          ? "bg-[#18181B] text-white font-bold"
+                          : "text-stone-600 hover:text-stone-900"
+                      }`}
+                    >
+                      Back View
+                    </button>
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setIsZoomLightboxOpen(true)}
+                  className="px-3 py-1.5 rounded-lg border border-[#E8E2D5] bg-white hover:bg-blue-50 text-[#2563EB] text-xs font-serif font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+                >
+                  <ZoomIn className="w-3.5 h-3.5" />
+                  <span>Zoom Specimen</span>
+                </button>
+              </div>
 
               {/* Curator Notes & Provenance Callout */}
               {inspectingBookmark.notes && (
@@ -758,6 +787,29 @@ export function OtherBookmarksHubClient({
           </div>
         )}
       </AnimatePresence>
+
+      {/* Fullscreen Pan & Zoom Lightbox for Other Bookmarks */}
+      {inspectingBookmark && (
+        <BookmarkZoomLightbox
+          isOpen={isZoomLightboxOpen}
+          onClose={() => setIsZoomLightboxOpen(false)}
+          imageUrl={
+            inspectSide === "back" && inspectingBookmark.backImageUrl
+              ? inspectingBookmark.backImageUrl
+              : inspectingBookmark.frontImageUrl
+          }
+          alt={inspectingBookmark.title}
+          title={inspectingBookmark.title}
+          subtitle={getBookmarkTags(inspectingBookmark).join(" · ")}
+          notes={inspectingBookmark.notes}
+          flipSide={{
+            current: inspectSide === "back" ? "back" : "front",
+            onToggle: () =>
+              setInspectSide((prev) => (prev === "front" ? "back" : "front")),
+            hasBack: !!inspectingBookmark.backImageUrl,
+          }}
+        />
+      )}
     </div>
   );
 }

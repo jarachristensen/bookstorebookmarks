@@ -14,8 +14,10 @@ import {
   Calendar,
   Layers,
   Sparkles,
+  ZoomIn,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { BookmarkZoomLightbox } from "./BookmarkZoomLightbox";
 
 export interface BookmarkInspectorProps {
   bookmark: BookmarkWithDetails;
@@ -29,9 +31,18 @@ export function BookmarkInspector({
   onOpenDossier,
 }: BookmarkInspectorProps) {
   const [isFlipped, setIsFlipped] = useState(false);
+  const [isZoomLightboxOpen, setIsZoomLightboxOpen] = useState(false);
   const [naturalAspect, setNaturalAspect] = useState<number | null>(null);
   const store = bookmark.bookstore;
   const parsedDim = parseDimensions(bookmark.dimensions);
+
+  const currentImageUrl =
+    isFlipped && bookmark.backImageUrl
+      ? bookmark.backImageUrl
+      : bookmark.frontImageUrl;
+  const currentAlt = isFlipped
+    ? `${bookmark.title} - Verso (Back)`
+    : `${bookmark.title} - Recto (Front)`;
 
   // Determine if bookmark is landscape either from parsed dimensions or natural image ratio
   const isLandscape = parsedDim.isLandscape || (naturalAspect !== null && naturalAspect > 1.15);
@@ -146,6 +157,18 @@ export function BookmarkInspector({
                     <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 px-1.5 py-0.5 rounded bg-black/65 backdrop-blur-xs text-[9px] sm:text-[10px] font-mono text-white shadow-sm z-20">
                       RECTO (FRONT)
                     </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsZoomLightboxOpen(true);
+                      }}
+                      aria-label="Zoom Specimen Fullscreen"
+                      className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 p-1.5 rounded-full bg-black/65 hover:bg-black/90 backdrop-blur-xs text-white shadow-sm z-20 transition-transform hover:scale-110 cursor-pointer"
+                      title="Inspect in Fullscreen Zoom"
+                    >
+                      <ZoomIn className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
 
@@ -179,13 +202,27 @@ export function BookmarkInspector({
                     <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 px-1.5 py-0.5 rounded bg-black/65 backdrop-blur-xs text-[9px] sm:text-[10px] font-mono text-white shadow-sm z-20">
                       VERSO (BACK)
                     </div>
+                    {bookmark.backImageUrl && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsZoomLightboxOpen(true);
+                        }}
+                        aria-label="Zoom Specimen Fullscreen"
+                        className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 p-1.5 rounded-full bg-black/65 hover:bg-black/90 backdrop-blur-xs text-white shadow-sm z-20 transition-transform hover:scale-110 cursor-pointer"
+                        title="Inspect in Fullscreen Zoom"
+                      >
+                        <ZoomIn className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                 </div>
               </motion.div>
             </div>
 
-            {/* Interactive Flip Trigger Button */}
-            <div className="flex items-center gap-2 sm:gap-3">
+            {/* Interactive Flip Trigger Button & Zoom Button */}
+            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
               <Button
                 variant="outline"
                 size="sm"
@@ -194,6 +231,15 @@ export function BookmarkInspector({
               >
                 <RotateCw className="w-3.5 h-3.5 text-[#F59E0B] transition-transform group-hover:rotate-180" />
                 <span>{isFlipped ? "Flip to Recto (Front)" : "Flip to Verso (Back)"}</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsZoomLightboxOpen(true)}
+                className="flex items-center gap-2 font-serif text-xs bg-white py-1.5 px-3 border-[#E8E2D5] text-[#2563EB] hover:bg-blue-50 cursor-pointer"
+              >
+                <ZoomIn className="w-3.5 h-3.5 text-[#2563EB]" />
+                <span>Zoom Specimen</span>
               </Button>
               <span className="text-[11px] font-mono text-stone-500 hidden xs:inline">
                 (or tap bookmark)
@@ -328,6 +374,18 @@ export function BookmarkInspector({
                     <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 px-1.5 py-0.5 rounded bg-black/65 backdrop-blur-xs text-[9px] sm:text-[10px] font-mono text-white shadow-sm z-20">
                       RECTO (FRONT)
                     </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsZoomLightboxOpen(true);
+                      }}
+                      aria-label="Zoom Specimen Fullscreen"
+                      className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 p-1.5 rounded-full bg-black/65 hover:bg-black/90 backdrop-blur-xs text-white shadow-sm z-20 transition-transform hover:scale-110 cursor-pointer"
+                      title="Inspect in Fullscreen Zoom"
+                    >
+                      <ZoomIn className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
 
@@ -361,13 +419,27 @@ export function BookmarkInspector({
                     <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 px-1.5 py-0.5 rounded bg-black/65 backdrop-blur-xs text-[9px] sm:text-[10px] font-mono text-white shadow-sm z-20">
                       VERSO (BACK)
                     </div>
+                    {bookmark.backImageUrl && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsZoomLightboxOpen(true);
+                        }}
+                        aria-label="Zoom Specimen Fullscreen"
+                        className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 p-1.5 rounded-full bg-black/65 hover:bg-black/90 backdrop-blur-xs text-white shadow-sm z-20 transition-transform hover:scale-110 cursor-pointer"
+                        title="Inspect in Fullscreen Zoom"
+                      >
+                        <ZoomIn className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                 </div>
               </motion.div>
             </div>
 
-            {/* Interactive Flip Trigger Button */}
-            <div className="flex items-center gap-2 sm:gap-3">
+            {/* Interactive Flip Trigger Button & Zoom Button */}
+            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
               <Button
                 variant="outline"
                 size="sm"
@@ -376,6 +448,15 @@ export function BookmarkInspector({
               >
                 <RotateCw className="w-3.5 h-3.5 text-[#F59E0B] transition-transform group-hover:rotate-180" />
                 <span>{isFlipped ? "Flip to Recto (Front)" : "Flip to Verso (Back)"}</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsZoomLightboxOpen(true)}
+                className="flex items-center gap-2 font-serif text-xs bg-white py-1.5 px-3 border-[#E8E2D5] text-[#2563EB] hover:bg-blue-50 cursor-pointer"
+              >
+                <ZoomIn className="w-3.5 h-3.5 text-[#2563EB]" />
+                <span>Zoom Specimen</span>
               </Button>
               <span className="text-[11px] font-mono text-stone-500 hidden xs:inline">
                 (or tap paper)
@@ -459,6 +540,22 @@ export function BookmarkInspector({
           </div>
         </div>
       )}
+
+      {/* Fullscreen Pan & Zoom Lightbox */}
+      <BookmarkZoomLightbox
+        isOpen={isZoomLightboxOpen}
+        onClose={() => setIsZoomLightboxOpen(false)}
+        imageUrl={currentImageUrl}
+        alt={currentAlt}
+        title={bookmark.title}
+        subtitle={store ? `${store.name} · ${store.city}, ${store.country}` : undefined}
+        notes={bookmark.acquisitionNotes}
+        flipSide={{
+          current: isFlipped ? "back" : "front",
+          onToggle: () => setIsFlipped(!isFlipped),
+          hasBack: !!bookmark.backImageUrl,
+        }}
+      />
     </div>
   );
 }

@@ -81,4 +81,19 @@ describe("BookmarkInspector Component", () => {
     const bookstoreLink = screen.getByRole("link", { name: /view bookstore page & history/i });
     expect(bookstoreLink.getAttribute("href")).toBe("/bookstores/gotham-book-mart");
   });
+
+  it("should open fullscreen zoom lightbox when Zoom Specimen is clicked", () => {
+    render(
+      <BookmarkInspector
+        bookmark={mockBookmark}
+        onClose={() => {}}
+      />
+    );
+
+    const zoomBtns = screen.getAllByRole("button", { name: /zoom specimen/i });
+    fireEvent.click(zoomBtns[0]);
+
+    expect(screen.getByRole("button", { name: /close fullscreen zoom/i })).toBeDefined();
+    expect(screen.getByRole("button", { name: /zoom in/i })).toBeDefined();
+  });
 });
