@@ -1953,10 +1953,20 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
 
       {/* Bookmark Inspector Modal */}
       {selectedBookmark && (
-        <BookmarkInspector
-          bookmark={selectedBookmark}
-          onClose={() => setSelectedBookmark(null)}
-        />
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto bg-stone-950/80 backdrop-blur-md p-2 sm:p-6 lg:p-8 flex items-start sm:items-center justify-center min-h-screen"
+          onClick={() => setSelectedBookmark(null)}
+        >
+          <div
+            className="w-full max-w-5xl my-auto py-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <BookmarkInspector
+              bookmark={selectedBookmark}
+              onClose={() => setSelectedBookmark(null)}
+            />
+          </div>
+        </div>
       )}
 
       {/* --- MODAL: Confirm Delete Bookstore --- */}

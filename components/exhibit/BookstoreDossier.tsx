@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { MarkdownRenderer } from "./MarkdownRenderer";
 import { ClippingLightbox } from "./ClippingLightbox";
+import { BookmarkInspector } from "./BookmarkInspector";
 import {
   X,
   MapPin,
@@ -20,8 +21,9 @@ import {
   ExternalLink,
   Layers,
   ArrowLeft,
+  ZoomIn,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 export interface BookstoreDossierProps {
   bookmark: BookmarkWithDetails;
@@ -38,6 +40,7 @@ export function BookstoreDossier({
 }: BookstoreDossierProps) {
   const [activeBookmark, setActiveBookmark] = useState<BookmarkWithDetails>(bookmark);
   const [selectedMedia, setSelectedMedia] = useState<ArchivalMedia | null>(null);
+  const [selectedInspectorBookmark, setSelectedInspectorBookmark] = useState<BookmarkWithDetails | null>(null);
 
   const store = activeBookmark.bookstore || bookmark.bookstore;
   if (!store) return null;
@@ -172,13 +175,20 @@ export function BookstoreDossier({
                 <span>c. {activeBookmark.yearProduced}</span>
               </div>
 
-              <div className="relative w-full aspect-[1/2.8] max-w-[200px] mx-auto rounded-lg overflow-hidden border border-[#E8E2D5] shadow-md bg-white">
+              <div
+                onClick={() => setSelectedInspectorBookmark(activeBookmark)}
+                className="relative w-full aspect-[1/2.8] max-w-[200px] mx-auto rounded-lg overflow-hidden border border-[#E8E2D5] shadow-md bg-white cursor-pointer group hover:border-[#2563EB]/50 transition-colors"
+                title="Click to inspect and zoom bookmark specimen"
+              >
                 <Image
                   src={activeBookmark.frontImageUrl}
                   alt={activeBookmark.title}
                   fill
-                  className="object-cover object-top"
+                  className="object-cover object-top group-hover:scale-105 transition-transform duration-200"
                 />
+                <div className="absolute top-1.5 right-1.5 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-opacity shadow-sm flex items-center gap-1">
+                  <ZoomIn className="w-3 h-3 text-amber-300" />
+                </div>
               </div>
 
               <div className="pt-2 space-y-1.5 text-xs text-stone-600">
@@ -324,6 +334,30 @@ export function BookstoreDossier({
           onClose={() => setSelectedMedia(null)}
         />
       )}
+
+      {/* Fullscreen Bookmark Inspector with Zoom & 3D Flip */}
+      <AnimatePresence>
+        {selectedInspectorBookmark && (
+          <div
+            className="fixed inset-0 z-50 overflow-y-auto bg-stone-950/80 backdrop-blur-md p-2 sm:p-6 lg:p-8 flex items-start sm:items-center justify-center min-h-screen"
+            onClick={() => setSelectedInspectorBookmark(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="w-full max-w-5xl my-auto py-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <BookmarkInspector
+                bookmark={selectedInspectorBookmark}
+                onClose={() => setSelectedInspectorBookmark(null)}
+              />
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

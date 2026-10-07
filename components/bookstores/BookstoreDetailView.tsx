@@ -23,7 +23,9 @@ import {
   BookOpen,
   Navigation,
   Building2,
+  ZoomIn,
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { marked } from "marked";
 import { resolveStorefrontImage, DEFAULT_STOREFRONT_IMAGE } from "@/lib/utils/storefront";
 
@@ -343,7 +345,7 @@ export function BookstoreDetailView({ bookstore, availableStorefronts }: Booksto
                   key={bm.id}
                   type="button"
                   onClick={() => setSelectedBookmark({ ...bm, bookstore })}
-                  className="group flex flex-col items-center text-center cursor-pointer p-2 rounded-xl bg-white hover:bg-[#FAF8F5] border border-[#E8E2D5] hover:border-[#F43F7A]/50 shadow-xs hover:shadow-md transition-all"
+                  className="group relative flex flex-col items-center text-center cursor-pointer p-2.5 rounded-xl bg-white hover:bg-[#FAF8F5] border border-[#E8E2D5] hover:border-[#2563EB]/50 shadow-xs hover:shadow-md transition-all duration-200"
                 >
                   <div className="relative w-full h-44 sm:h-52 mb-2 flex items-center justify-center overflow-hidden">
                     <Image
@@ -353,8 +355,12 @@ export function BookstoreDetailView({ bookstore, availableStorefronts }: Booksto
                       unoptimized
                       className="object-contain object-center group-hover:scale-105 transition-transform duration-200"
                     />
+                    {/* Hover Zoom Hint */}
+                    <div className="absolute top-1.5 right-1.5 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-opacity shadow-sm flex items-center gap-1">
+                      <ZoomIn className="w-3 h-3 text-amber-300" />
+                    </div>
                   </div>
-                  <h4 className="font-serif text-xs font-bold text-stone-900 group-hover:text-[#F43F7A] transition-colors line-clamp-1 w-full">
+                  <h4 className="font-serif text-xs font-bold text-stone-900 group-hover:text-[#2563EB] transition-colors line-clamp-1 w-full">
                     {bm.title}
                   </h4>
                   <span className="font-mono text-[11px] text-stone-500 mt-0.5">
@@ -596,13 +602,29 @@ export function BookstoreDetailView({ bookstore, availableStorefronts }: Booksto
       {/* 7. Historic Location & Interactive Google Map */}
       <BookstoreGoogleMap bookstore={bookstore} />
 
-      {/* Bookmark Inspector Modal */}
-      {selectedBookmark && (
-        <BookmarkInspector
-          bookmark={selectedBookmark}
-          onClose={() => setSelectedBookmark(null)}
-        />
-      )}
+      {/* Bookmark Inspector Modal with Fullscreen Zoom capability */}
+      <AnimatePresence>
+        {selectedBookmark && (
+          <div
+            className="fixed inset-0 z-50 overflow-y-auto bg-stone-950/80 backdrop-blur-md p-2 sm:p-6 lg:p-8 flex items-start sm:items-center justify-center min-h-screen"
+            onClick={() => setSelectedBookmark(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="w-full max-w-5xl my-auto py-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <BookmarkInspector
+                bookmark={selectedBookmark}
+                onClose={() => setSelectedBookmark(null)}
+              />
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Press Clipping / Photo Lightbox Popup */}
       {selectedLightboxMedia && (
