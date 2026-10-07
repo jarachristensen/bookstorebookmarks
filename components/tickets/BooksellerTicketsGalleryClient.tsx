@@ -138,9 +138,9 @@ export function BooksellerTicketsGalleryClient({
               <BookmarkInspector
                 bookmark={inspectingTicket}
                 onClose={() => setInspectingTicket(null)}
-                onOpenDossier={(b) => {
+                onOpenDossier={() => {
+                  setDossierTicket(inspectingTicket);
                   setInspectingTicket(null);
-                  setDossierTicket(b);
                 }}
               />
             </motion.div>
