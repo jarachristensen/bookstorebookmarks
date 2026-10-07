@@ -1,11 +1,19 @@
 import { db, initDb } from "./index";
-import { bookstores, bookmarks, archivalMedia } from "./schema";
+import {
+  bookstores,
+  bookmarks,
+  archivalMedia,
+  nonBookstoreBookmarks,
+  nonBookstoreTags,
+} from "./schema";
 import { ensureSeedAssets } from "./generate-seed-assets";
+import { ensureOtherSeedAssets } from "./generate-other-seed-assets";
 import { eq } from "drizzle-orm";
 
 export async function seedDatabase() {
   await initDb();
   ensureSeedAssets();
+  ensureOtherSeedAssets();
 
   const now = new Date().toISOString();
 
@@ -702,12 +710,108 @@ Serving readers across Southwest Washington and the Columbia River since 1975, *
       set: m,
     });
   }
+
+  // Initial Curated Non-Bookstore Tags
+  const initialTags = [
+    "Libraries",
+    "Publishers",
+    "Museums & Galleries",
+    "Literary Magazines",
+    "Authors & Signings",
+    "Pacific Northwest",
+    "Vintage 1980s",
+    "Penguin Books",
+    "New York Art",
+  ];
+
+  for (const t of initialTags) {
+    await db.insert(nonBookstoreTags).values({
+      id: `tag-${t.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+      name: t,
+      createdAt: now,
+    }).onConflictDoNothing();
+  }
+
+  // Non-Bookstore Ephemera Bookmarks
+  const nonBookstoreEntries = [
+    {
+      id: "other-spl-borrower-1984",
+      title: "Seattle Public Library Vintage Borrower Card Bookmark",
+      tags: JSON.stringify(["Libraries", "Pacific Northwest", "Vintage 1980s"]),
+      category: "Libraries",
+      frontImageUrl: "/seed-images/other/spl-card-front.svg",
+      backImageUrl: "/seed-images/other/spl-card-back.svg",
+      tradeQuantity: 3,
+      dimensions: '2.1" × 7.5"',
+      material: "Heavy Manila Library Stock with Official Date Stamps",
+      condition: "Very Good",
+      notes: "Authentic deaccessioned date-due slip and borrower card preserved from the Seattle Central Library in 1984.",
+      displayOrder: 1,
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: "other-penguin-orange-1960",
+      title: "Penguin Classics Orange Spine Publisher Bookmark",
+      tags: JSON.stringify(["Publishers", "Penguin Books", "Paperback Ephemera"]),
+      category: "Publishers",
+      frontImageUrl: "/seed-images/other/penguin-classics-front.svg",
+      backImageUrl: "/seed-images/other/penguin-classics-back.svg",
+      tradeQuantity: 2,
+      dimensions: '2.2" × 7.75"',
+      material: "Two-Tone Orange & Cream Chipboard",
+      condition: "Fine",
+      notes: "Original publisher promotional insert distributed with 1960s Harmondsworth paperback first editions.",
+      displayOrder: 2,
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: "other-met-degas-1988",
+      title: "Metropolitan Museum of Art 1988 Degas Exhibition Bookmark",
+      tags: JSON.stringify(["Museums & Galleries", "New York Art"]),
+      category: "Museums & Galleries",
+      frontImageUrl: "/seed-images/other/met-museum-front.svg",
+      backImageUrl: "/seed-images/other/met-museum-back.svg",
+      tradeQuantity: 2,
+      dimensions: '2.25" × 8.0"',
+      material: "Gold-Stamped Black Linen Cardstock",
+      condition: "Near Mint",
+      notes: "Acquired at the Met Fifth Avenue museum shop during the Autumn 1988 Edgar Degas retrospective.",
+      displayOrder: 3,
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: "other-paris-review-1975",
+      title: "The Paris Review Literary Quarterly Writers at Work Bookmark",
+      tags: JSON.stringify(["Literary Magazines", "Authors & Signings"]),
+      category: "Literary Magazines",
+      frontImageUrl: "/seed-images/other/paris-review-front.svg",
+      backImageUrl: "/seed-images/other/paris-review-back.svg",
+      tradeQuantity: 3,
+      dimensions: '2.2" × 7.5"',
+      material: "Crimson Letterpress French Rag Paper",
+      condition: "Excellent",
+      notes: "Rare promotional bookmark included with 1970s subscriber issues featuring the iconic Paris Review crow emblem.",
+      displayOrder: 4,
+      createdAt: now,
+      updatedAt: now,
+    },
+  ];
+
+  for (const nbm of nonBookstoreEntries) {
+    await db.insert(nonBookstoreBookmarks).values(nbm).onConflictDoUpdate({
+      target: nonBookstoreBookmarks.id,
+      set: nbm,
+    });
+  }
 }
 
 if (require.main === module || process.argv[1]?.includes("seed.ts")) {
   seedDatabase()
     .then(() => {
-      console.log("Database seeded successfully with Green Apple Books!");
+      console.log("Database seeded successfully with Bookstores & Other Ephemera Bookmarks!");
       process.exit(0);
     })
     .catch((err) => {

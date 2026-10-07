@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 900" width="100%" height="100%">
+    <rect width="320" height="900" fill="#FAF6EE" rx="4" />
+    <g transform="translate(30, 60)">
+      <text x="130" y="30" font-family="'Gill Sans', sans-serif" font-size="16" font-weight="bold" fill="#EA580C" text-anchor="middle" letter-spacing="2">RECENT CLASSICS TITLES</text>
+      <line x1="20" y1="45" x2="240" y2="45" stroke="#18181B" stroke-width="1" />
+      
+      <text x="10" y="80" font-family="Georgia, serif" font-size="12" font-weight="bold" fill="#18181B">L1 · HOMER: The Odyssey</text>
+      <text x="10" y="100" font-family="Georgia, serif" font-size="10" font-style="italic" fill="#6B7280">Translated by E.V. Rieu</text>
+
+      <text x="10" y="140" font-family="Georgia, serif" font-size="12" font-weight="bold" fill="#18181B">L2 · MAUPASSANT: Boule de Suif</text>
+      <text x="10" y="160" font-family="Georgia, serif" font-size="10" font-style="italic" fill="#6B7280">Translated by H.N.P. Sloman</text>
+
+      <text x="10" y="200" font-family="Georgia, serif" font-size="12" font-weight="bold" fill="#18181B">L5 · VOLTAIRE: Candide</text>
+      <text x="10" y="220" font-family="Georgia, serif" font-size="10" font-style="italic" fill="#6B7280">Translated by John Butt</text>
+
+      <text x="10" y="260" font-family="Georgia, serif" font-size="12" font-weight="bold" fill="#18181B">L14 · HOMER: The Iliad</text>
+      <text x="10" y="280" font-family="Georgia, serif" font-size="10" font-style="italic" fill="#6B7280">Translated by E.V. Rieu</text>
+
+      <text x="10" y="320" font-family="Georgia, serif" font-size="12" font-weight="bold" fill="#18181B">L23 · TOLSTOY: War and Peace</text>
+      <text x="10" y="340" font-family="Georgia, serif" font-size="10" font-style="italic" fill="#6B7280">Translated by Rosemary Edmonds</text>
+
+      <rect x="10" y="440" width="240" height="300" fill="#FFFFFF" stroke="#EA580C" stroke-width="1.5" rx="4" />
+      <text x="130" y="480" font-family="'Gill Sans', sans-serif" font-size="14" font-weight="bold" fill="#EA580C" text-anchor="middle">PENGUIN COLLECTORS NOTE</text>
+      <text x="130" y="520" font-family="Georgia, serif" font-size="11" fill="#4B5563" text-anchor="middle">Original promotional bookmark issued</text>
+      <text x="130" y="540" font-family="Georgia, serif" font-size="11" fill="#4B5563" text-anchor="middle">with English paperback first editions.</text>
+      <circle cx="130" cy="620" r="28" fill="#EA580C" />
+      <text x="130" y="628" font-family="sans-serif" font-size="20" fill="#FFFFFF" text-anchor="middle">🐧</text>
+    </g>
+  </svg>

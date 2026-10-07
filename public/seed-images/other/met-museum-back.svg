@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 900" width="100%" height="100%">
+    <rect width="320" height="900" fill="#292524" rx="4" />
+    <g transform="translate(35, 100)">
+      <text x="125" y="40" font-family="Georgia, serif" font-size="16" font-weight="bold" fill="#FBBF24" text-anchor="middle">THE METROPOLITAN MUSEUM</text>
+      <text x="125" y="65" font-family="'Courier New', monospace" font-size="10" fill="#A8A29E" text-anchor="middle">NEW YORK · FOUNDED 1870</text>
+      <line x1="30" y1="85" x2="220" y2="85" stroke="#D97706" stroke-width="1" />
+      
+      <text x="125" y="140" font-family="Georgia, serif" font-size="12" fill="#E7E5E4" text-anchor="middle">Open Tuesday through Sunday</text>
+      <text x="125" y="165" font-family="Georgia, serif" font-size="12" fill="#E7E5E4" text-anchor="middle">Pay-what-you-wish admission</text>
+      
+      <rect x="20" y="240" width="210" height="340" fill="#1C1917" stroke="#44403C" stroke-width="1" rx="4" />
+      <text x="125" y="280" font-family="'Courier New', monospace" font-size="11" font-weight="bold" fill="#FBBF24" text-anchor="middle">MEMBERSHIP PRIVILEGES</text>
+      <text x="125" y="320" font-family="Georgia, serif" font-size="11" fill="#A8A29E" text-anchor="middle">Free admission to all galleries</text>
+      <text x="125" y="350" font-family="Georgia, serif" font-size="11" fill="#A8A29E" text-anchor="middle">10% discount in Museum Bookshop</text>
+      <text x="125" y="380" font-family="Georgia, serif" font-size="11" fill="#A8A29E" text-anchor="middle">Invitations to Evening Previews</text>
+      <text x="125" y="480" font-family="Georgia, serif" font-size="20" fill="#D97706" text-anchor="middle">🏛</text>
+    </g>
+  </svg>
