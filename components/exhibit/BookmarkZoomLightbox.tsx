@@ -189,6 +189,15 @@ export function BookmarkZoomLightbox({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose, handleZoomIn, handleZoomOut, handleResetZoom, flipSide]);
 
+  // Global mouse up listener to prevent sticky drag state
+  useEffect(() => {
+    const handleGlobalMouseUp = () => setIsDragging(false);
+    if (isDragging) {
+      window.addEventListener("mouseup", handleGlobalMouseUp);
+      return () => window.removeEventListener("mouseup", handleGlobalMouseUp);
+    }
+  }, [isDragging]);
+
   // Lock background body scroll when open
   useEffect(() => {
     if (isOpen) {
@@ -282,18 +291,15 @@ export function BookmarkZoomLightbox({
               transform: `translate3d(${position.x}px, ${position.y}px, 0) scale(${scale})`,
               transition: isDragging ? "none" : "transform 0.15s ease-out",
             }}
-            className="relative max-w-[90vw] max-h-[80vh] flex items-center justify-center pointer-events-none drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)]"
+            className="relative max-w-[90vw] max-h-[80vh] flex items-center justify-center pointer-events-none"
           >
-            {/* The High-Resolution Specimen Image */}
-            <div className="relative w-full h-full flex items-center justify-center">
-              <Image
+            {/* The High-Resolution Specimen Image mounted on solid paper backing with clean box shadow */}
+            <div className="relative flex items-center justify-center bg-white rounded-[4px] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.85)] ring-1 ring-black/20 overflow-hidden">
+              <img
                 src={imageUrl}
                 alt={alt}
-                width={1200}
-                height={1600}
-                unoptimized
-                priority
-                className="max-h-[75vh] w-auto object-contain rounded-[4px] filter contrast-[1.02]"
+                className="max-h-[75vh] max-w-[85vw] w-auto h-auto object-contain block select-none"
+                draggable={false}
               />
             </div>
           </div>
