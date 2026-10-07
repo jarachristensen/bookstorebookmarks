@@ -307,7 +307,7 @@ export function BookstoreDetailView({ bookstore, availableStorefronts }: Booksto
           <div className="flex items-center justify-between border-b border-[#E8E2D5] pb-2">
             <h2 className="font-serif text-lg font-bold text-stone-900 flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-[#F43F7A]" />
-              <span>Cataloged Bookmarks</span>
+              <span>Cataloged Bookmarks &amp; Tickets</span>
             </h2>
             <span className="text-xs font-mono text-stone-500">
               {bookstore.bookmarks.length} {bookstore.bookmarks.length === 1 ? "Specimen" : "Specimens"}
@@ -328,6 +328,11 @@ export function BookstoreDetailView({ bookstore, availableStorefronts }: Booksto
                   className="group relative flex flex-col items-center text-center cursor-pointer p-2.5 rounded-xl bg-white hover:bg-[#FAF8F5] border border-[#E8E2D5] hover:border-[#2563EB]/50 shadow-xs hover:shadow-md transition-all duration-200"
                 >
                   <div className="relative w-full h-44 sm:h-52 mb-2 flex items-center justify-center overflow-hidden">
+                    {bm.isBooksellerTicket && (
+                      <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-[#2563EB] text-white shadow-2xs z-10">
+                        Ticket
+                      </div>
+                    )}
                     <Image
                       src={bm.frontImageUrl}
                       alt={bm.title}
@@ -336,7 +341,7 @@ export function BookstoreDetailView({ bookstore, availableStorefronts }: Booksto
                       className="object-contain object-center group-hover:scale-105 transition-transform duration-200"
                     />
                     {/* Hover Zoom Hint */}
-                    <div className="absolute top-1.5 right-1.5 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-opacity shadow-sm flex items-center gap-1">
+                    <div className="absolute top-1.5 right-1.5 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-opacity shadow-sm flex items-center gap-1 z-10">
                       <ZoomIn className="w-3 h-3 text-amber-300" />
                     </div>
                   </div>

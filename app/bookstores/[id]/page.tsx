@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getBookstoreById } from "@/lib/db/queries";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/ui/Header";
+import { Footer } from "@/components/ui/Footer";
 import { BookstoreDetailView } from "@/components/bookstores/BookstoreDetailView";
 import { getAvailableStorefrontFiles } from "@/lib/utils/storefront-server";
 
@@ -36,38 +37,7 @@ export default async function SingleBookstorePage({
         <BookstoreDetailView bookstore={bookstore} availableStorefronts={availableStorefronts} />
       </main>
 
-      <footer className="border-t border-[#E8E2D5] py-8 bg-[#FAF8F5] text-center text-xs text-stone-600 mt-12">
-        <div className="max-w-7xl mx-auto px-4 space-y-3">
-          <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-stone-700 font-medium">
-            <Link href="/" className="hover:text-[#F43F7A] hover:underline">
-              Archive
-            </Link>
-            <span>·</span>
-            <Link href="/bookstores" className="hover:text-[#F43F7A] hover:underline font-bold text-[#F43F7A]">
-              Bookstores
-            </Link>
-            <span>·</span>
-            <Link href="/partners" className="hover:text-[#F43F7A] hover:underline">
-              Partners &amp; Donors
-            </Link>
-            <span>·</span>
-            <Link href="/about" className="hover:text-[#F43F7A] hover:underline">
-              About Archive
-            </Link>
-            <span>·</span>
-            <Link href="/contact" className="hover:text-[#F43F7A] hover:underline">
-              Donate &amp; Submissions
-            </Link>
-          </div>
-
-          <p className="font-serif font-bold text-stone-900 text-sm">
-            <span className="text-[#F43F7A]">The</span> <span className="text-[#2563EB]">Bookstore</span> <span className="text-[#F43F7A]">Bookmark</span> <span className="text-[#2563EB]">Archive</span>
-          </p>
-          <p className="italic font-serif text-stone-700 max-w-xl mx-auto">
-            "They saved our place; now, let’s save theirs."
-          </p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

@@ -14,6 +14,7 @@ import {
   X,
   HeartHandshake,
   ArrowLeftRight,
+  Ticket,
 } from "lucide-react";
 
 function CuratorCabinetButton({ pathname }: { pathname: string | null }) {
@@ -59,6 +60,7 @@ export function Header() {
   const navLinks = [
     { href: "/", label: "Archive", icon: Bookmark },
     { href: "/bookstores", label: "Bookstores", icon: Building2 },
+    { href: "/tickets", label: "Bookseller Tickets", icon: Ticket },
     { href: "/partners", label: "Partners & Donors", icon: HeartHandshake },
     { href: "/about", label: "About Archive", icon: Info },
     { href: "/trading", label: "Bookmark Bazaar", icon: ArrowLeftRight },

@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { Header } from "@/components/ui/Header";
+import { Footer } from "@/components/ui/Footer";
 import { CuratorPageToolbar } from "@/components/admin/CuratorPageToolbar";
 import { FAQAccordion } from "@/components/ui/FAQAccordion";
 import { VisualTextarea } from "@/components/ui/VisualTextarea";
@@ -353,38 +354,7 @@ export function EditableContactPage({
         />
       )}
 
-      <footer className="border-t border-[#E8E2D5] py-8 bg-[#FAF8F5] text-center text-xs font-serif text-stone-500">
-        <div className="max-w-7xl mx-auto px-4 space-y-3">
-          <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-serif text-stone-600">
-            <Link href="/" className="hover:text-[#F43F7A] hover:underline">
-              Archive
-            </Link>
-            <span>·</span>
-            <Link href="/bookstores" className="hover:text-[#F43F7A] hover:underline">
-              Bookstores
-            </Link>
-            <span>·</span>
-            <Link href="/partners" className="hover:text-[#F43F7A] hover:underline">
-              Partners &amp; Donors
-            </Link>
-            <span>·</span>
-            <Link href="/about" className="hover:text-[#F43F7A] hover:underline">
-              About Archive
-            </Link>
-            <span>·</span>
-            <Link href="/contact" className="text-[#F43F7A] font-bold hover:underline">
-              Contact
-            </Link>
-          </div>
-
-          <p className="font-serif font-bold text-stone-800">
-            <span className="text-[#F43F7A]">The</span> <span className="text-[#2563EB]">Bookstore</span> <span className="text-[#F43F7A]">Bookmark</span> <span className="text-[#2563EB]">Archive</span>
-          </p>
-          <p className="text-stone-500">
-            Dedicated to preserving independent bookstore ephemera, history, and physical papercraft.
-          </p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

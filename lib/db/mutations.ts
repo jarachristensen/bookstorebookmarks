@@ -31,6 +31,7 @@ export interface FullBookmarkInput {
     acquisitionDate?: string | null;
     acquisitionNotes?: string | null;
     isFeatured?: boolean;
+    isBooksellerTicket?: boolean;
     tradeQuantity?: number;
     displayOrder?: number;
     accentColor?: string | null;
@@ -153,6 +154,7 @@ export interface BookmarkBulkUpdateItem {
   id: string;
   title: string;
   dimensions: string;
+  isBooksellerTicket?: boolean;
 }
 
 /**
@@ -171,6 +173,9 @@ export async function bulkUpdateBookmarks(updates: BookmarkBulkUpdateItem[]): Pr
     }
     if (typeof item.dimensions === "string" && item.dimensions.trim()) {
       updateData.dimensions = item.dimensions.trim();
+    }
+    if (typeof item.isBooksellerTicket === "boolean") {
+      updateData.isBooksellerTicket = item.isBooksellerTicket;
     }
 
     if (Object.keys(updateData).length > 1) {
@@ -272,6 +277,7 @@ export async function saveBookmarkAndBookstore(data: FullBookmarkInput): Promise
     acquisitionDate: data.bookmark.acquisitionDate || null,
     acquisitionNotes: data.bookmark.acquisitionNotes || null,
     isFeatured: Boolean(data.bookmark.isFeatured),
+    isBooksellerTicket: Boolean(data.bookmark.isBooksellerTicket),
     tradeQuantity: data.bookmark.tradeQuantity !== undefined ? Number(data.bookmark.tradeQuantity) : 0,
     displayOrder: Number(data.bookmark.displayOrder) || 0,
     accentColor: data.bookmark.accentColor || "#881337",

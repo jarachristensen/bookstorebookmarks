@@ -831,6 +831,11 @@ export function AdminTableClient({
                                   KEY
                                 </span>
                               )}
+                              {b.isBooksellerTicket && (
+                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-[#2563EB]/15 text-[#2563EB] border border-[#2563EB]/30">
+                                  TICKET
+                                </span>
+                              )}
                             </div>
                             <span className="font-mono text-[10px] text-stone-400 block">
                               Accession: {b.accessionNo}

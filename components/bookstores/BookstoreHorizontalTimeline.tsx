@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { BookstoreWithDetails } from "@/lib/db/queries";
 import { BookstoreLocation, ArchivalMedia, CustomTimelineEvent } from "@/db/schema";
 import {
@@ -12,7 +12,9 @@ import {
   Calendar,
   Pencil,
   Trash2,
+  ZoomIn,
 } from "lucide-react";
+import { ClippingLightbox } from "@/components/exhibit/ClippingLightbox";
 
 export interface TimelineEvent {
   id: string;
@@ -42,6 +44,16 @@ export function BookstoreHorizontalTimeline({
   onEditEvent,
   onDeleteEvent,
 }: BookstoreHorizontalTimelineProps) {
+  const [localLightboxMedia, setLocalLightboxMedia] = useState<ArchivalMedia | null>(null);
+
+  const handleMediaClick = (media: ArchivalMedia) => {
+    if (onSelectMedia) {
+      onSelectMedia(media);
+    } else {
+      setLocalLightboxMedia(media);
+    }
+  };
+
   // Parse locations
   let parsedLocations: BookstoreLocation[] = [];
   try {
@@ -265,10 +277,10 @@ export function BookstoreHorizontalTimeline({
       <div className="overflow-x-auto pb-4 pt-2">
         <div className="min-w-[760px] flex items-center gap-6 py-6 px-4">
           {/* Left Anchor: Grand Opening Stamp */}
-          {storefrontMedia && onSelectMedia && !isEditable ? (
+          {storefrontMedia && !isEditable ? (
             <button
               type="button"
-              onClick={() => onSelectMedia(storefrontMedia)}
+              onClick={() => handleMediaClick(storefrontMedia)}
               title="Click to view storefront photo & clipping"
               className="shrink-0 group flex flex-col items-center justify-center text-center p-4 rounded-xl border-2 border-dashed border-stone-800 hover:border-[#F43F7A] bg-[#FAF8F5] hover:bg-rose-50/50 shadow-xs hover:shadow-md rotate-[-2.5deg] hover:rotate-0 transition-all duration-200 cursor-pointer max-w-[185px]"
             >
@@ -301,7 +313,7 @@ export function BookstoreHorizontalTimeline({
           )}
 
           {/* Horizontal Timeline Rail with Alternating Stalks */}
-          <div className="flex-1 relative flex flex-col justify-center min-h-[240px]">
+          <div className="flex-1 relative flex flex-col justify-center min-h-[290px]">
             {/* Center Axis Line */}
             <div className="absolute left-0 right-0 h-[3px] bg-stone-900 rounded-full top-1/2 -translate-y-1/2 z-0" />
 
@@ -310,20 +322,47 @@ export function BookstoreHorizontalTimeline({
               {timelineEvents.map((ev, index) => {
                 const isTop = index % 2 === 0;
                 const hasMedia = Boolean(ev.media);
-                const isClickable = hasMedia && Boolean(onSelectMedia) && !isEditable;
+                const isClickable = hasMedia && !isEditable;
 
                 return (
                   <div
                     key={ev.id}
                     className="flex-1 flex flex-col items-center relative text-center min-w-[110px] max-w-[150px]"
                   >
-                    {/* Top Content Area (Fixed Height 96px) */}
-                    <div className="h-[96px] w-full flex flex-col items-center justify-end">
+                    {/* Top Content Area (Fixed Height 128px) */}
+                    <div className="h-[128px] w-full flex flex-col items-center justify-end">
                       {isTop && (
                         <div className="flex flex-col items-center w-full">
                           <span className="font-serif font-bold text-xs text-stone-900 tracking-tight mb-0.5">
                             {ev.year}
                           </span>
+
+                          {/* Image or Newspaper Clipping Thumbnail */}
+                          {ev.media?.imageUrl && (
+                            <button
+                              type="button"
+                              onClick={() => handleMediaClick(ev.media!)}
+                              title={`Click to zoom ${ev.media.mediaType === "newspaper" ? "clipping" : "photo"}`}
+                              className="group/thumb relative my-0.5 w-10 h-10 rounded border border-stone-300 hover:border-[#F43F7A] overflow-hidden shadow-2xs hover:shadow-xs transition-all cursor-pointer bg-stone-100 flex items-center justify-center shrink-0"
+                            >
+                              <img
+                                src={ev.media.imageUrl}
+                                alt={ev.description || ev.label}
+                                className="w-full h-full object-cover group-hover/thumb:scale-110 transition-transform duration-200"
+                              />
+                              <div className="absolute inset-0 bg-black/0 group-hover/thumb:bg-black/30 flex items-center justify-center transition-colors">
+                                <ZoomIn className="w-3.5 h-3.5 text-white opacity-0 group-hover/thumb:opacity-100 transition-opacity drop-shadow" />
+                              </div>
+                              <div className="absolute bottom-0 right-0 p-0.5 bg-stone-900/70 text-white rounded-tl">
+                                {ev.media.mediaType === "newspaper" ? (
+                                  <Newspaper className="w-2.5 h-2.5" />
+                                ) : (
+                                  <Camera className="w-2.5 h-2.5" />
+                                )}
+                              </div>
+                            </button>
+                          )}
+
                           {isEditable ? (
                             <div className="flex flex-col items-center gap-1">
                               <p className="font-serif text-[11px] text-stone-900 font-bold leading-tight line-clamp-2">
@@ -355,26 +394,28 @@ export function BookstoreHorizontalTimeline({
                           ) : isClickable ? (
                             <button
                               type="button"
-                              onClick={() => onSelectMedia!(ev.media!)}
+                              onClick={() => handleMediaClick(ev.media!)}
                               title={`Click to view clipping/photo: ${ev.description || ev.label}`}
                               className="group flex flex-col items-center cursor-pointer focus:outline-none"
                             >
                               <p className="font-serif text-[11px] text-stone-900 group-hover:text-[#F43F7A] font-bold leading-tight line-clamp-2 group-hover:underline transition-colors">
                                 {ev.description || ev.label}
                               </p>
-                              <span className="inline-flex items-center gap-0.5 text-[9px] font-mono text-[#F43F7A] mt-0.5 opacity-80 group-hover:opacity-100 font-semibold">
-                                {ev.media?.mediaType === "newspaper" ? (
-                                  <>
-                                    <Newspaper className="w-2.5 h-2.5" />
-                                    <span>Clipping</span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <Camera className="w-2.5 h-2.5" />
-                                    <span>Photo</span>
-                                  </>
-                                )}
-                              </span>
+                              {!ev.media?.imageUrl && (
+                                <span className="inline-flex items-center gap-0.5 text-[9px] font-mono text-[#F43F7A] mt-0.5 opacity-80 group-hover:opacity-100 font-semibold">
+                                  {ev.media?.mediaType === "newspaper" ? (
+                                    <>
+                                      <Newspaper className="w-2.5 h-2.5" />
+                                      <span>Clipping</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Camera className="w-2.5 h-2.5" />
+                                      <span>Photo</span>
+                                    </>
+                                  )}
+                                </span>
+                              )}
                             </button>
                           ) : (
                             <p className="font-serif text-[11px] text-stone-900 font-semibold leading-tight line-clamp-2">
@@ -401,7 +442,7 @@ export function BookstoreHorizontalTimeline({
                       ) : isClickable ? (
                         <button
                           type="button"
-                          onClick={() => onSelectMedia!(ev.media!)}
+                          onClick={() => handleMediaClick(ev.media!)}
                           title={`View attached archival clipping/photo (${ev.year})`}
                           className="group focus:outline-none flex items-center justify-center cursor-pointer"
                         >
@@ -412,8 +453,8 @@ export function BookstoreHorizontalTimeline({
                       )}
                     </div>
 
-                    {/* Bottom Content Area (Fixed Height 96px) */}
-                    <div className="h-[96px] w-full flex flex-col items-center justify-start">
+                    {/* Bottom Content Area (Fixed Height 128px) */}
+                    <div className="h-[128px] w-full flex flex-col items-center justify-start">
                       {!isTop && (
                         <div className="flex flex-col items-center w-full">
                           {/* Stalk up to axis */}
@@ -421,6 +462,33 @@ export function BookstoreHorizontalTimeline({
                           <span className="font-serif font-bold text-xs text-stone-900 tracking-tight mb-0.5">
                             {ev.year}
                           </span>
+
+                          {/* Image or Newspaper Clipping Thumbnail */}
+                          {ev.media?.imageUrl && (
+                            <button
+                              type="button"
+                              onClick={() => handleMediaClick(ev.media!)}
+                              title={`Click to zoom ${ev.media.mediaType === "newspaper" ? "clipping" : "photo"}`}
+                              className="group/thumb relative my-0.5 w-10 h-10 rounded border border-stone-300 hover:border-[#F43F7A] overflow-hidden shadow-2xs hover:shadow-xs transition-all cursor-pointer bg-stone-100 flex items-center justify-center shrink-0"
+                            >
+                              <img
+                                src={ev.media.imageUrl}
+                                alt={ev.description || ev.label}
+                                className="w-full h-full object-cover group-hover/thumb:scale-110 transition-transform duration-200"
+                              />
+                              <div className="absolute inset-0 bg-black/0 group-hover/thumb:bg-black/30 flex items-center justify-center transition-colors">
+                                <ZoomIn className="w-3.5 h-3.5 text-white opacity-0 group-hover/thumb:opacity-100 transition-opacity drop-shadow" />
+                              </div>
+                              <div className="absolute bottom-0 right-0 p-0.5 bg-stone-900/70 text-white rounded-tl">
+                                {ev.media.mediaType === "newspaper" ? (
+                                  <Newspaper className="w-2.5 h-2.5" />
+                                ) : (
+                                  <Camera className="w-2.5 h-2.5" />
+                                )}
+                              </div>
+                            </button>
+                          )}
+
                           {isEditable ? (
                             <div className="flex flex-col items-center gap-1">
                               <p className="font-serif text-[11px] text-stone-900 font-bold leading-tight line-clamp-2">
@@ -452,26 +520,28 @@ export function BookstoreHorizontalTimeline({
                           ) : isClickable ? (
                             <button
                               type="button"
-                              onClick={() => onSelectMedia!(ev.media!)}
+                              onClick={() => handleMediaClick(ev.media!)}
                               title={`Click to view clipping/photo: ${ev.description || ev.label}`}
                               className="group flex flex-col items-center cursor-pointer focus:outline-none"
                             >
                               <p className="font-serif text-[11px] text-stone-900 group-hover:text-[#F43F7A] font-bold leading-tight line-clamp-2 group-hover:underline transition-colors">
                                 {ev.description || ev.label}
                               </p>
-                              <span className="inline-flex items-center gap-0.5 text-[9px] font-mono text-[#F43F7A] mt-0.5 opacity-80 group-hover:opacity-100 font-semibold">
-                                {ev.media?.mediaType === "newspaper" ? (
-                                  <>
-                                    <Newspaper className="w-2.5 h-2.5" />
-                                    <span>Clipping</span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <Camera className="w-2.5 h-2.5" />
-                                    <span>Photo</span>
-                                  </>
-                                )}
-                              </span>
+                              {!ev.media?.imageUrl && (
+                                <span className="inline-flex items-center gap-0.5 text-[9px] font-mono text-[#F43F7A] mt-0.5 opacity-80 group-hover:opacity-100 font-semibold">
+                                  {ev.media?.mediaType === "newspaper" ? (
+                                    <>
+                                      <Newspaper className="w-2.5 h-2.5" />
+                                      <span>Clipping</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Camera className="w-2.5 h-2.5" />
+                                      <span>Photo</span>
+                                    </>
+                                  )}
+                                </span>
+                              )}
                             </button>
                           ) : (
                             <p className="font-serif text-[11px] text-stone-900 font-semibold leading-tight line-clamp-2">
@@ -488,6 +558,14 @@ export function BookstoreHorizontalTimeline({
           </div>
         </div>
       </div>
+
+      {/* Internal Fallback Lightbox if clicked standalone */}
+      {localLightboxMedia && (
+        <ClippingLightbox
+          media={localLightboxMedia}
+          onClose={() => setLocalLightboxMedia(null)}
+        />
+      )}
     </div>
   );
 }

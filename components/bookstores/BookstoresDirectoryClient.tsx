@@ -18,9 +18,10 @@ export interface BookstoresDirectoryClientProps {
 interface BookstoreCardProps {
   store: BookstoreWithDetails;
   availableStorefronts?: string[];
+  priority?: boolean;
 }
 
-function BookstoreCard({ store, availableStorefronts }: BookstoreCardProps) {
+function BookstoreCard({ store, availableStorefronts, priority = false }: BookstoreCardProps) {
   const initialImage = resolveStorefrontImage(store, availableStorefronts);
   const [imgSrc, setImgSrc] = useState(initialImage);
   const [hasError, setHasError] = useState(false);
@@ -56,6 +57,8 @@ function BookstoreCard({ store, availableStorefronts }: BookstoreCardProps) {
             src={isFiller ? DEFAULT_STOREFRONT_IMAGE : imgSrc}
             alt={`${store.name} Storefront`}
             fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            priority={priority}
             unoptimized
             onError={() => {
               setHasError(true);
@@ -287,11 +290,12 @@ export function BookstoresDirectoryClient({
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredBookstores.map((store) => (
+          {filteredBookstores.map((store, idx) => (
             <BookstoreCard
               key={store.id}
               store={store}
               availableStorefronts={availableStorefronts}
+              priority={idx < 6}
             />
           ))}
         </div>

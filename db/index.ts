@@ -131,6 +131,7 @@ export async function initDb() {
       acquisition_date TEXT,
       acquisition_notes TEXT,
       is_featured INTEGER NOT NULL DEFAULT 0,
+      is_bookseller_ticket INTEGER NOT NULL DEFAULT 0,
       trade_quantity INTEGER NOT NULL DEFAULT 0,
       display_order INTEGER NOT NULL DEFAULT 0,
       accent_color TEXT,
@@ -142,6 +143,11 @@ export async function initDb() {
   // Migrate bookmarks table if trade_quantity column does not exist
   try {
     await client.execute(`ALTER TABLE bookmarks ADD COLUMN trade_quantity INTEGER NOT NULL DEFAULT 0;`);
+  } catch (_) {}
+
+  // Migrate bookmarks table if is_bookseller_ticket column does not exist
+  try {
+    await client.execute(`ALTER TABLE bookmarks ADD COLUMN is_bookseller_ticket INTEGER NOT NULL DEFAULT 0;`);
   } catch (_) {}
 
   await client.execute(`

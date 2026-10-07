@@ -41,6 +41,7 @@ export interface BookmarkFormData {
     acquisitionDate: string;
     acquisitionNotes: string;
     isFeatured: boolean;
+    isBooksellerTicket?: boolean;
     tradeQuantity?: number;
     displayOrder: number;
     accentColor: string;
@@ -107,6 +108,7 @@ export function BookmarkForm({
         acquisitionDate: "",
         acquisitionNotes: "",
         isFeatured: false,
+        isBooksellerTicket: false,
         tradeQuantity: 0,
         displayOrder: 0,
         accentColor: "#881337",
@@ -620,6 +622,25 @@ export function BookmarkForm({
             />
             <label htmlFor="isFeatured" className="text-xs font-serif font-semibold text-stone-900 cursor-pointer">
               Highlight as Featured Key Specimen
+            </label>
+          </div>
+
+          <div className="flex items-center gap-2 pt-6">
+            <input
+              type="checkbox"
+              id="isBooksellerTicket"
+              data-1p-ignore
+              checked={formData.bookmark.isBooksellerTicket || false}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  bookmark: { ...formData.bookmark, isBooksellerTicket: e.target.checked },
+                })
+              }
+              className="w-4 h-4 rounded text-[#2563EB] border-[#E8E2D5] focus:ring-[#2563EB]/30 cursor-pointer"
+            />
+            <label htmlFor="isBooksellerTicket" className="text-xs font-serif font-semibold text-stone-900 cursor-pointer">
+              Bookseller Ticket (Rare Antique Binder/Bookseller Label)
             </label>
           </div>
         </div>
