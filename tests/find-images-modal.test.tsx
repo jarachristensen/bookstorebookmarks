@@ -116,6 +116,11 @@ describe("FindImagesModal Component", () => {
     expect(googleBtn).toBeDefined();
     expect(googleBtn.getAttribute("href")).toContain("google.com/search?tbm=isch");
     expect(googleBtn.getAttribute("href")).toContain("Strand");
+
+    const mapsBtn = screen.getByTitle("Open Google Maps place card and user photos in new tab");
+    expect(mapsBtn).toBeDefined();
+    expect(mapsBtn.getAttribute("href")).toContain("google.com/maps/search");
+    expect(mapsBtn.getAttribute("href")).toContain("Strand");
   });
 });
 

@@ -206,6 +206,19 @@ export function FindImagesModal({
               <ExternalLink className="w-3.5 h-3.5 text-stone-500" />
               <span>Google Images ↗</span>
             </a>
+
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                query.trim() || bookstoreName
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[#E8E2D5] bg-[#FAF8F5] hover:bg-stone-100 text-stone-700 text-xs font-serif shrink-0 transition-colors cursor-pointer"
+              title="Open Google Maps place card and user photos in new tab"
+            >
+              <ExternalLink className="w-3.5 h-3.5 text-stone-500" />
+              <span>Google Maps Photos ↗</span>
+            </a>
           </form>
 
           {/* Quick Selection Bar */}

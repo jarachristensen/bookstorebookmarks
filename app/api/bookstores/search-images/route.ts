@@ -76,6 +76,57 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  // 0b. Optional: Google Places API (Fetches user-uploaded Google Maps storefront/interior photos)
+  const placesApiKey =
+    process.env.GOOGLE_PLACES_API_KEY || process.env.GOOGLE_MAPS_API_KEY;
+
+  if (placesApiKey) {
+    try {
+      const placesEndpoint = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(
+        query
+      )}&key=${placesApiKey}`;
+
+      const pRes = await fetch(placesEndpoint, {
+        next: { revalidate: 3600 },
+      });
+
+      if (pRes.ok) {
+        const pData = await pRes.json();
+        const topPlace = pData.results?.[0];
+        if (topPlace && Array.isArray(topPlace.photos)) {
+          for (let i = 0; i < topPlace.photos.length; i++) {
+            const photo = topPlace.photos[i];
+            const photoRef = photo.photo_reference;
+            if (!photoRef) continue;
+
+            const fullUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=1600&photo_reference=${photoRef}&key=${placesApiKey}`;
+            const thumbUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${photoRef}&key=${placesApiKey}`;
+
+            if (!seenUrls.has(fullUrl)) {
+              seenUrls.add(fullUrl);
+              const author = photo.html_attributions?.[0]
+                ? photo.html_attributions[0].replace(/<[^>]*>/g, "")
+                : "Google Maps User";
+
+              results.push({
+                id: `maps-${i}-${Date.now()}`,
+                title: `${topPlace.name || query} (${topPlace.formatted_address || "Google Maps"})`,
+                url: fullUrl,
+                thumbnailUrl: thumbUrl,
+                source: "Google Maps",
+                description: `Photo by ${author}`,
+                width: photo.width,
+                height: photo.height,
+              });
+            }
+          }
+        }
+      }
+    } catch (pErr) {
+      console.warn("Google Places Photo API error:", pErr);
+    }
+  }
+
   // 1. Search Wikimedia Commons (Rich public domain & CC cultural heritage)
   try {
     const commonsEndpoint = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(
