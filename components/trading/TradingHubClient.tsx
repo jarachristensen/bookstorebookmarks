@@ -32,6 +32,8 @@ import {
   Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { TradeImageUploader } from "./TradeImageUploader";
+
 
 export interface TradingHubClientProps {
   initialBookmarks: BookmarkWithDetails[];
@@ -193,6 +195,8 @@ export function TradingHubClient({
   const [collectorName, setCollectorName] = useState("");
   const [collectorEmail, setCollectorEmail] = useState("");
   const [offeredItemsText, setOfferedItemsText] = useState("");
+  const [offeredImages, setOfferedImages] = useState<string[]>([]);
+
 
   // Bookmark Inspector Modal
   const [inspectingBookmark, setInspectingBookmark] = useState<BookmarkWithDetails | null>(null);
@@ -284,9 +288,11 @@ export function TradingHubClient({
           collectorName,
           collectorEmail,
           offeredItems: offeredItemsText,
+          offeredImages,
           requestedBookmarkIds: selectedBookmarks.map((b) => b.id),
           requestedBookmarksSnapshot: snapshot,
         }),
+
       });
 
       const data = await res.json();
@@ -950,7 +956,9 @@ export function TradingHubClient({
                         setCollectorName("");
                         setCollectorEmail("");
                         setOfferedItemsText("");
+                        setOfferedImages([]);
                       }}
+
                       className="bg-stone-900 text-white text-xs font-serif cursor-pointer hover:bg-stone-800"
                     >
                       Back to Bookmark Bazaar
@@ -1027,7 +1035,14 @@ export function TradingHubClient({
                     />
                   </div>
 
+                  <TradeImageUploader
+                    images={offeredImages}
+                    onChange={setOfferedImages}
+                    disabled={isSubmittingProposal}
+                  />
+
                   <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#E8E2D5]">
+
                     <Button
                       type="button"
                       variant="outline"

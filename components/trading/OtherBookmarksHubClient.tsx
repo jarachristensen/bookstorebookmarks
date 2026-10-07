@@ -28,6 +28,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { BookmarkZoomLightbox } from "@/components/exhibit/BookmarkZoomLightbox";
+import { TradeImageUploader } from "./TradeImageUploader";
+
 
 export interface OtherBookmarksHubClientProps {
   initialBookmarks: NonBookstoreBookmark[];
@@ -59,7 +61,9 @@ export function OtherBookmarksHubClient({
   const [collectorName, setCollectorName] = useState("");
   const [collectorEmail, setCollectorEmail] = useState("");
   const [offeredItems, setOfferedItems] = useState("");
+  const [offeredImages, setOfferedImages] = useState<string[]>([]);
   const [isSubmittingProposal, setIsSubmittingProposal] = useState(false);
+
   const [proposalSuccess, setProposalSuccess] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
@@ -144,7 +148,9 @@ export function OtherBookmarksHubClient({
         collectorName: collectorName.trim(),
         collectorEmail: collectorEmail.trim(),
         offeredItems: offeredItems.trim(),
+        offeredImages,
         requestedBookmarkIds: selectedBookmarks.map((b) => b.id),
+
         requestedBookmarksSnapshot: selectedBookmarks.map((b) => ({
           id: b.id,
           title: b.title,
@@ -486,7 +492,12 @@ export function OtherBookmarksHubClient({
                       setIsProposalModalOpen(false);
                       setSelectedBookmarkIds([]);
                       setProposalSuccess(false);
+                      setCollectorName("");
+                      setCollectorEmail("");
+                      setOfferedItems("");
+                      setOfferedImages([]);
                     }}
+
                     className="bg-[#18181B] text-white px-6"
                   >
                     Done & Return to Bazaar
@@ -596,7 +607,14 @@ export function OtherBookmarksHubClient({
                         className="w-full px-3 py-2 rounded-xl bg-white border border-[#E8E2D5] text-xs font-serif focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
                       />
                     </div>
+
+                    <TradeImageUploader
+                      images={offeredImages}
+                      onChange={setOfferedImages}
+                      disabled={isSubmittingProposal}
+                    />
                   </div>
+
 
                   {submitError && (
                     <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-serif">

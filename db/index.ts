@@ -191,6 +191,7 @@ export async function initDb() {
       collector_name TEXT NOT NULL,
       collector_email TEXT NOT NULL,
       offered_items TEXT NOT NULL,
+      offered_images TEXT,
       requested_bookmark_ids TEXT NOT NULL,
       requested_bookmarks_snapshot TEXT NOT NULL,
       status TEXT NOT NULL DEFAULT 'pending',
@@ -199,6 +200,12 @@ export async function initDb() {
       updated_at TEXT NOT NULL
     );
   `);
+
+  // Migrate trade_proposals table if offered_images column does not exist
+  try {
+    await client.execute(`ALTER TABLE trade_proposals ADD COLUMN offered_images TEXT;`);
+  } catch (_) {}
+
 
   await client.execute(`
     CREATE TABLE IF NOT EXISTS non_bookstore_bookmarks (

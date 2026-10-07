@@ -30,7 +30,14 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { collectorName, collectorEmail, offeredItems, requestedBookmarkIds, requestedBookmarksSnapshot } = body;
+    const {
+      collectorName,
+      collectorEmail,
+      offeredItems,
+      offeredImages,
+      requestedBookmarkIds,
+      requestedBookmarksSnapshot,
+    } = body;
 
     if (!collectorName || typeof collectorName !== "string" || !collectorName.trim()) {
       return NextResponse.json({ error: "Collector name is required" }, { status: 400 });
@@ -52,9 +59,11 @@ export async function POST(req: NextRequest) {
       collectorName,
       collectorEmail,
       offeredItems,
+      offeredImages: Array.isArray(offeredImages) ? offeredImages : undefined,
       requestedBookmarkIds,
       requestedBookmarksSnapshot,
     });
+
 
     return NextResponse.json({ success: true, id }, { status: 201 });
   } catch (err: any) {

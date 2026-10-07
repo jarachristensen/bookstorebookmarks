@@ -504,7 +504,9 @@ export interface CreateTradeProposalInput {
   collectorName: string;
   collectorEmail: string;
   offeredItems: string;
+  offeredImages?: string[];
   requestedBookmarkIds: string[];
+
   requestedBookmarksSnapshot?: Array<{
     id: string;
     title: string;
@@ -572,7 +574,12 @@ export async function createTradeProposal(data: CreateTradeProposalInput): Promi
     collectorName: data.collectorName.trim(),
     collectorEmail: data.collectorEmail.trim(),
     offeredItems: data.offeredItems.trim(),
+    offeredImages:
+      data.offeredImages && data.offeredImages.length > 0
+        ? JSON.stringify(data.offeredImages)
+        : null,
     requestedBookmarkIds: JSON.stringify(data.requestedBookmarkIds),
+
     requestedBookmarksSnapshot: JSON.stringify(snapshot),
     status: "pending",
     notes: null,

@@ -124,7 +124,9 @@ export const tradeProposals = sqliteTable("trade_proposals", {
   collectorName: text("collector_name").notNull(),
   collectorEmail: text("collector_email").notNull(),
   offeredItems: text("offered_items").notNull(),
+  offeredImages: text("offered_images"), // JSON stringified array of image URLs
   requestedBookmarkIds: text("requested_bookmark_ids").notNull(), // JSON stringified array of bookmark IDs
+
   requestedBookmarksSnapshot: text("requested_bookmarks_snapshot").notNull(), // JSON stringified array of bookmark objects
   status: text("status").notNull().default("pending"), // 'pending' | 'accepted' | 'declined' | 'completed'
   notes: text("notes"),

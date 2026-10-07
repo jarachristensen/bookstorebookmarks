@@ -33,6 +33,8 @@ import {
   Upload,
   Layers,
   Sliders,
+  Camera,
+  ZoomIn,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
@@ -40,6 +42,8 @@ import { OtherBookmarksBulkUploaderModal } from "@/components/admin/OtherBookmar
 import { TagManagerModal } from "@/components/admin/TagManagerModal";
 import { EditOtherBookmarkModal } from "@/components/admin/EditOtherBookmarkModal";
 import { ImageDropzone } from "@/components/admin/ImageDropzone";
+import { BookmarkZoomLightbox } from "@/components/exhibit/BookmarkZoomLightbox";
+
 
 
 export interface AdminTableClientProps {
@@ -78,6 +82,8 @@ export function AdminTableClient({
   const [updatingTradeId, setUpdatingTradeId] = useState<string | null>(null);
   const [tradeSuccessMsg, setTradeSuccessMsg] = useState("");
   const [tradeErrorMsg, setTradeErrorMsg] = useState("");
+  const [selectedTradeZoomImage, setSelectedTradeZoomImage] = useState<string | null>(null);
+
 
   // Bulk Edit States for Bookstore Bookmarks
   const [isBulkEditing, setIsBulkEditing] = useState(false);
@@ -1773,19 +1779,66 @@ export function AdminTableClient({
 
                       {/* Offered Ephemera Description */}
                       <div className="p-3.5 rounded-xl bg-[#FAF8F5] border border-[#E8E2D5] space-y-2 flex flex-col justify-between">
-                        <div>
-                          <span className="text-[10px] font-mono text-stone-500 uppercase tracking-wider font-bold block mb-1">
-                            Bookmarks &amp; Ephemera Offered in Exchange
-                          </span>
-                          <div className="p-3 bg-white rounded-lg border border-[#E8E2D5] text-xs font-serif text-stone-800 whitespace-pre-wrap leading-relaxed min-h-[90px]">
-                            {proposal.offeredItems}
+                        <div className="space-y-3">
+                          <div>
+                            <span className="text-[10px] font-mono text-stone-500 uppercase tracking-wider font-bold block mb-1">
+                              Bookmarks &amp; Ephemera Offered in Exchange
+                            </span>
+                            <div className="p-3 bg-white rounded-lg border border-[#E8E2D5] text-xs font-serif text-stone-800 whitespace-pre-wrap leading-relaxed min-h-[90px]">
+                              {proposal.offeredItems}
+                            </div>
                           </div>
+
+                          {/* Uploaded Photos from Collector */}
+                          {(() => {
+                            let offeredPhotos: string[] = [];
+                            if (proposal.offeredImages) {
+                              try {
+                                const parsed = JSON.parse(proposal.offeredImages);
+                                if (Array.isArray(parsed)) offeredPhotos = parsed;
+                              } catch {}
+                            }
+                            if (offeredPhotos.length === 0) return null;
+
+                            return (
+                              <div className="p-2.5 bg-white rounded-lg border border-[#E8E2D5] space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-[10px] font-mono text-stone-600 uppercase tracking-wider font-bold flex items-center gap-1.5">
+                                    <Camera className="w-3.5 h-3.5 text-[#2563EB]" />
+                                    <span>Photos Attached by Collector ({offeredPhotos.length})</span>
+                                  </span>
+                                  <span className="text-[9px] font-mono text-stone-400">Click to zoom</span>
+                                </div>
+                                <div className="flex flex-wrap items-center gap-2">
+                                  {offeredPhotos.map((imgUrl, pIdx) => (
+                                    <div
+                                      key={`${imgUrl}-${pIdx}`}
+                                      onClick={() => setSelectedTradeZoomImage(imgUrl)}
+                                      className="group relative w-16 h-22 rounded-lg overflow-hidden border border-[#E8E2D5] bg-stone-100 shadow-2xs hover:border-[#2563EB] hover:scale-105 transition-all cursor-pointer"
+                                    >
+                                      <Image
+                                        src={imgUrl}
+                                        alt={`Offered photo ${pIdx + 1}`}
+                                        fill
+                                        unoptimized
+                                        className="object-cover object-center"
+                                      />
+                                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 flex items-center justify-center transition-colors">
+                                        <ZoomIn className="w-4 h-4 text-white opacity-0 group-hover:opacity-100 drop-shadow-md transition-opacity" />
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          })()}
                         </div>
 
                         <div className="text-[11px] font-serif text-stone-500 italic pt-1">
                           Contact the collector directly via their email to finalize mailing logistics and physical exchange.
                         </div>
                       </div>
+
                     </div>
                   </div>
                 );
@@ -1952,6 +2005,14 @@ export function AdminTableClient({
           router.refresh();
         }}
       />
+
+      {/* Lightbox for Zooming Collector Uploaded Trade Photos */}
+      <BookmarkZoomLightbox
+        isOpen={!!selectedTradeZoomImage}
+        onClose={() => setSelectedTradeZoomImage(null)}
+        imageUrl={selectedTradeZoomImage || ""}
+      />
     </div>
   );
 }
+
