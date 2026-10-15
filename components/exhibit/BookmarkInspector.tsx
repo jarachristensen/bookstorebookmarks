@@ -23,12 +23,16 @@ export interface BookmarkInspectorProps {
   bookmark: BookmarkWithDetails;
   onClose: () => void;
   onOpenDossier?: () => void;
+  tradeAction?: React.ReactNode;
+  showBookstoreLink?: boolean;
 }
 
 export function BookmarkInspector({
   bookmark,
   onClose,
   onOpenDossier,
+  tradeAction,
+  showBookstoreLink = true,
 }: BookmarkInspectorProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isZoomLightboxOpen, setIsZoomLightboxOpen] = useState(false);
@@ -308,20 +312,28 @@ export function BookmarkInspector({
                 </div>
               </div>
 
-              {/* Action to open Bookstore Page */}
-              {store && (
-                <div className="pt-1">
-                  <Link
-                    href={`/bookstores/${store.id}`}
-                    onClick={() => {
-                      if (onClose) onClose();
-                      if (onOpenDossier) onOpenDossier();
-                    }}
-                    className="w-full flex items-center justify-center gap-2 font-serif text-xs sm:text-sm py-2.5 sm:py-3 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-xl shadow-xs transition-colors cursor-pointer"
-                  >
-                    <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 shrink-0" />
-                    <span className="truncate">View Bookstore Page &amp; History →</span>
-                  </Link>
+              {/* Actions: Trade Action & Bookstore Link */}
+              {(tradeAction || (store && showBookstoreLink)) && (
+                <div className="pt-1 space-y-2">
+                  {tradeAction}
+
+                  {store && showBookstoreLink && (
+                    <Link
+                      href={`/bookstores/${store.id}`}
+                      onClick={() => {
+                        if (onClose) onClose();
+                        if (onOpenDossier) onOpenDossier();
+                      }}
+                      className={
+                        tradeAction
+                          ? "w-full flex items-center justify-center gap-1.5 font-serif text-xs py-2 text-stone-500 hover:text-[#2563EB] hover:underline transition-colors cursor-pointer"
+                          : "w-full flex items-center justify-center gap-2 font-serif text-xs sm:text-sm py-2.5 sm:py-3 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-xl shadow-xs transition-colors cursor-pointer"
+                      }
+                    >
+                      <Sparkles className={tradeAction ? "w-3 h-3 text-amber-500 shrink-0" : "w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 shrink-0"} />
+                      <span className="truncate">View Bookstore Page &amp; History →</span>
+                    </Link>
+                  )}
                 </div>
               )}
             </div>
@@ -521,20 +533,28 @@ export function BookmarkInspector({
               )}
             </div>
 
-            {/* Action to open Bookstore Page */}
-            {store && (
-              <div className="pt-1 sm:pt-2">
-                <Link
-                  href={`/bookstores/${store.id}`}
-                  onClick={() => {
-                    if (onClose) onClose();
-                    if (onOpenDossier) onOpenDossier();
-                  }}
-                  className="w-full flex items-center justify-center gap-2 font-serif text-xs sm:text-sm py-2.5 sm:py-3 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-xl shadow-xs transition-colors cursor-pointer"
-                >
-                  <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 shrink-0" />
-                  <span className="truncate">View Bookstore Page &amp; History →</span>
-                </Link>
+            {/* Actions: Trade Action & Bookstore Link */}
+            {(tradeAction || (store && showBookstoreLink)) && (
+              <div className="pt-1 sm:pt-2 space-y-2">
+                {tradeAction}
+
+                {store && showBookstoreLink && (
+                  <Link
+                    href={`/bookstores/${store.id}`}
+                    onClick={() => {
+                      if (onClose) onClose();
+                      if (onOpenDossier) onOpenDossier();
+                    }}
+                    className={
+                      tradeAction
+                        ? "w-full flex items-center justify-center gap-1.5 font-serif text-xs py-2 text-stone-500 hover:text-[#2563EB] hover:underline transition-colors cursor-pointer"
+                        : "w-full flex items-center justify-center gap-2 font-serif text-xs sm:text-sm py-2.5 sm:py-3 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-xl shadow-xs transition-colors cursor-pointer"
+                    }
+                  >
+                    <Sparkles className={tradeAction ? "w-3 h-3 text-amber-500 shrink-0" : "w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 shrink-0"} />
+                    <span className="truncate">View Bookstore Page &amp; History →</span>
+                  </Link>
+                )}
               </div>
             )}
           </div>

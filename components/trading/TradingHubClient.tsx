@@ -436,6 +436,76 @@ export function TradingHubClient({
     );
   };
 
+  const renderInspectorTradeAction = (bookmark: BookmarkWithDetails) => {
+    const isSelected = selectedBookmarks.some((b) => b.id === bookmark.id);
+    const currentQty = selectedQuantities[bookmark.id] || 1;
+    const maxQty = Math.max(1, bookmark.tradeQuantity || 1);
+
+    if (!isSelected) {
+      return (
+        <button
+          type="button"
+          onClick={() => toggleBookmarkSelection(bookmark)}
+          className="w-full flex items-center justify-center gap-2 font-serif text-xs sm:text-sm py-2.5 sm:py-3 bg-[#F43F7A] hover:bg-[#E11D48] text-white rounded-xl shadow-xs hover:shadow-md transition-all cursor-pointer font-bold active:scale-[0.99]"
+        >
+          <Plus className="w-4 h-4" />
+          <span>
+            + Add to Trade Tray {maxQty > 1 ? `(${maxQty} copies available)` : ""}
+          </span>
+        </button>
+      );
+    }
+
+    return (
+      <div className="w-full bg-[#2563EB] text-white rounded-xl p-2 sm:p-2.5 shadow-xs flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 pl-1.5">
+          <CheckCircle2 className="w-4 h-4 text-emerald-300 shrink-0" />
+          <span className="font-serif text-xs sm:text-sm font-semibold">
+            In Trade Tray {maxQty > 1 ? `(${currentQty} of ${maxQty})` : "(1 copy)"}
+          </span>
+        </div>
+
+        <div className="inline-flex items-center gap-1.5 bg-blue-700/60 rounded-lg p-1 border border-blue-400/30">
+          <button
+            type="button"
+            aria-label={`Decrease ${bookmark.title} quantity in inspector`}
+            onClick={() => {
+              if (currentQty <= 1) {
+                removeSelectedBookmark(bookmark.id);
+              } else {
+                updateQuantity(bookmark.id, -1, maxQty);
+              }
+            }}
+            className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-white/20 active:bg-white/30 text-white transition-colors cursor-pointer text-sm font-bold select-none"
+            title={currentQty <= 1 ? "Remove from trade tray" : "Decrease quantity"}
+          >
+            −
+          </button>
+          <span
+            className="text-xs sm:text-sm font-mono font-bold px-2 text-center min-w-[20px] select-none text-white"
+            data-testid={`inspector-qty-${bookmark.id}`}
+          >
+            {currentQty}
+          </span>
+          <button
+            type="button"
+            aria-label={`Increase ${bookmark.title} quantity in inspector`}
+            disabled={currentQty >= maxQty}
+            onClick={() => {
+              if (currentQty < maxQty) {
+                updateQuantity(bookmark.id, 1, maxQty);
+              }
+            }}
+            className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-white/20 active:bg-white/30 text-white transition-colors cursor-pointer text-sm font-bold select-none disabled:opacity-35 disabled:hover:bg-transparent disabled:cursor-not-allowed"
+            title={currentQty >= maxQty ? "Maximum available copies selected" : "Add another copy"}
+          >
+            +
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   const renderPortraitCard = (bookmark: BookmarkWithDetails) => {
     const isSelected = selectedBookmarks.some((b) => b.id === bookmark.id);
     const qty = bookmark.tradeQuantity || 1;
@@ -1170,6 +1240,7 @@ export function TradingHubClient({
                 <BookmarkInspector
                   bookmark={inspectingBookmark}
                   onClose={() => setInspectingBookmark(null)}
+                  tradeAction={renderInspectorTradeAction(inspectingBookmark)}
                 />
               </motion.div>
             </div>

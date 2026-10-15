@@ -226,6 +226,41 @@ describe("TradingHubClient Component", () => {
     });
   });
 
+  it("allows adding to trade and adjusting quantity from within BookmarkInspector modal", async () => {
+    render(<TradingHubClient initialBookmarks={mockTradeBookmarks} />);
+
+    // Open inspector for Powell's
+    fireEvent.click(screen.getByText("Powell's City of Books Wide Bookmark"));
+
+    // Verify Add to Trade Tray button is present in the inspector
+    const modalAddBtn = screen.getByRole("button", { name: /\+ add to trade tray/i });
+    expect(modalAddBtn).toBeDefined();
+
+    // Verify bookstore history link is rendered as secondary link
+    expect(screen.getByText(/view bookstore page & history/i)).toBeDefined();
+
+    // Click Add to Trade Tray in the modal
+    fireEvent.click(modalAddBtn);
+
+    // Should now show in-modal stepper with quantity 1
+    const modalQty = screen.getByTestId("inspector-qty-bm-trade-3");
+    expect(modalQty.textContent).toBe("1");
+
+    // Click + to increment
+    const incBtn = screen.getByRole("button", { name: /increase powell's city of books wide bookmark quantity in inspector/i });
+    fireEvent.click(incBtn);
+    expect(modalQty.textContent).toBe("2");
+
+    // Click − to decrement back to 1
+    const decBtn = screen.getByRole("button", { name: /decrease powell's city of books wide bookmark quantity in inspector/i });
+    fireEvent.click(decBtn);
+    expect(modalQty.textContent).toBe("1");
+
+    // Click − at 1 to remove from trade tray
+    fireEvent.click(decBtn);
+    expect(screen.getByRole("button", { name: /\+ add to trade tray/i })).toBeDefined();
+  });
+
   it("renders the side column FAQ questions", () => {
     render(<TradingHubClient initialBookmarks={mockTradeBookmarks} />);
 
