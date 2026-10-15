@@ -173,6 +173,35 @@ describe("BookmarkPaperSpread Component", () => {
     expect(handleInspect).toHaveBeenCalledWith(mockBookmarks[2]);
   });
 
+  it("allocates an unpaired landscape bookmark to a landscape-stack slot", () => {
+    // 1 portrait bookmark and 1 landscape bookmark
+    const subset = [mockBookmarks[0], mockBookmarks[1]];
+    const slots = groupBookmarksForSpread(subset);
+    expect(slots).toHaveLength(2);
+    expect(slots[0].type).toBe("portrait");
+    expect(slots[0].id).toBe("bm-1");
+    expect(slots[1].type).toBe("landscape-stack");
+    if (slots[1].type === "landscape-stack") {
+      expect(slots[1].bookmarks).toHaveLength(1);
+      expect(slots[1].bookmarks[0].id).toBe("bm-2");
+    }
+
+    const handleInspect = vi.fn();
+    render(
+      <BookmarkPaperSpread
+        bookmarks={subset}
+        onInspectBookmark={handleInspect}
+      />
+    );
+
+    const landscapeBtn = screen.getByRole("button", {
+      name: /gotham horizontal strip bookmark/i,
+    });
+    expect(landscapeBtn).toBeDefined();
+    fireEvent.click(landscapeBtn);
+    expect(handleInspect).toHaveBeenCalledWith(mockBookmarks[1]);
+  });
+
   it("renders empty state when bookmarks list is empty", () => {
     const handleReset = vi.fn();
 

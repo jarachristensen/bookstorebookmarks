@@ -24,6 +24,18 @@ describe("parseDimensions", () => {
     expect(res.isLandscape).toBe(false);
   });
 
+  it("should parse dimensions with W, H, or inch labels", () => {
+    const res = parseDimensions('7.5" W × 2.25" H');
+    expect(res.width).toBeCloseTo(7.5);
+    expect(res.height).toBeCloseTo(2.25);
+    expect(res.isLandscape).toBe(true);
+
+    const res2 = parseDimensions("7 1/2 in x 2 1/4 in");
+    expect(res2.width).toBeCloseTo(7.5);
+    expect(res2.height).toBeCloseTo(2.25);
+    expect(res2.isLandscape).toBe(true);
+  });
+
   it("should handle atypical dimension strings gracefully with fallback", () => {
     const res = parseDimensions("vintage size");
     expect(res.width).toBe(2.25);
@@ -31,3 +43,4 @@ describe("parseDimensions", () => {
     expect(res.isLandscape).toBe(false);
   });
 });
+

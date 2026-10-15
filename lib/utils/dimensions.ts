@@ -25,18 +25,19 @@ export function parseDimensions(dimStr?: string | null): ParsedDimensions {
 
   if (parts.length === 2) {
     const parseFractionOrDecimal = (val: string): number => {
-      const trimmed = val.trim();
-      if (trimmed.includes(" ")) {
+      // Clean labels like W, H, in, inches
+      const cleanedVal = val.replace(/(?:inches|inch|in|width|height|w|h)\.?/gi, "").trim();
+      if (cleanedVal.includes(" ")) {
         // e.g. "2 1/4"
-        const [whole, frac] = trimmed.split(" ");
-        const [num, den] = frac.split("/").map(Number);
+        const [whole, frac] = cleanedVal.split(" ");
+        const [num, den] = (frac || "").split("/").map(Number);
         return Number(whole) + (den ? num / den : 0);
-      } else if (trimmed.includes("/")) {
+      } else if (cleanedVal.includes("/")) {
         // e.g. "3/4"
-        const [num, den] = trimmed.split("/").map(Number);
+        const [num, den] = cleanedVal.split("/").map(Number);
         return den ? num / den : 0;
       }
-      return parseFloat(trimmed);
+      return parseFloat(cleanedVal);
     };
 
     const width = parseFractionOrDecimal(parts[0]);

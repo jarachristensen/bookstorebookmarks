@@ -96,6 +96,8 @@ function BookmarkPaperItem({
   setHoveredId: (id: string | null) => void;
   priority?: boolean;
 }) {
+  const dim = parseDimensions(bookmark.dimensions);
+  const effectiveLandscape = isLandscape || dim.isLandscape;
   const isHovered = hoveredId === bookmark.id;
   const store = bookmark.bookstore;
   const locationStr = [store?.city, store?.stateProvince || store?.country]
@@ -143,8 +145,8 @@ function BookmarkPaperItem({
       >
         <motion.div
           whileHover={{
-            y: isLandscape ? -5 : -8,
-            scale: isLandscape ? 1.03 : 1.04,
+            y: effectiveLandscape ? -5 : -8,
+            scale: effectiveLandscape ? 1.03 : 1.04,
             transition: { duration: 0.2, ease: "easeOut" },
           }}
           whileTap={{ scale: 0.98 }}
@@ -153,7 +155,7 @@ function BookmarkPaperItem({
           {/* Authentic Soft Paper Drop Shadow */}
           <div
             className={`relative w-full ${
-              isLandscape
+              effectiveLandscape
                 ? "aspect-[3.2/1] max-h-[170px] drop-shadow-[0_4px_10px_rgba(24,24,27,0.13)] group-hover:drop-shadow-[0_12px_22px_rgba(24,24,27,0.20)]"
                 : "aspect-[1/3.2] max-h-[380px] drop-shadow-[0_6px_14px_rgba(24,24,27,0.14)] group-hover:drop-shadow-[0_16px_28px_rgba(24,24,27,0.22)]"
             } transition-all duration-200 flex items-center justify-center`}
@@ -163,7 +165,7 @@ function BookmarkPaperItem({
               alt={bookmark.title}
               fill
               sizes={
-                isLandscape
+                effectiveLandscape
                   ? "(max-width: 640px) 95vw, (max-width: 1024px) 55vw, 38vw"
                   : "(max-width: 640px) 45vw, (max-width: 1024px) 25vw, 15vw"
               }
