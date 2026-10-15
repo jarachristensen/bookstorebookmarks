@@ -118,9 +118,7 @@ export function BookstoreDetailEditor({
     specialties: initialData?.specialties
       ? JSON.parse(initialData.specialties).join(", ")
       : "",
-    historicalBlurb:
-      initialData?.historicalBlurb ||
-      `### Bookstore Heritage & Cultural Story\n\nWrite your historical research blurb here...`,
+    historicalBlurb: initialData?.historicalBlurb || "",
     notablePatronsTrivia: initialData?.notablePatronsTrivia
       ? JSON.parse(initialData.notablePatronsTrivia).join("\n")
       : "",
