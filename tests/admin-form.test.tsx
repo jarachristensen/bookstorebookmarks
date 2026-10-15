@@ -10,9 +10,25 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
+vi.mock("@/lib/utils/image-compressor", () => ({
+  compressImageIfNeeded: vi.fn((file: File) => Promise.resolve(file)),
+  getNonTransparentBoundingBox: vi.fn(),
+}));
+
 describe("BookmarkForm Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    global.URL.createObjectURL = vi.fn(() => "blob:http://localhost/preview-123");
+    global.URL.revokeObjectURL = vi.fn();
+    global.fetch = vi.fn().mockImplementation((url: string) => {
+      if (url.includes("/api/bookstores")) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve([]),
+        });
+      }
+      return Promise.resolve({ ok: true, json: () => Promise.resolve({}) });
+    }) as any;
   });
 
   it("should render all main input sections and controls", () => {
@@ -99,6 +115,94 @@ describe("BookmarkForm Component", () => {
           method: "POST",
         })
       );
+    });
+  });
+
+  it("should initialize specialties and notablePatronsTrivia as blank strings", () => {
+    render(<BookmarkForm />);
+    const specialtiesInput = screen.getByPlaceholderText(
+      /Modernist Poetry, Rare Editions, Cinema/i
+    ) as HTMLInputElement;
+    const triviaInput = screen.getByPlaceholderText(
+      /Patti Smith worked as a clerk here/i
+    ) as HTMLTextAreaElement;
+
+    expect(specialtiesInput.value).toBe("");
+    expect(triviaInput.value).toBe("");
+  });
+
+  it("should render bookstore website URL input and allow typing", () => {
+    render(<BookmarkForm />);
+    const websiteInput = screen.getByPlaceholderText("https://example.com") as HTMLInputElement;
+    expect(websiteInput).toBeDefined();
+    expect(websiteInput.value).toBe("");
+    fireEvent.change(websiteInput, { target: { value: "https://citylights.com" } });
+    expect(websiteInput.value).toBe("https://citylights.com");
+  });
+
+  it("should not render MediaManager or clippings upload in BookmarkForm", () => {
+    render(<BookmarkForm />);
+    expect(screen.queryByText(/Bulk Upload Scans/i)).toBeNull();
+    expect(screen.queryByText(/Drag & drop multiple scans here/i)).toBeNull();
+    expect(screen.queryByText(/3\. Archival Media & Newspaper Clippings/i)).toBeNull();
+  });
+
+  it("should handle concurrent front and back uploads without clobbering each other", async () => {
+    let resolveFrontUpload!: (val: any) => void;
+    let resolveBackUpload!: (val: any) => void;
+
+    const frontUploadPromise = new Promise((resolve) => {
+      resolveFrontUpload = resolve;
+    });
+    const backUploadPromise = new Promise((resolve) => {
+      resolveBackUpload = resolve;
+    });
+
+    let uploadCallCount = 0;
+    global.fetch = vi.fn().mockImplementation((url: string) => {
+      if (url === "/api/upload") {
+        uploadCallCount++;
+        if (uploadCallCount === 1) {
+          return frontUploadPromise;
+        }
+        return backUploadPromise;
+      }
+      return Promise.resolve({ ok: true, json: () => Promise.resolve({}) });
+    }) as any;
+
+    render(<BookmarkForm />);
+
+    const fileInputs = document.querySelectorAll('input[type="file"]') as NodeListOf<HTMLInputElement>;
+    expect(fileInputs.length).toBeGreaterThanOrEqual(2);
+
+    const frontFile = new File(["front-content"], "front-scan.png", { type: "image/png" });
+    const backFile = new File(["back-content"], "back-scan.png", { type: "image/png" });
+
+    // Trigger both uploads concurrently
+    fireEvent.change(fileInputs[0], { target: { files: [frontFile] } });
+    fireEvent.change(fileInputs[1], { target: { files: [backFile] } });
+
+    // Resolve front upload first
+    resolveFrontUpload({
+      ok: true,
+      text: () => Promise.resolve(JSON.stringify({ url: "https://example.com/front-scan.webp" })),
+    });
+
+    // Resolve back upload second
+    resolveBackUpload({
+      ok: true,
+      text: () => Promise.resolve(JSON.stringify({ url: "https://example.com/back-scan.webp" })),
+    });
+
+    // Both scans must be present in the UI and not overwritten
+    await waitFor(() => {
+      const frontImg = screen.getByRole("img", { name: /Bookmark Front Scan/i });
+      const backImg = screen.getByRole("img", { name: /Bookmark Verso \/ Back Scan/i });
+
+      expect(frontImg).toBeDefined();
+      expect(frontImg.getAttribute("src")).toBe("https://example.com/front-scan.webp");
+      expect(backImg).toBeDefined();
+      expect(backImg.getAttribute("src")).toBe("https://example.com/back-scan.webp");
     });
   });
 });

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ImageDropzone } from "./ImageDropzone";
-import { MediaManager, MediaItem } from "./MediaManager";
+import type { MediaItem } from "./MediaManager";
 import { MarkdownRenderer } from "@/components/exhibit/MarkdownRenderer";
 import { Button } from "@/components/ui/Button";
 import { Bookstore } from "@/db/schema";
@@ -124,9 +124,9 @@ export function BookmarkForm({
         yearClosed: "",
         isStillOperating: false,
         founders: "",
-        specialties: "Literature, Rare Books, Poetry",
+        specialties: "",
         historicalBlurb: `### Bookstore Heritage & Cultural Story\n\nWrite your historical research blurb here...`,
-        notablePatronsTrivia: "Famous author signing\nHistoric event",
+        notablePatronsTrivia: "",
         websiteUrl: "",
       },
       archivalMedia: [],
@@ -354,10 +354,10 @@ export function BookmarkForm({
             label="Bookmark Front Scan"
             value={formData.bookmark.frontImageUrl}
             onChange={(url) =>
-              setFormData({
-                ...formData,
-                bookmark: { ...formData.bookmark, frontImageUrl: url },
-              })
+              setFormData((prev) => ({
+                ...prev,
+                bookmark: { ...prev.bookmark, frontImageUrl: url },
+              }))
             }
             onUploadingChange={setIsUploadingFront}
             aspectRatio={parsedDimensions.isLandscape ? "landscape" : "bookmark"}
@@ -368,10 +368,10 @@ export function BookmarkForm({
             label="Bookmark Verso / Back Scan (Optional)"
             value={formData.bookmark.backImageUrl || ""}
             onChange={(url) =>
-              setFormData({
-                ...formData,
-                bookmark: { ...formData.bookmark, backImageUrl: url },
-              })
+              setFormData((prev) => ({
+                ...prev,
+                bookmark: { ...prev.bookmark, backImageUrl: url },
+              }))
             }
             onUploadingChange={setIsUploadingBack}
             aspectRatio={parsedDimensions.isLandscape ? "landscape" : "bookmark"}
@@ -1127,6 +1127,20 @@ export function BookmarkForm({
               className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif"
             />
           </div>
+
+          <div>
+            <label className="block text-xs font-mono text-stone-600 mb-1">BOOKSTORE WEBSITE URL</label>
+            <input
+              type="url"
+              placeholder="https://example.com"
+              value={formData.bookstore.websiteUrl || ""}
+              onChange={(e) => setFormData((prev) => ({
+                ...prev,
+                bookstore: { ...prev.bookstore, websiteUrl: e.target.value },
+              }))}
+              className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif"
+            />
+          </div>
         </div>
 
         {/* Markdown Research Blurb with Live Preview */}
@@ -1205,14 +1219,6 @@ export function BookmarkForm({
             className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif"
           />
         </div>
-      </div>
-
-      {/* 3. Archival Media & Newspaper Clippings */}
-      <div className="p-6 rounded-2xl bg-white border border-[#E8E2D5] shadow-xs">
-        <MediaManager
-          mediaList={formData.archivalMedia}
-          onChange={(list) => setFormData({ ...formData, archivalMedia: list })}
-        />
       </div>
 
       {/* Bottom Save Button */}
