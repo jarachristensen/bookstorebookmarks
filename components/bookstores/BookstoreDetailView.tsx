@@ -526,13 +526,13 @@ export function BookstoreDetailView({ bookstore, availableStorefronts }: Booksto
         </div>
       </div>
 
-      {/* 6. Branch Locations & Sibling Stores Grid (if flagship or has branches) */}
-      {bookstore.branches && bookstore.branches.length > 0 && (
+      {/* 6. Branch Locations & Sister Stores Grid (if flagship or has branches or is a branch) */}
+      {((bookstore.branches && bookstore.branches.length > 0) || bookstore.flagshipStore) && (
         <section className="p-6 sm:p-8 rounded-2xl bg-white border border-[#E8E2D5] shadow-xs space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#E8E2D5]">
             <h2 className="font-serif text-base sm:text-lg font-bold text-stone-900 flex items-center gap-2">
               <Building2 className="w-4.5 h-4.5 text-[#2563EB]" />
-              <span>Branch Locations &amp; Sibling Stores ({bookstore.branches.length})</span>
+              <span>Sister Branches &amp; Other Locations</span>
             </h2>
             <span className="text-xs font-sans text-stone-500 italic">
               {bookstore.chainName || bookstore.name} Network
@@ -540,7 +540,41 @@ export function BookstoreDetailView({ bookstore, availableStorefronts }: Booksto
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pt-2">
-            {bookstore.branches.map((branch) => (
+            {/* If this is a branch, display the Flagship Store first */}
+            {bookstore.flagshipStore && (
+              <Link
+                key={bookstore.flagshipStore.id}
+                href={`/bookstores/${bookstore.flagshipStore.id}`}
+                className="group p-4 rounded-xl border border-[#2563EB]/40 bg-blue-50/40 hover:bg-white hover:border-[#2563EB] transition-all shadow-2xs hover:shadow-xs flex flex-col justify-between space-y-3"
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="text-[10px] font-mono font-bold text-[#2563EB] uppercase tracking-wider">
+                      Flagship Store
+                    </span>
+                    <span className="text-[10px] font-mono text-stone-500">
+                      {bookstore.flagshipStore.yearOpened}–{bookstore.flagshipStore.isStillOperating ? "Pres." : bookstore.flagshipStore.yearClosed || "Closed"}
+                    </span>
+                  </div>
+                  <h4 className="font-serif text-sm font-bold text-stone-900 group-hover:text-[#2563EB] transition-colors">
+                    {bookstore.flagshipStore.name}
+                  </h4>
+                  <p className="font-sans text-xs text-stone-600 mt-1 flex items-center gap-1">
+                    <MapPin className="w-3 h-3 text-[#F59E0B] shrink-0" />
+                    <span className="truncate">
+                      {bookstore.flagshipStore.city}{bookstore.flagshipStore.stateProvince ? `, ${bookstore.flagshipStore.stateProvince}` : ""}
+                    </span>
+                  </p>
+                </div>
+                <div className="text-[11px] font-serif font-bold text-[#2563EB] group-hover:underline flex items-center gap-1 pt-2 border-t border-blue-200/60">
+                  <span>View flagship dossier</span>
+                  <span>→</span>
+                </div>
+              </Link>
+            )}
+
+            {/* List branches if flagship */}
+            {bookstore.branches?.map((branch) => (
               <Link
                 key={branch.id}
                 href={`/bookstores/${branch.id}`}

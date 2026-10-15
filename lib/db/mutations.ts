@@ -238,6 +238,78 @@ export async function bulkUpdateNonBookstoreBookmarks(
 
 
 /**
+ * Synchronize secondary/branch locations as independent bookstore entries linked to the flagship.
+ */
+export async function syncBranchBookstores(
+  flagshipId: string,
+  bookstoreData: {
+    name: string;
+    city?: string | null;
+    stateProvince?: string | null;
+    country?: string | null;
+    chainName?: string | null;
+    isFlagship?: boolean | null;
+    yearOpened?: number | null;
+    yearClosed?: number | null;
+    locations?: BookstoreLocation[] | null;
+  },
+  now: string
+) {
+  if (!bookstoreData.isFlagship || !Array.isArray(bookstoreData.locations)) {
+    return;
+  }
+
+  for (const [idx, loc] of bookstoreData.locations.entries()) {
+    // Secondary locations (idx > 0) or explicitly labeled branch locations
+    const isBranch =
+      idx > 0 ||
+      Boolean(loc.label && /branch|location/i.test(loc.label)) ||
+      (!loc.isMovedFrom && loc.label && !/flagship|main/i.test(loc.label));
+
+    if (!isBranch) continue;
+
+    const branchId =
+      loc.id && !loc.id.startsWith("loc-")
+        ? loc.id
+        : generateSlug(`${bookstoreData.name}-${loc.label || "branch"}-${loc.city || bookstoreData.city || "store"}`);
+
+    if (branchId === flagshipId) continue;
+
+    const branchValues = {
+      id: branchId,
+      name: `${bookstoreData.name}${loc.label ? ` (${loc.label})` : ""}`,
+      city: loc.city || bookstoreData.city || "Unknown City",
+      stateProvince: loc.stateProvince || bookstoreData.stateProvince || null,
+      country: loc.country || bookstoreData.country || "United States",
+      streetAddress: loc.streetAddress || null,
+      isFlagship: false,
+      flagshipId: flagshipId,
+      chainName: bookstoreData.chainName || bookstoreData.name,
+      branchLabel: loc.label || "Branch Location",
+      yearOpened: Number(bookstoreData.yearOpened) || 1900,
+      yearClosed: loc.isCurrent ? null : (bookstoreData.yearClosed ? Number(bookstoreData.yearClosed) : null),
+      isStillOperating: Boolean(loc.isCurrent),
+      historicalBlurb: `Branch location of ${bookstoreData.name}.`,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    await db.insert(bookstores).values(branchValues).onConflictDoUpdate({
+      target: bookstores.id,
+      set: {
+        city: branchValues.city,
+        stateProvince: branchValues.stateProvince,
+        country: branchValues.country,
+        streetAddress: branchValues.streetAddress,
+        branchLabel: branchValues.branchLabel,
+        isStillOperating: branchValues.isStillOperating,
+        updatedAt: now,
+      },
+    });
+  }
+}
+
+/**
  * Upsert bookstore, bookmark, and associated media in a single transaction/operation.
  */
 export async function saveBookmarkAndBookstore(data: FullBookmarkInput): Promise<string> {
@@ -308,6 +380,9 @@ export async function saveBookmarkAndBookstore(data: FullBookmarkInput): Promise
       updatedAt: now,
     },
   });
+
+  // Sync secondary/branch locations as independent bookstore entries if flagship
+  await syncBranchBookstores(bookstoreId, data.bookstore, now);
 
   // 2. Prepare Bookmark ID & Data
   const bookmarkId = data.bookmark.id || generateSlug(`${data.bookmark.title}-${Date.now().toString().slice(-4)}`);
@@ -442,6 +517,9 @@ export async function saveBookstoreDossier(data: BookstoreDossierInput): Promise
       updatedAt: now,
     },
   });
+
+  // Sync secondary/branch locations as independent bookstore entries if flagship
+  await syncBranchBookstores(bookstoreId, data.bookstore, now);
 
   // Upsert archival media
   if (data.archivalMedia && data.archivalMedia.length > 0) {

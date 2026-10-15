@@ -114,4 +114,62 @@ describe("Chain Bookstores & Flagship / Branch Relationships", () => {
     expect(foundBranch2?.flagshipId).toBe(flagshipId);
     expect(foundBranch2?.flagshipStore?.id).toBe(flagshipId);
   });
+
+  it("should auto-create branch bookstore records when saving a flagship with multiple locations", async () => {
+    const autoFlagshipId = `powells-flagship-${timestamp}`;
+    const autoBranchId = `powells-books-beaverton-branch-beaverton`;
+
+    try {
+      await saveBookstoreDossier({
+        bookstore: {
+          id: autoFlagshipId,
+          name: "Powell's Books",
+          city: "Portland",
+          stateProvince: "OR",
+          country: "United States",
+          streetAddress: "1005 W Burnside St",
+          isFlagship: true,
+          yearOpened: 1971,
+          isStillOperating: true,
+          historicalBlurb: "Famous Portland bookstore.",
+          locations: [
+            {
+              id: "loc-1",
+              label: "Burnside Flagship",
+              streetAddress: "1005 W Burnside St",
+              city: "Portland",
+              stateProvince: "OR",
+              country: "United States",
+              isCurrent: true,
+            },
+            {
+              id: autoBranchId,
+              label: "Beaverton Branch",
+              streetAddress: "3415 SW Cedar Hills Blvd",
+              city: "Beaverton",
+              stateProvince: "OR",
+              country: "United States",
+              isCurrent: true,
+            },
+          ],
+        },
+      });
+
+      // Verify the auto-created branch was saved to bookstores table
+      const branchStore = await getBookstoreById(autoBranchId);
+      expect(branchStore).toBeDefined();
+      expect(branchStore?.name).toContain("Powell's Books");
+      expect(branchStore?.city).toBe("Beaverton");
+      expect(branchStore?.flagshipId).toBe(autoFlagshipId);
+      expect(branchStore?.isFlagship).toBe(false);
+
+      // Verify flagship resolves this branch in branches array
+      const flagship = await getBookstoreById(autoFlagshipId);
+      expect(flagship?.branches?.some((b) => b.id === autoBranchId)).toBe(true);
+    } finally {
+      await db.delete(bookstores).where(eq(bookstores.id, autoFlagshipId));
+      await db.delete(bookstores).where(eq(bookstores.id, autoBranchId));
+    }
+  });
 });
+
