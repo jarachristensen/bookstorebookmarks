@@ -50,6 +50,12 @@ export default async function AdminDashboardPage() {
   );
   const pendingTrades = tradeProposals.filter((t) => t.status === "pending").length;
 
+  const sortedBookmarks = [...bookmarks].sort((a, b) => {
+    const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+    return timeB - timeA;
+  });
+
   return (
     <div className="min-h-screen bg-[#FAF8F5] pb-16">
       {/* Header */}
@@ -187,7 +193,7 @@ export default async function AdminDashboardPage() {
 
         {/* Client Table Component */}
         <AdminTableClient
-          initialBookmarks={bookmarks}
+          initialBookmarks={sortedBookmarks}
           initialBookstores={bookstores}
           initialTradeProposals={tradeProposals}
           initialOtherBookmarks={otherBookmarks}

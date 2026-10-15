@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { BookmarkWithDetails, BookstoreWithDetails } from "@/lib/db/queries";
@@ -64,7 +64,23 @@ export function AdminTableClient({
   const [activeTab, setActiveTab] = useState<
     "bookmarks" | "bookstores" | "other" | "trades"
   >("bookmarks");
-  const [bookmarks, setBookmarks] = useState(initialBookmarks);
+  const [bookmarks, setBookmarks] = useState(() =>
+    [...initialBookmarks].sort((a, b) => {
+      const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return timeB - timeA;
+    })
+  );
+
+  useEffect(() => {
+    setBookmarks(
+      [...initialBookmarks].sort((a, b) => {
+        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return timeB - timeA;
+      })
+    );
+  }, [initialBookmarks]);
   const [bookstores, setBookstores] = useState(initialBookstores);
   const [otherBookmarks, setOtherBookmarks] = useState<NonBookstoreBookmark[]>(
     initialOtherBookmarks
@@ -85,8 +101,6 @@ export function AdminTableClient({
   const [selectedTradeZoomImage, setSelectedTradeZoomImage] = useState<string | null>(null);
   const [selectedTradeCollector, setSelectedTradeCollector] = useState<string>("");
 
-
-  // Bulk Edit States for Bookstore Bookmarks
   const [isBulkEditing, setIsBulkEditing] = useState(false);
   const [bulkEdits, setBulkEdits] = useState<
     Record<string, { title: string; dimensions: string }>
