@@ -188,6 +188,7 @@ export function TradingHubClient({
 
   // Trade Proposal Basket State
   const [selectedBookmarks, setSelectedBookmarks] = useState<BookmarkWithDetails[]>([]);
+  const [selectedQuantities, setSelectedQuantities] = useState<Record<string, number>>({});
   const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
   const [proposalSubmitted, setProposalSubmitted] = useState(false);
   const [isSubmittingProposal, setIsSubmittingProposal] = useState(false);
@@ -197,6 +198,49 @@ export function TradingHubClient({
   const [offeredItemsText, setOfferedItemsText] = useState("");
   const [offeredImages, setOfferedImages] = useState<string[]>([]);
 
+  // Toggle selection for trade proposal
+  const toggleBookmarkSelection = (bookmark: BookmarkWithDetails) => {
+    setSelectedBookmarks((prev) => {
+      const exists = prev.some((b) => b.id === bookmark.id);
+      if (exists) {
+        setSelectedQuantities((q) => {
+          const next = { ...q };
+          delete next[bookmark.id];
+          return next;
+        });
+        return prev.filter((b) => b.id !== bookmark.id);
+      } else {
+        setSelectedQuantities((q) => ({ ...q, [bookmark.id]: 1 }));
+        return [...prev, bookmark];
+      }
+    });
+  };
+
+  const removeSelectedBookmark = (id: string) => {
+    setSelectedBookmarks((prev) => prev.filter((b) => b.id !== id));
+    setSelectedQuantities((q) => {
+      const next = { ...q };
+      delete next[id];
+      return next;
+    });
+  };
+
+  const clearSelection = () => {
+    setSelectedBookmarks([]);
+    setSelectedQuantities({});
+  };
+
+  const updateQuantity = (id: string, delta: number, maxQty: number) => {
+    setSelectedQuantities((prev) => {
+      const current = prev[id] || 1;
+      const nextVal = Math.min(Math.max(1, current + delta), maxQty);
+      return { ...prev, [id]: nextVal };
+    });
+  };
+
+  const totalTradeItemsCount = useMemo(() => {
+    return selectedBookmarks.reduce((sum, b) => sum + (selectedQuantities[b.id] || 1), 0);
+  }, [selectedBookmarks, selectedQuantities]);
 
   // Bookmark Inspector Modal
   const [inspectingBookmark, setInspectingBookmark] = useState<BookmarkWithDetails | null>(null);
@@ -246,26 +290,6 @@ export function TradingHubClient({
     });
   }, [initialBookmarks, selectedBookstore, selectedCondition, searchQuery]);
 
-  // Toggle selection for trade proposal
-  const toggleBookmarkSelection = (bookmark: BookmarkWithDetails) => {
-    setSelectedBookmarks((prev) => {
-      const exists = prev.some((b) => b.id === bookmark.id);
-      if (exists) {
-        return prev.filter((b) => b.id !== bookmark.id);
-      } else {
-        return [...prev, bookmark];
-      }
-    });
-  };
-
-  const removeSelectedBookmark = (id: string) => {
-    setSelectedBookmarks((prev) => prev.filter((b) => b.id !== id));
-  };
-
-  const clearSelection = () => {
-    setSelectedBookmarks([]);
-  };
-
   // Submit Trade Proposal directly to the backend database
   const handleSendProposal = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -279,6 +303,7 @@ export function TradingHubClient({
         accessionNo: b.accessionNo,
         bookstoreName: b.bookstore?.name || "Bookstore",
         frontImageUrl: b.frontImageUrl,
+        quantity: selectedQuantities[b.id] || 1,
       }));
 
       const res = await fetch("/api/trades", {
@@ -856,7 +881,7 @@ export function TradingHubClient({
                 <div className="min-w-0 space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="font-serif font-bold text-sm text-stone-100">
-                      {selectedBookmarks.length} {selectedBookmarks.length === 1 ? "Bookmark" : "Bookmarks"} in Trade Tray
+                      {totalTradeItemsCount} {totalTradeItemsCount === 1 ? "Item" : "Items"} in Trade Tray
                     </span>
                     <button
                       type="button"
@@ -869,22 +894,52 @@ export function TradingHubClient({
 
                   {/* Thumbnail Strip */}
                   <div className="flex items-center gap-2 overflow-x-auto py-0.5 max-w-md">
-                    {selectedBookmarks.map((b) => (
-                      <div
-                        key={b.id}
-                        className="group/thumb relative inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-stone-800 border border-stone-700 text-xs font-serif text-stone-200 shrink-0"
-                      >
-                        <span className="truncate max-w-[120px] text-[11px]">{b.title}</span>
-                        <button
-                          type="button"
-                          onClick={() => removeSelectedBookmark(b.id)}
-                          className="text-stone-400 hover:text-rose-400 cursor-pointer"
-                          title="Remove from tray"
+                    {selectedBookmarks.map((b) => {
+                      const qty = selectedQuantities[b.id] || 1;
+                      const maxQty = Math.max(1, b.tradeQuantity || 1);
+                      return (
+                        <div
+                          key={b.id}
+                          className="group/thumb relative inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-stone-800 border border-stone-700 text-xs font-serif text-stone-200 shrink-0"
                         >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </div>
-                    ))}
+                          <span className="truncate max-w-[120px] text-[11px]">{b.title}</span>
+
+                          {/* Quantity Controls */}
+                          <div className="inline-flex items-center gap-1 bg-stone-900 border border-stone-700 rounded-md px-1 py-0.5 ml-1">
+                            <button
+                              type="button"
+                              aria-label={`Decrease ${b.title} quantity`}
+                              onClick={() => updateQuantity(b.id, -1, maxQty)}
+                              disabled={qty <= 1}
+                              className="w-3.5 h-3.5 flex items-center justify-center text-stone-400 hover:text-white disabled:opacity-30 disabled:hover:text-stone-400 cursor-pointer text-[10px]"
+                            >
+                              −
+                            </button>
+                            <span className="text-[10px] font-mono font-bold text-amber-200 px-0.5" data-testid={`qty-${b.id}`}>
+                              {qty}
+                            </span>
+                            <button
+                              type="button"
+                              aria-label={`Increase ${b.title} quantity`}
+                              onClick={() => updateQuantity(b.id, 1, maxQty)}
+                              disabled={qty >= maxQty}
+                              className="w-3.5 h-3.5 flex items-center justify-center text-stone-400 hover:text-white disabled:opacity-30 disabled:hover:text-stone-400 cursor-pointer text-[10px]"
+                            >
+                              +
+                            </button>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => removeSelectedBookmark(b.id)}
+                            className="text-stone-400 hover:text-rose-400 cursor-pointer ml-0.5"
+                            title="Remove from tray"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -897,7 +952,7 @@ export function TradingHubClient({
                   className="bg-[#F43F7A] hover:bg-[#E11D48] text-white font-serif text-xs font-bold gap-2 px-4 py-2.5 shadow-md cursor-pointer"
                 >
                   <Send className="w-3.5 h-3.5" />
-                  <span>Propose Trade ({selectedBookmarks.length})</span>
+                  <span>Propose Trade ({totalTradeItemsCount})</span>
                 </Button>
               </div>
             </div>
@@ -976,15 +1031,20 @@ export function TradingHubClient({
                   {/* Selected Bookmarks List Summary */}
                   <div className="p-3.5 rounded-xl bg-[#FAF8F5] border border-[#E8E2D5] space-y-2">
                     <span className="text-[10px] font-mono text-stone-500 uppercase tracking-wider block">
-                      Bookmarks You Are Requesting ({selectedBookmarks.length})
+                      Bookmarks You Are Requesting ({totalTradeItemsCount} total copies across {selectedBookmarks.length} titles)
                     </span>
                     <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1 text-xs font-serif text-stone-800">
-                      {selectedBookmarks.map((b) => (
-                        <div key={b.id} className="flex items-center justify-between gap-2 border-b border-stone-200/60 pb-1">
-                          <span className="font-bold truncate">{b.title}</span>
-                          <span className="font-mono text-[10px] text-stone-500 shrink-0">{b.accessionNo}</span>
-                        </div>
-                      ))}
+                      {selectedBookmarks.map((b) => {
+                        const qty = selectedQuantities[b.id] || 1;
+                        return (
+                          <div key={b.id} className="flex items-center justify-between gap-2 border-b border-stone-200/60 pb-1">
+                            <span className="font-bold truncate">
+                              {b.title} {qty > 1 && <span className="text-[#2563EB] font-mono font-normal">× {qty}</span>}
+                            </span>
+                            <span className="font-mono text-[10px] text-stone-500 shrink-0">{b.accessionNo}</span>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
 

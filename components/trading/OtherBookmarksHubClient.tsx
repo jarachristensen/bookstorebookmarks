@@ -107,16 +107,39 @@ export function OtherBookmarksHubClient({
     });
   }, [bookmarks, selectedCategory, searchQuery]);
 
-  // Selected bookmarks list
+  // Selected bookmarks list & quantities
+  const [selectedQuantities, setSelectedQuantities] = useState<Record<string, number>>({});
   const selectedBookmarks = useMemo(() => {
     return bookmarks.filter((bm) => selectedBookmarkIds.includes(bm.id));
   }, [bookmarks, selectedBookmarkIds]);
 
   const toggleSelectBookmark = (id: string) => {
-    setSelectedBookmarkIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
+    setSelectedBookmarkIds((prev) => {
+      if (prev.includes(id)) {
+        setSelectedQuantities((q) => {
+          const next = { ...q };
+          delete next[id];
+          return next;
+        });
+        return prev.filter((item) => item !== id);
+      } else {
+        setSelectedQuantities((q) => ({ ...q, [id]: 1 }));
+        return [...prev, id];
+      }
+    });
   };
+
+  const updateQuantity = (id: string, delta: number, maxQty: number) => {
+    setSelectedQuantities((prev) => {
+      const current = prev[id] || 1;
+      const nextVal = Math.min(Math.max(1, current + delta), maxQty);
+      return { ...prev, [id]: nextVal };
+    });
+  };
+
+  const totalTradeItemsCount = useMemo(() => {
+    return selectedBookmarks.reduce((sum, b) => sum + (selectedQuantities[b.id] || 1), 0);
+  }, [selectedBookmarks, selectedQuantities]);
 
   const toggleFlip = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -158,6 +181,7 @@ export function OtherBookmarksHubClient({
           frontImageUrl: b.frontImageUrl,
           backImageUrl: b.backImageUrl,
           tradeQuantity: b.tradeQuantity,
+          quantity: selectedQuantities[b.id] || 1,
           type: "non-bookstore",
         })),
         notes: `Proposal from /otherbookmarks direct link`,
@@ -427,13 +451,13 @@ export function OtherBookmarksHubClient({
             <div className="bg-[#18181B] text-white p-4 rounded-2xl shadow-2xl border border-stone-700 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-[#2563EB] text-white flex items-center justify-center font-serif font-bold">
-                  {selectedBookmarkIds.length}
+                  {totalTradeItemsCount}
                 </div>
                 <div>
                   <h4 className="font-serif font-bold text-sm leading-tight">
-                    {selectedBookmarkIds.length === 1
-                      ? "1 Bookmark Selected"
-                      : `${selectedBookmarkIds.length} Bookmarks Selected`}
+                    {totalTradeItemsCount === 1
+                      ? "1 Item Selected"
+                      : `${totalTradeItemsCount} Items Selected`}
                   </h4>
                   <p className="text-[11px] text-stone-400 font-serif">
                     Ready to propose an exchange
@@ -443,7 +467,10 @@ export function OtherBookmarksHubClient({
 
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setSelectedBookmarkIds([])}
+                  onClick={() => {
+                    setSelectedBookmarkIds([]);
+                    setSelectedQuantities({});
+                  }}
                   className="px-3 py-2 rounded-xl text-xs font-serif text-stone-400 hover:text-white hover:bg-stone-800 transition-colors"
                 >
                   Clear
@@ -453,7 +480,7 @@ export function OtherBookmarksHubClient({
                   className="px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-serif font-bold shadow-xs flex items-center gap-1.5 transition-all cursor-pointer"
                 >
                   <Send className="w-3.5 h-3.5" />
-                  <span>Propose Trade</span>
+                  <span>Propose Trade ({totalTradeItemsCount})</span>
                 </button>
               </div>
             </div>
@@ -527,39 +554,71 @@ export function OtherBookmarksHubClient({
                   {/* Selected Bookmarks Preview Strip */}
                   <div className="space-y-2">
                     <label className="block font-serif text-xs font-bold text-stone-700">
-                      Requested Bookmarks ({selectedBookmarks.length})
+                      Requested Bookmarks ({totalTradeItemsCount} total copies across {selectedBookmarks.length} items)
                     </label>
                     <div className="max-h-36 overflow-y-auto space-y-2 p-2 rounded-xl bg-white border border-[#E8E2D5]">
-                      {selectedBookmarks.map((bm) => (
-                        <div
-                          key={bm.id}
-                          className="flex items-center justify-between gap-2 p-1.5 rounded-lg bg-stone-50 text-xs font-serif"
-                        >
-                          <div className="flex items-center gap-2 truncate">
-                            <Image
-                              src={bm.frontImageUrl}
-                              alt={bm.title}
-                              width={24}
-                              height={36}
-                              unoptimized
-                              className="h-8 w-auto object-contain rounded"
-                            />
-                            <span className="font-semibold text-stone-900 truncate">
-                              {bm.title}
-                            </span>
-                            <span className="text-[10px] text-stone-500 font-mono">
-                              [{bm.category}]
-                            </span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => toggleSelectBookmark(bm.id)}
-                            className="text-stone-400 hover:text-red-500 p-1"
+                      {selectedBookmarks.map((bm) => {
+                        const qty = selectedQuantities[bm.id] || 1;
+                        const maxQty = Math.max(1, bm.tradeQuantity || 1);
+                        return (
+                          <div
+                            key={bm.id}
+                            className="flex items-center justify-between gap-2 p-1.5 rounded-lg bg-stone-50 text-xs font-serif"
                           >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      ))}
+                            <div className="flex items-center gap-2 truncate">
+                              <Image
+                                src={bm.frontImageUrl}
+                                alt={bm.title}
+                                width={24}
+                                height={36}
+                                unoptimized
+                                className="h-8 w-auto object-contain rounded"
+                              />
+                              <span className="font-semibold text-stone-900 truncate">
+                                {bm.title}
+                              </span>
+                              <span className="text-[10px] text-stone-500 font-mono">
+                                [{bm.category}]
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-2 shrink-0">
+                              {/* Quantity Controls */}
+                              <div className="inline-flex items-center gap-1 bg-white border border-[#E8E2D5] rounded-md px-1.5 py-0.5">
+                                <button
+                                  type="button"
+                                  aria-label={`Decrease ${bm.title} quantity`}
+                                  onClick={() => updateQuantity(bm.id, -1, maxQty)}
+                                  disabled={qty <= 1}
+                                  className="w-4 h-4 flex items-center justify-center text-stone-500 hover:text-stone-900 disabled:opacity-30 cursor-pointer font-bold"
+                                >
+                                  −
+                                </button>
+                                <span className="text-xs font-mono font-bold text-stone-900 px-1" data-testid={`qty-${bm.id}`}>
+                                  {qty}
+                                </span>
+                                <button
+                                  type="button"
+                                  aria-label={`Increase ${bm.title} quantity`}
+                                  onClick={() => updateQuantity(bm.id, 1, maxQty)}
+                                  disabled={qty >= maxQty}
+                                  className="w-4 h-4 flex items-center justify-center text-stone-500 hover:text-stone-900 disabled:opacity-30 cursor-pointer font-bold"
+                                >
+                                  +
+                                </button>
+                              </div>
+
+                              <button
+                                type="button"
+                                onClick={() => toggleSelectBookmark(bm.id)}
+                                className="text-stone-400 hover:text-red-500 p-1"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
 
