@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/Button";
 import { ImageDropzone } from "./ImageDropzone";
 import { parseClippingFilename } from "@/lib/utils/clipping-parser";
 import { compressImageIfNeeded } from "@/lib/utils/image-compressor";
+import { generateTimelineEntryFromArticle } from "@/lib/ai/timeline-generator";
 
 export interface MediaItem {
   id?: string;
@@ -33,9 +34,22 @@ export interface MediaItem {
 export interface MediaManagerProps {
   mediaList: MediaItem[];
   onChange: (newList: MediaItem[]) => void;
+  onAutoAddToTimeline?: (entry: {
+    year: number;
+    label: string;
+    description: string;
+    mediaItem: MediaItem;
+  }) => void;
+  autoAddToTimeline?: boolean;
 }
 
-export function MediaManager({ mediaList, onChange }: MediaManagerProps) {
+export function MediaManager({
+  mediaList,
+  onChange,
+  onAutoAddToTimeline,
+  autoAddToTimeline: initialAutoAdd = true,
+}: MediaManagerProps) {
+  const [autoAddToTimeline, setAutoAddToTimeline] = useState<boolean>(initialAutoAdd);
   const [ocrLoadingIndex, setOcrLoadingIndex] = useState<number | null>(null);
   const [ocrStatusText, setOcrStatusText] = useState<string>("");
   const [ocrError, setOcrError] = useState<string>("");
@@ -143,7 +157,7 @@ export function MediaManager({ mediaList, onChange }: MediaManagerProps) {
           file.name.toLowerCase().includes("interior") ||
           file.name.toLowerCase().includes("photo");
 
-        newItems.push({
+        const newItem: MediaItem = {
           id: `media-${Date.now()}-${i}`,
           mediaType: isLikelyPhoto ? "photo" : "newspaper",
           imageUrl: data.url,
@@ -152,7 +166,22 @@ export function MediaManager({ mediaList, onChange }: MediaManagerProps) {
           publicationDate: parsed.publicationDate || "",
           transcriptionText: "",
           isStorefront: file.name.toLowerCase().includes("storefront"),
-        });
+        };
+        newItems.push(newItem);
+
+        if (autoAddToTimeline && onAutoAddToTimeline) {
+          generateTimelineEntryFromArticle({
+            fileName: file.name,
+            publicationDate: parsed.publicationDate,
+          }).then((entry) => {
+            onAutoAddToTimeline({
+              year: entry.year,
+              label: entry.label,
+              description: entry.description,
+              mediaItem: newItem,
+            });
+          }).catch((err) => console.error("Auto-add timeline error:", err));
+        }
       } catch (err) {
         console.error("Failed uploading bulk file:", file.name, err);
       }
@@ -238,6 +267,21 @@ export function MediaManager({ mediaList, onChange }: MediaManagerProps) {
 
       if (text && text.trim().length > 0) {
         updateMedia(index, { transcriptionText: text.trim() });
+        if (autoAddToTimeline && onAutoAddToTimeline) {
+          generateTimelineEntryFromArticle({
+            ocrText: text.trim(),
+            fileName: item.caption,
+            publicationDate: item.publicationDate,
+            bookstoreName: item.sourcePublication,
+          }).then((entry) => {
+            onAutoAddToTimeline({
+              year: entry.year,
+              label: entry.label,
+              description: entry.description,
+              mediaItem: item,
+            });
+          }).catch((err) => console.error("Auto-add timeline from OCR error:", err));
+        }
       } else {
         setOcrError("No legible text recognized in this scan. You can enter the transcription manually below.");
       }
@@ -263,7 +307,19 @@ export function MediaManager({ mediaList, onChange }: MediaManagerProps) {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-3">
+          <label className="flex items-center gap-1.5 text-xs font-serif text-stone-700 cursor-pointer select-none bg-white px-2 py-1 rounded border border-[#E8E2D5]">
+            <input
+              type="checkbox"
+              aria-label="Auto-add to Timeline"
+              checked={autoAddToTimeline}
+              onChange={(e) => setAutoAddToTimeline(e.target.checked)}
+              className="w-3.5 h-3.5 rounded border-[#E8E2D5] text-[#F43F7A] focus:ring-[#F43F7A]"
+            />
+            <Sparkles className="w-3.5 h-3.5 text-[#F43F7A]" />
+            <span>Auto-add to Timeline</span>
+          </label>
+
           <Button
             type="button"
             variant="outline"

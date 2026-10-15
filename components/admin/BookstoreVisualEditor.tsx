@@ -14,6 +14,7 @@ import {
 } from "@/components/bookstores/BookstoreHorizontalTimeline";
 import { parseClippingFilename, sortMediaByMostRecent } from "@/lib/utils/clipping-parser";
 import { compressImageIfNeeded } from "@/lib/utils/image-compressor";
+import { generateTimelineEntryFromArticle } from "@/lib/ai/timeline-generator";
 import {
   MapPin,
   Calendar,
@@ -189,6 +190,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [activeMediaTab, setActiveMediaTab] = useState<"clippings" | "photos">("clippings");
   const [isFindImagesOpen, setIsFindImagesOpen] = useState(false);
+  const [autoAddToTimeline, setAutoAddToTimeline] = useState<boolean>(true);
 
   // Timeline Events State
   const [timelineEvents, setTimelineEvents] = useState<CustomTimelineEvent[]>(() => {
@@ -491,7 +493,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
         // Auto-detect if name contains "storefront" or "inside" or "interior"
         const isPhotoName = /storefront|exterior|interior|inside|facade|shopfront|photo/i.test(file.name);
 
-        uploadedItems.push({
+        const newMediaItem: ArchivalMedia = {
           id: `media-bulk-${Date.now()}-${i}`,
           bookstoreId: initialData.id,
           mediaType: isPhotoName ? "photo" : parsed.sourcePublication ? "newspaper" : "photo",
@@ -504,7 +506,31 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
           mediaTag: /interior|inside/i.test(file.name) ? "interior" : isPhotoName ? "storefront" : null,
           displayOrder: mediaList.length + i,
           createdAt: new Date().toISOString(),
-        });
+        };
+        uploadedItems.push(newMediaItem);
+
+        if (autoAddToTimeline) {
+          try {
+            const entry = await generateTimelineEntryFromArticle({
+              fileName: file.name,
+              publicationDate: parsed.publicationDate,
+              bookstoreName: name || initialData.name,
+            });
+            const autoEvent: CustomTimelineEvent = {
+              id: `ev-auto-${Date.now()}-${i}`,
+              year: entry.year,
+              label: entry.label,
+              description: entry.description,
+              type: "press",
+              mediaId: newMediaItem.id,
+              mediaUrl: newMediaItem.imageUrl,
+              mediaCaption: newMediaItem.caption,
+            };
+            setTimelineEvents((prev) => [...prev, autoEvent]);
+          } catch (autoErr) {
+            console.error("Auto-add timeline entry error:", autoErr);
+          }
+        }
       } catch (err) {
         console.error(`Failed to process ${file.name}:`, err);
       }
@@ -1378,7 +1404,19 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
 
               {/* Upload Buttons based on active tab */}
               {activeMediaTab === "clippings" ? (
-                <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <label className="flex items-center gap-1.5 text-xs font-serif text-stone-700 cursor-pointer select-none bg-white px-2 py-1 rounded border border-[#E8E2D5]">
+                    <input
+                      type="checkbox"
+                      aria-label="Auto-add to Timeline"
+                      checked={autoAddToTimeline}
+                      onChange={(e) => setAutoAddToTimeline(e.target.checked)}
+                      className="w-3.5 h-3.5 rounded border-[#E8E2D5] text-[#F43F7A] focus:ring-[#F43F7A]"
+                    />
+                    <Sparkles className="w-3.5 h-3.5 text-[#F43F7A]" />
+                    <span>Auto-add to Timeline</span>
+                  </label>
+
                   <input
                     ref={bulkInputRef}
                     type="file"
