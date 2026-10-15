@@ -14,8 +14,6 @@ import {
 } from "@/components/bookstores/BookstoreVerticalTimeline";
 import { parseClippingFilename, sortMediaByMostRecent } from "@/lib/utils/clipping-parser";
 import { compressImageIfNeeded } from "@/lib/utils/image-compressor";
-import { generateTimelineEntryFromArticle } from "@/lib/ai/timeline-generator";
-import { cleanOcrTranscription } from "@/lib/utils/ocr-sanitizer";
 import {
   MapPin,
   Calendar,
@@ -521,8 +519,6 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
     if (bulkInputRef.current) bulkInputRef.current.value = "";
   };
 
-  const [analyzingMediaId, setAnalyzingMediaId] = useState<string | null>(null);
-
   const isItemInTimeline = (media: ArchivalMedia): boolean => {
     return timelineEvents.some(
       (ev) =>
@@ -533,72 +529,40 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
     );
   };
 
-  const handleAiScanClipping = async (media: ArchivalMedia) => {
-    if (!media.imageUrl) return;
-    setAnalyzingMediaId(media.id);
+  const handleToggleTimelineForMedia = (media: ArchivalMedia, willAdd: boolean) => {
+    if (willAdd) {
+      const matchYear = (text?: string): number => {
+        if (!text) return 1950;
+        const normalized = text.replace(/[_/\\.-]/g, " ");
+        const m = normalized.match(/\b(18\d{2}|19\d{2}|20\d{2})\b/);
+        return m ? parseInt(m[1], 10) : 1950;
+      };
 
-    try {
-      let text = cleanOcrTranscription(media.transcriptionText || "");
+      const year =
+        matchYear(media.publicationDate) !== 1950
+          ? matchYear(media.publicationDate)
+          : matchYear(media.caption);
 
-      // If no OCR text yet, extract it via /api/ocr
-      if (!text) {
-        try {
-          const res = await fetch("/api/ocr", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ imageUrl: media.imageUrl }),
-          });
-          if (res.ok) {
-            const data = await res.json();
-            text = cleanOcrTranscription(data.text || "");
-          }
-        } catch (ocrErr) {
-          console.warn("OCR route failed, using metadata fallback:", ocrErr);
-        }
-      }
+      const label = (
+        media.caption ||
+        media.sourcePublication ||
+        "Archival Press Clipping"
+      ).toUpperCase();
 
-      // Generate timeline entry via AI generator
-      const entry = await generateTimelineEntryFromArticle({
-        ocrText: text || undefined,
-        fileName: media.caption,
-        publicationDate: media.publicationDate || undefined,
-        bookstoreName: name || initialData.name || media.sourcePublication || undefined,
-      });
+      const pubName = media.sourcePublication || "press archives";
+      const dateText = media.publicationDate || String(year);
+      const description = `Historical press documentation published in ${pubName} (${dateText}).`;
 
-      // Update media headline and transcription
-      const isGenericCaption =
-        !media.caption ||
-        media.caption === "Archival Press Clipping" ||
-        /\.(jpe?g|png|webp|svg)$/i.test(media.caption) ||
-        /\([A-Z][a-z]{2}\s+\d{1,2},\s+\d{4}\)/.test(media.caption);
-
-      const updatedCaption = isGenericCaption && entry.label ? entry.label : media.caption;
-      const updatedDate = !media.publicationDate && entry.year ? String(entry.year) : media.publicationDate;
-
-      setMediaList((prev) =>
-        prev.map((m) =>
-          m.id === media.id
-            ? {
-                ...m,
-                caption: updatedCaption,
-                publicationDate: updatedDate,
-                transcriptionText: text || m.transcriptionText,
-              }
-            : m
-        )
-      );
-
-      // Add or update milestone in timelineEvents
       const milestoneId = `ev-${media.id}`;
       const newEvent: CustomTimelineEvent = {
         id: milestoneId,
-        year: entry.year,
-        label: entry.label,
-        description: entry.description,
+        year,
+        label,
+        description,
         type: "press",
         mediaId: media.id,
         mediaUrl: media.imageUrl,
-        mediaCaption: entry.label,
+        mediaCaption: label,
       };
 
       setTimelineEvents((prev) => {
@@ -606,20 +570,11 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
           (ev) =>
             ev.mediaId !== media.id &&
             ev.id !== milestoneId &&
-            !ev.id.startsWith(`ev-${media.id}-`)
+            !ev.id.startsWith(`ev-${media.id}-`) &&
+            (!media.imageUrl || ev.mediaUrl !== media.imageUrl)
         );
         return [...filtered, newEvent].sort((a, b) => a.year - b.year);
       });
-    } catch (err) {
-      console.error("AI scanning error:", err);
-    } finally {
-      setAnalyzingMediaId(null);
-    }
-  };
-
-  const handleToggleTimelineForMedia = async (media: ArchivalMedia, willAdd: boolean) => {
-    if (willAdd) {
-      await handleAiScanClipping(media);
     } else {
       setTimelineEvents((prev) =>
         prev.filter(
@@ -1653,26 +1608,6 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                                 {isItemInTimeline(media) ? "In Timeline" : "Add to Timeline"}
                               </span>
                             </label>
-
-                            <button
-                              type="button"
-                              onClick={() => handleAiScanClipping(media)}
-                              disabled={analyzingMediaId === media.id || !media.imageUrl}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-serif border border-[#F43F7A]/30 text-[#F43F7A] bg-[#F43F7A]/5 hover:bg-[#F43F7A]/15 transition-all cursor-pointer disabled:opacity-50"
-                              title="Extract article text with OCR and synthesize timeline headline & summary"
-                            >
-                              {analyzingMediaId === media.id ? (
-                                <>
-                                  <Loader2 className="w-3 h-3 animate-spin" />
-                                  <span>AI Scanning...</span>
-                                </>
-                              ) : (
-                                <>
-                                  <Sparkles className="w-3 h-3" />
-                                  <span>Scan with AI</span>
-                                </>
-                              )}
-                            </button>
                           </div>
                         </div>
                       </div>

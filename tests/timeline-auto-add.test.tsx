@@ -25,7 +25,7 @@ describe("MediaManager Individual Clipping Timeline Checkbox & AI Scan", () => {
     },
   ];
 
-  it("renders individual 'Add to Timeline' checkbox and 'Scan with AI' button for each clipping", () => {
+  it("renders individual 'Add to Timeline' checkbox for each clipping", () => {
     render(
       <MediaManager
         mediaList={sampleMedia}
@@ -37,7 +37,6 @@ describe("MediaManager Individual Clipping Timeline Checkbox & AI Scan", () => {
 
     expect(screen.getByLabelText(/Add item #1 to Timeline/i)).toBeDefined();
     expect(screen.getByLabelText(/Add item #2 to Timeline/i)).toBeDefined();
-    expect(screen.getAllByText(/Scan with AI/i).length).toBe(2);
   });
 
   it("shows checked 'In Timeline' state when item is present in timelineEvents", () => {
@@ -96,6 +95,29 @@ describe("MediaManager Individual Clipping Timeline Checkbox & AI Scan", () => {
 
     fireEvent.click(checkbox1);
     expect(onTimelineChange).toHaveBeenCalledWith([]);
+  });
+
+  it("adds event to timeline when checking an untracked clipping", () => {
+    const onTimelineChange = vi.fn();
+
+    render(
+      <MediaManager
+        mediaList={sampleMedia}
+        onChange={vi.fn()}
+        timelineEvents={[]}
+        onTimelineEventsChange={onTimelineChange}
+      />
+    );
+
+    const checkbox1 = screen.getByLabelText(/Add item #1 to Timeline/i) as HTMLInputElement;
+    expect(checkbox1.checked).toBe(false);
+
+    fireEvent.click(checkbox1);
+    expect(onTimelineChange).toHaveBeenCalled();
+    const addedEvents = onTimelineChange.mock.calls[0][0];
+    expect(addedEvents.length).toBe(1);
+    expect(addedEvents[0].year).toBe(2000);
+    expect(addedEvents[0].label).toContain("THE TRIBUNE");
   });
 });
 

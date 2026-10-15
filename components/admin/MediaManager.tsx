@@ -17,8 +17,6 @@ import { Button } from "@/components/ui/Button";
 import { ImageDropzone } from "./ImageDropzone";
 import { parseClippingFilename } from "@/lib/utils/clipping-parser";
 import { compressImageIfNeeded } from "@/lib/utils/image-compressor";
-import { generateTimelineEntryFromArticle } from "@/lib/ai/timeline-generator";
-import { cleanOcrTranscription } from "@/lib/utils/ocr-sanitizer";
 import { CustomTimelineEvent } from "@/db/schema";
 
 export interface MediaItem {
@@ -58,10 +56,6 @@ export function MediaManager({
   autoAddToTimeline: initialAutoAdd = true,
 }: MediaManagerProps) {
   const [autoAddToTimeline, setAutoAddToTimeline] = useState<boolean>(initialAutoAdd);
-  const [analyzingIndex, setAnalyzingIndex] = useState<number | null>(null);
-  const [ocrLoadingIndex, setOcrLoadingIndex] = useState<number | null>(null);
-  const [ocrStatusText, setOcrStatusText] = useState<string>("");
-  const [ocrError, setOcrError] = useState<string>("");
   const [bulkUploading, setBulkUploading] = useState(false);
   const [bulkProgress, setBulkProgress] = useState<string>("");
   const bulkFileInputRef = useRef<HTMLInputElement>(null);
@@ -116,81 +110,43 @@ export function MediaManager({
     });
   };
 
-  const handleAiScanAndGenerate = async (index: number) => {
+  const handleToggleItemTimeline = (index: number, willAdd: boolean) => {
     const item = mediaList[index];
     if (!item) return;
-    if (!item.imageUrl) {
-      setOcrError("Please upload an image scan first before running AI scanning.");
-      return;
-    }
 
-    setOcrError("");
-    setAnalyzingIndex(index);
-    setOcrStatusText("Scanning text & synthesizing milestone...");
+    if (willAdd) {
+      const matchYear = (text?: string): number => {
+        if (!text) return 1950;
+        const normalized = text.replace(/[_/\\.-]/g, " ");
+        const m = normalized.match(/\b(18\d{2}|19\d{2}|20\d{2})\b/);
+        return m ? parseInt(m[1], 10) : 1950;
+      };
 
-    try {
-      let text = (item.transcriptionText || "").trim();
+      const year =
+        matchYear(item.publicationDate) !== 1950
+          ? matchYear(item.publicationDate)
+          : matchYear(item.caption);
 
-      // If no OCR transcription text yet, extract it via /api/ocr
-      if (!text) {
-        try {
-          const res = await fetch("/api/ocr", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ imageUrl: item.imageUrl }),
-          });
-          if (res.ok) {
-            const ocrData = await res.json();
-            text = cleanOcrTranscription(ocrData.text || "");
-            if (text) {
-              updateMedia(index, { transcriptionText: text });
-            }
-          }
-        } catch (ocrErr) {
-          console.warn("OCR route failed, using metadata fallback:", ocrErr);
-        }
-      }
+      const label = (
+        item.caption ||
+        item.sourcePublication ||
+        "Archival Press Clipping"
+      ).toUpperCase();
 
-      // Generate timeline entry via AI generator
-      const entry = await generateTimelineEntryFromArticle({
-        ocrText: text || undefined,
-        fileName: item.caption,
-        publicationDate: item.publicationDate || undefined,
-        bookstoreName: bookstoreName || item.sourcePublication || undefined,
-      });
+      const pubName = item.sourcePublication || "press archives";
+      const dateText = item.publicationDate || String(year);
+      const description = `Historical press documentation published in ${pubName} (${dateText}).`;
 
-      // Update media title/caption if it was generic
-      const isGenericCaption =
-        !item.caption ||
-        item.caption === "Archival Press Clipping" ||
-        /\.(jpe?g|png|webp|svg)$/i.test(item.caption) ||
-        /\([A-Z][a-z]{2}\s+\d{1,2},\s+\d{4}\)/.test(item.caption);
-
-      const updates: Partial<MediaItem> = {};
-      if (isGenericCaption && entry.label) {
-        updates.caption = entry.label;
-      }
-      if (!item.publicationDate && entry.year) {
-        updates.publicationDate = String(entry.year);
-      }
-      if (text && (!item.transcriptionText || item.transcriptionText.trim() === "")) {
-        updates.transcriptionText = text;
-      }
-      if (Object.keys(updates).length > 0) {
-        updateMedia(index, updates);
-      }
-
-      // Add to timeline
       const milestoneId = `ev-${item.id || Date.now()}-${index}`;
       const newEvent: CustomTimelineEvent = {
         id: milestoneId,
-        year: entry.year,
-        label: entry.label,
-        description: entry.description,
+        year,
+        label,
+        description,
         type: "press",
         mediaId: item.id,
         mediaUrl: item.imageUrl,
-        mediaCaption: entry.label,
+        mediaCaption: label,
       };
 
       if (onTimelineEventsChange) {
@@ -200,34 +156,20 @@ export function MediaManager({
             ev.mediaId !== item.id &&
             ev.id !== milestoneId &&
             ev.id !== `ev-${item.id}` &&
-            !ev.id.startsWith(`ev-${item.id}-`)
+            !ev.id.startsWith(`ev-${item.id}-`) &&
+            (!item.imageUrl || ev.mediaUrl !== item.imageUrl)
         );
         onTimelineEventsChange([...filtered, newEvent]);
       }
 
       if (onAutoAddToTimeline) {
         onAutoAddToTimeline({
-          year: entry.year,
-          label: entry.label,
-          description: entry.description,
-          mediaItem: { ...item, ...updates },
+          year,
+          label,
+          description,
+          mediaItem: item,
         });
       }
-    } catch (err: any) {
-      console.error("AI Scan Error:", err);
-      setOcrError(err.message || "Failed to analyze clipping with AI.");
-    } finally {
-      setAnalyzingIndex(null);
-      setOcrStatusText("");
-    }
-  };
-
-  const handleToggleItemTimeline = async (index: number, willAdd: boolean) => {
-    const item = mediaList[index];
-    if (!item) return;
-
-    if (willAdd) {
-      await handleAiScanAndGenerate(index);
     } else {
       if (onTimelineEventsChange && timelineEvents) {
         const filtered = timelineEvents.filter((ev) => {
@@ -337,97 +279,6 @@ export function MediaManager({
     setBulkProgress("");
   };
 
-  const handleRunOcr = async (index: number) => {
-    const item = mediaList[index];
-    if (!item || !item.imageUrl) {
-      setOcrError("Please upload a clipping scan first before running OCR.");
-      return;
-    }
-
-    setOcrError("");
-    setOcrLoadingIndex(index);
-    setOcrStatusText("Preparing OCR engine...");
-
-    // 30-second timeout guard to ensure OCR never spins indefinitely
-    const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(
-        () =>
-          reject(
-            new Error(
-              "OCR processing timed out. You can enter or paste the transcription text manually below."
-            )
-          ),
-        30000
-      )
-    );
-
-    try {
-      const ocrTask = (async () => {
-        // 1. Prefer server-side route which runs full PSM.AUTO multi-column layout separation
-        try {
-          setOcrStatusText("Extracting article text via server engine...");
-          const res = await fetch("/api/ocr", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ imageUrl: item.imageUrl }),
-          });
-
-          if (res.ok) {
-            const data = await res.json();
-            if (data.text) {
-              return data.text as string;
-            }
-          }
-        } catch (serverErr) {
-          console.warn("Server OCR failed, trying browser WebAssembly:", serverErr);
-        }
-
-        // 2. Client-side browser WebAssembly fallback with PSM.AUTO
-        setOcrStatusText("Processing scan in browser...");
-        const { createWorker, PSM } = await import("tesseract.js");
-        const worker = await createWorker("eng");
-        await worker.setParameters({
-          tessedit_pageseg_mode: (PSM && PSM.AUTO) || (3 as any),
-        });
-        const result = await worker.recognize(item.imageUrl);
-        await worker.terminate();
-
-        const extracted = cleanOcrTranscription(result.data.text || "");
-        return extracted;
-      })();
-
-      const text = await Promise.race([ocrTask, timeoutPromise]);
-
-      if (text && text.trim().length > 0) {
-        const cleaned = cleanOcrTranscription(text);
-        updateMedia(index, { transcriptionText: cleaned });
-        if (autoAddToTimeline && onAutoAddToTimeline) {
-          generateTimelineEntryFromArticle({
-            ocrText: cleaned,
-            fileName: item.caption,
-            publicationDate: item.publicationDate,
-            bookstoreName: item.sourcePublication,
-          }).then((entry) => {
-            onAutoAddToTimeline({
-              year: entry.year,
-              label: entry.label,
-              description: entry.description,
-              mediaItem: item,
-            });
-          }).catch((err) => console.error("Auto-add timeline from OCR error:", err));
-        }
-      } else {
-        setOcrError("No legible text recognized in this scan. You can enter the transcription manually below.");
-      }
-    } catch (err: any) {
-      console.error("OCR Extraction Error:", err);
-      setOcrError(err.message || "Failed to extract text via OCR. You can type the transcription manually below.");
-    } finally {
-      setOcrLoadingIndex(null);
-      setOcrStatusText("");
-    }
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -513,12 +364,6 @@ export function MediaManager({
         )}
       </div>
 
-      {ocrError && (
-        <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs font-serif">
-          {ocrError}
-        </div>
-      )}
-
       {mediaList.length === 0 ? (
         <div className="p-8 border-2 border-dashed border-[#E8E2D5] rounded-xl text-center space-y-2 bg-[#FAF8F5]">
           <ImageIcon className="w-8 h-8 text-stone-400 mx-auto" />
@@ -588,27 +433,6 @@ export function MediaManager({
                       {isItemInTimeline(item, index) ? "In Timeline" : "Add to Timeline"}
                     </span>
                   </label>
-
-                  {/* Dedicated AI Scan & Synthesize Button */}
-                  <button
-                    type="button"
-                    onClick={() => handleAiScanAndGenerate(index)}
-                    disabled={analyzingIndex === index || !item.imageUrl}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-serif border border-[#F43F7A]/30 text-[#F43F7A] bg-[#F43F7A]/5 hover:bg-[#F43F7A]/15 transition-all cursor-pointer disabled:opacity-50"
-                    title="Extract article text with OCR and synthesize timeline milestone title & summary"
-                  >
-                    {analyzingIndex === index ? (
-                      <>
-                        <Loader2 className="w-3 h-3 animate-spin" />
-                        <span>AI Scanning...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="w-3 h-3" />
-                        <span>Scan with AI</span>
-                      </>
-                    )}
-                  </button>
                 </div>
 
                 <button
@@ -685,38 +509,16 @@ export function MediaManager({
                   </div>
 
                   <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <label className="block text-[11px] font-mono text-stone-700">
-                        ARTICLE TRANSCRIPTION (FOR FADED / SMALL NEWSPRINT)
-                      </label>
-                      {item.imageUrl && (
-                        <button
-                          type="button"
-                          disabled={ocrLoadingIndex === index}
-                          onClick={() => handleRunOcr(index)}
-                          className="inline-flex items-center gap-1 text-[11px] font-mono text-[#F43F7A] hover:underline disabled:opacity-60 cursor-pointer font-bold"
-                        >
-                          {ocrLoadingIndex === index ? (
-                            <>
-                              <Loader2 className="w-3 h-3 animate-spin" />
-                              <span>{ocrStatusText || "Running OCR..."}</span>
-                            </>
-                          ) : (
-                            <>
-                              <Sparkles className="w-3 h-3 text-[#F59E0B]" />
-                              <span>Extract Text via OCR</span>
-                            </>
-                          )}
-                        </button>
-                      )}
-                    </div>
+                    <label className="block text-[11px] font-mono text-stone-700 mb-1">
+                      ARTICLE TRANSCRIPTION (OPTIONAL - FOR FADED / SMALL NEWSPRINT)
+                    </label>
                     <textarea
                       rows={3}
                       data-1p-ignore
                       autoComplete="off"
                       value={item.transcriptionText || ""}
                       onChange={(e) => updateMedia(index, { transcriptionText: e.target.value })}
-                      placeholder="Type or paste the transcribed text of the article, or click 'Extract Text via OCR' above..."
+                      placeholder="Type or paste article excerpts or key quotes..."
                       className="w-full px-3 py-2 text-xs bg-white border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none font-serif"
                     />
                   </div>
