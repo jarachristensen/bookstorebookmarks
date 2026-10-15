@@ -106,5 +106,41 @@ describe("BookstoreVerticalTimeline Component", () => {
     fireEvent.click(deleteButtons[0]);
     expect(onDeleteEvent).toHaveBeenCalledWith("ev-1");
   });
+
+  it("renders a starting dot at the top of the line and displays titles with no emojis", () => {
+    const { container } = render(<BookstoreVerticalTimeline bookstore={mockBookstore} />);
+
+    // Top starting dot exists in SVG
+    const startDot = screen.getByTestId("timeline-start-dot");
+    expect(startDot).toBeDefined();
+    expect(startDot.getAttribute("fill")).toBe("#292524");
+
+    // Year badges have no SVG icons or emojis
+    const yearBadge1 = screen.getByText("1953");
+    expect(yearBadge1.querySelector("svg")).toBeNull();
+    expect(yearBadge1.textContent).toBe("1953");
+
+    // Title has uppercase bold styling without emojis
+    const title = screen.getByText("Grand Opening on Columbus Ave");
+    expect(title.className).toContain("uppercase");
+    expect(title.className).toContain("font-extrabold");
+
+    // Clipping image maintains natural aspect ratio (not rigid object-cover thumbnail)
+    const img = screen.getByAltText(/City Lights Storefront/i);
+    expect(img.className).toContain("object-contain");
+    expect(img.className).not.toContain("object-cover");
+  });
+
+  it("opens BookmarkZoomLightbox when a clipping is clicked without onSelectMedia", () => {
+    render(<BookstoreVerticalTimeline bookstore={mockBookstore} />);
+
+    const thumbnail = screen.getByAltText(/City Lights Storefront/i);
+    fireEvent.click(thumbnail);
+
+    // BookmarkZoomLightbox should be opened with zoom controls
+    expect(screen.getByTitle("Zoom In (+)")).toBeDefined();
+    expect(screen.getByTitle("Zoom Out (-)")).toBeDefined();
+    expect(screen.getByTitle(/Reset Zoom/i)).toBeDefined();
+  });
 });
 

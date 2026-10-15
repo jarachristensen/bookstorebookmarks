@@ -5,17 +5,12 @@ import Image from "next/image";
 import { BookstoreWithDetails } from "@/lib/db/queries";
 import { BookstoreLocation, ArchivalMedia, CustomTimelineEvent } from "@/db/schema";
 import {
-  Store,
-  Sparkles,
-  MapPin,
-  Newspaper,
-  Camera,
   Calendar,
   Pencil,
   Trash2,
   ZoomIn,
 } from "lucide-react";
-import { ClippingLightbox } from "@/components/exhibit/ClippingLightbox";
+import { BookmarkZoomLightbox } from "@/components/exhibit/BookmarkZoomLightbox";
 
 export interface TimelineEvent {
   id: string;
@@ -56,47 +51,63 @@ export function BookstoreVerticalTimeline({
   };
 
   // Parse locations
-  let parsedLocations: BookstoreLocation[] = [];
-  try {
+  const parsedLocations: BookstoreLocation[] = useMemo(() => {
     if (bookstore.locations) {
-      parsedLocations = JSON.parse(bookstore.locations);
+      try {
+        const parsed = JSON.parse(bookstore.locations);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch {}
     }
-  } catch {}
 
-  if (parsedLocations.length === 0 && bookstore.streetAddress) {
-    parsedLocations = [
-      {
-        id: "loc-1",
-        label: "1st Location",
-        streetAddress: bookstore.streetAddress,
-        city: bookstore.city,
-        stateProvince: bookstore.stateProvince || undefined,
-        country: bookstore.country,
-        yearsActive: `${bookstore.yearOpened}–${
-          bookstore.isStillOperating ? "Present" : bookstore.yearClosed || ""
-        }`,
-        isMovedFrom: false,
-        isCurrent: bookstore.isStillOperating,
-      },
-    ];
-  }
+    if (bookstore.streetAddress) {
+      return [
+        {
+          id: "loc-1",
+          label: "1st Location",
+          streetAddress: bookstore.streetAddress,
+          city: bookstore.city,
+          stateProvince: bookstore.stateProvince || undefined,
+          country: bookstore.country,
+          yearsActive: `${bookstore.yearOpened}–${
+            bookstore.isStillOperating ? "Present" : bookstore.yearClosed || ""
+          }`,
+          isMovedFrom: false,
+          isCurrent: bookstore.isStillOperating,
+        },
+      ];
+    }
+    return [];
+  }, [
+    bookstore.locations,
+    bookstore.streetAddress,
+    bookstore.city,
+    bookstore.stateProvince,
+    bookstore.country,
+    bookstore.yearOpened,
+    bookstore.yearClosed,
+    bookstore.isStillOperating,
+  ]);
 
   // Parse stored custom timeline events if not explicitly passed as prop
-  let storedCustomEvents: CustomTimelineEvent[] | null = null;
-  if (customEvents) {
-    storedCustomEvents = customEvents;
-  } else if (bookstore.timelineEvents) {
-    try {
-      storedCustomEvents = JSON.parse(bookstore.timelineEvents);
-    } catch {}
-  }
+  const storedCustomEvents: CustomTimelineEvent[] | null = useMemo(() => {
+    if (customEvents) return customEvents;
+    if (bookstore.timelineEvents) {
+      try {
+        return JSON.parse(bookstore.timelineEvents);
+      } catch {}
+    }
+    return null;
+  }, [customEvents, bookstore.timelineEvents]);
 
   // Find primary storefront image for Grand Opening link
-  const storefrontMedia =
-    bookstore.archivalMedia?.find((m) => m.isStorefront) ||
-    bookstore.archivalMedia?.find((m) => m.mediaType === "photo") ||
-    bookstore.archivalMedia?.[0] ||
-    null;
+  const storefrontMedia = useMemo(() => {
+    return (
+      bookstore.archivalMedia?.find((m) => m.isStorefront) ||
+      bookstore.archivalMedia?.find((m) => m.mediaType === "photo") ||
+      bookstore.archivalMedia?.[0] ||
+      null
+    );
+  }, [bookstore.archivalMedia]);
 
   // Build timeline events dynamically
   const timelineEvents: TimelineEvent[] = useMemo(() => {
@@ -248,25 +259,11 @@ export function BookstoreVerticalTimeline({
     return events.sort((a, b) => a.year - b.year);
   }, [bookstore, storedCustomEvents, parsedLocations, storefrontMedia]);
 
-  const getTypeIcon = (type: TimelineEvent["type"]) => {
-    switch (type) {
-      case "opening":
-        return <Store className="w-3.5 h-3.5 text-emerald-700" />;
-      case "relocation":
-        return <MapPin className="w-3.5 h-3.5 text-blue-700" />;
-      case "press":
-        return <Newspaper className="w-3.5 h-3.5 text-[#F43F7A]" />;
-      case "closure":
-        return <Calendar className="w-3.5 h-3.5 text-stone-600" />;
-      default:
-        return <Sparkles className="w-3.5 h-3.5 text-amber-600" />;
-    }
-  };
-
   const containerRef = useRef<HTMLDivElement>(null);
   const rowRefs = useRef<(HTMLDivElement | null)[]>([]);
   const dotRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [svgPath, setSvgPath] = useState<string>("");
+  const [startDot, setStartDot] = useState<{ x: number; y: number } | null>(null);
 
   const updateSvgPath = useCallback(() => {
     if (!containerRef.current) return;
@@ -313,11 +310,14 @@ export function BookstoreVerticalTimeline({
 
     if (dots.length === 0) {
       setSvgPath("");
+      setStartDot(null);
       return;
     }
 
-    // Top vertical entry from 0 down to first dot
-    let d = `M ${dots[0].x} 0 L ${dots[0].x} ${dots[0].y}`;
+    // Top vertical entry: starts with a distinct dot 48px above the first event
+    const startY = Math.max(12, dots[0].y - 48);
+
+    let d = `M ${dots[0].x} ${startY} L ${dots[0].x} ${dots[0].y}`;
 
     for (let i = 0; i < dots.length - 1; i++) {
       const p1 = dots[i];
@@ -361,7 +361,11 @@ export function BookstoreVerticalTimeline({
     const endY = Math.max(lastDot.y + 40, (lastRow?.bottom ?? lastDot.y) + 24);
     d += ` L ${lastDot.x} ${endY}`;
 
-    setSvgPath(d);
+    setStartDot((prev) => {
+      if (prev && prev.x === dots[0].x && prev.y === startY) return prev;
+      return { x: dots[0].x, y: startY };
+    });
+    setSvgPath((prev) => (prev === d ? prev : d));
   }, [timelineEvents]);
 
   useEffect(() => {
@@ -412,6 +416,16 @@ export function BookstoreVerticalTimeline({
           className="absolute inset-0 w-full h-full pointer-events-none z-0"
           data-testid="serpentine-svg"
         >
+          {/* Starting Dot at top of line */}
+          {startDot && (
+            <circle
+              data-testid="timeline-start-dot"
+              cx={startDot.x}
+              cy={startDot.y}
+              r="5.5"
+              fill="#292524"
+            />
+          )}
           <path
             d={svgPath}
             fill="none"
@@ -433,7 +447,7 @@ export function BookstoreVerticalTimeline({
             </p>
           </div>
         ) : (
-          <div className="space-y-12 md:space-y-20 relative z-10">
+          <div className="space-y-16 md:space-y-24 relative z-10 pt-4">
           {timelineEvents.map((event, index) => {
             const isEven = index % 2 === 0;
             const hasMedia = Boolean(event.media && event.media.imageUrl);
@@ -451,61 +465,59 @@ export function BookstoreVerticalTimeline({
                   ref={(el) => {
                     dotRefs.current[index] = el;
                   }}
-                  className={`absolute top-6 z-20 flex items-center justify-center -translate-x-1/2 left-6 ${
+                  className={`absolute top-2 z-20 flex items-center justify-center -translate-x-1/2 left-6 ${
                     isEven ? "md:left-[60%]" : "md:left-[40%]"
                   }`}
                 >
-                  <div className="w-5 h-5 rounded-full bg-stone-900 border-2 border-[#FAF8F5] shadow-xs flex items-center justify-center">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#FAF8F5]" />
-                  </div>
+                  <div className="w-5 h-5 rounded-full bg-[#292524] shadow-xs flex items-center justify-center" />
                 </div>
 
                 {hasMedia ? (
                   isEven ? (
                     /* Even Index (Event 1, 3, 5...): Dot at 60%, Text on Left (54%), Media on Right (38%) */
                     <div className="flex flex-col md:flex-row items-start justify-between gap-6 md:gap-0">
-                      {/* Left: Text Card */}
-                      <div className="w-full md:w-[54%] md:pr-8">
+                      {/* Left: Text Content */}
+                      <div className="w-full md:w-[54%] md:pr-10">
                         <EventCardContent
                           event={event}
                           align="right"
                           isEditable={isEditable}
                           onEditEvent={onEditEvent}
                           onDeleteEvent={onDeleteEvent}
-                          getTypeIcon={getTypeIcon}
                         />
                       </div>
 
-                      {/* Right: Media Thumbnail */}
+                      {/* Right: Media Clipping with Natural Aspect Ratio */}
                       <div className="w-full md:w-[38%] md:ml-auto">
                         <EventThumbnail
                           media={event.media!}
                           eventLabel={event.label}
                           onClick={() => handleMediaClick(event.media!)}
+                          align="left"
                         />
                       </div>
                     </div>
                   ) : (
                     /* Odd Index (Event 2, 4, 6...): Dot at 40%, Media on Left (38%), Text on Right (54%) */
                     <div className="flex flex-col-reverse md:flex-row items-start justify-between gap-6 md:gap-0">
-                      {/* Left: Media Thumbnail */}
+                      {/* Left: Media Clipping with Natural Aspect Ratio */}
                       <div className="w-full md:w-[38%]">
                         <EventThumbnail
                           media={event.media!}
                           eventLabel={event.label}
                           onClick={() => handleMediaClick(event.media!)}
+                          align="right"
                         />
                       </div>
 
-                      {/* Right: Text Card */}
-                      <div className="w-full md:w-[54%] md:ml-auto md:pl-8">
+                      {/* Right: Text Content */}
+                      <div className="w-full md:w-[54%] md:ml-auto md:pl-10">
                         <EventCardContent
                           event={event}
                           align="left"
                           isEditable={isEditable}
                           onEditEvent={onEditEvent}
                           onDeleteEvent={onDeleteEvent}
-                          getTypeIcon={getTypeIcon}
                         />
                       </div>
                     </div>
@@ -515,8 +527,8 @@ export function BookstoreVerticalTimeline({
                   <div
                     className={`w-full ${
                       isEven
-                        ? "md:w-[54%] md:pr-8"
-                        : "md:w-[54%] md:ml-auto md:pl-8"
+                        ? "md:w-[54%] md:pr-10"
+                        : "md:w-[54%] md:ml-auto md:pl-10"
                     }`}
                   >
                     <EventCardContent
@@ -525,7 +537,6 @@ export function BookstoreVerticalTimeline({
                       isEditable={isEditable}
                       onEditEvent={onEditEvent}
                       onDeleteEvent={onDeleteEvent}
-                      getTypeIcon={getTypeIcon}
                     />
                   </div>
                 )}
@@ -536,14 +547,25 @@ export function BookstoreVerticalTimeline({
         )}
 
         {/* Antique Broadside Bottom Rule */}
-        <div className="border-b-2 border-stone-800 mt-14 max-w-4xl mx-auto" />
+        <div className="border-b-2 border-stone-800 mt-16 max-w-4xl mx-auto" />
       </div>
 
-      {/* Lightbox Modal */}
+      {/* Lightbox Modal with Bookmark Zoom Options */}
       {localLightboxMedia && (
-        <ClippingLightbox
-          media={localLightboxMedia}
+        <BookmarkZoomLightbox
+          isOpen={Boolean(localLightboxMedia)}
           onClose={() => setLocalLightboxMedia(null)}
+          imageUrl={localLightboxMedia.imageUrl}
+          alt={localLightboxMedia.caption || "Archival clipping"}
+          title={localLightboxMedia.caption || "Archival Press Clipping"}
+          subtitle={
+            localLightboxMedia.sourcePublication
+              ? `${localLightboxMedia.sourcePublication}${
+                  localLightboxMedia.publicationDate ? ` · ${localLightboxMedia.publicationDate}` : ""
+                }`
+              : localLightboxMedia.publicationDate || undefined
+          }
+          notes={localLightboxMedia.transcriptionText}
         />
       )}
     </div>
@@ -556,45 +578,50 @@ function EventCardContent({
   isEditable,
   onEditEvent,
   onDeleteEvent,
-  getTypeIcon,
 }: {
   event: TimelineEvent;
   align: "left" | "right";
   isEditable?: boolean;
   onEditEvent?: (event: TimelineEvent) => void;
   onDeleteEvent?: (eventId: string) => void;
-  getTypeIcon: (type: TimelineEvent["type"]) => React.ReactNode;
 }) {
   const isRight = align === "right";
 
   return (
     <div
-      className={`p-5 rounded-xl border border-[#E8E2D5] bg-[#FAF8F5] shadow-xs space-y-2 text-left ${
+      className={`space-y-1.5 py-1 text-left ${
         isRight ? "md:text-right" : "md:text-left"
       }`}
     >
+      {/* Year Badge: Solid dark espresso rounded rectangle, NO emojis */}
       <div
         className={`flex items-center gap-2 justify-start ${
           isRight ? "md:justify-end" : "md:justify-start"
         }`}
       >
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-stone-900 text-stone-100 shadow-2xs">
-          {getTypeIcon(event.type)}
-          <span>{event.year}</span>
+        <span className="inline-block px-3.5 py-1 rounded-md text-sm md:text-base font-sans font-bold bg-[#292524] text-white shadow-xs tracking-wider leading-none">
+          {event.year}
         </span>
       </div>
 
-      <h3 className="text-base font-serif font-bold text-stone-900 uppercase tracking-wide">
+      {/* Title: Heavy uppercase bold sans-serif, NO emojis */}
+      <h3 className="font-sans font-extrabold uppercase text-[#292524] text-lg sm:text-xl md:text-2xl tracking-tight leading-snug pt-1">
         {event.label}
       </h3>
 
-      <p className="text-xs font-serif text-stone-700 leading-relaxed">
+      {/* Description / Blurb: Clean sans-serif */}
+      <p
+        className={`font-sans text-stone-600 text-xs sm:text-sm leading-relaxed pt-1 ${
+          isRight ? "md:ml-auto" : "md:mr-auto"
+        } max-w-md`}
+      >
         {event.description}
       </p>
 
+      {/* Editable Controls */}
       {isEditable && (
         <div
-          className={`flex items-center gap-2 pt-2 border-t border-[#E8E2D5] justify-start ${
+          className={`flex items-center gap-2 pt-2 justify-start ${
             isRight ? "md:justify-end" : "md:justify-start"
           }`}
         >
@@ -602,7 +629,7 @@ function EventCardContent({
             <button
               type="button"
               onClick={() => onEditEvent(event)}
-              className="p-1 rounded text-stone-500 hover:text-stone-900"
+              className="p-1.5 rounded-md text-stone-500 hover:text-stone-900 hover:bg-stone-200/60 transition-colors cursor-pointer"
               title="Edit milestone"
             >
               <Pencil className="w-3.5 h-3.5" />
@@ -612,7 +639,7 @@ function EventCardContent({
             <button
               type="button"
               onClick={() => onDeleteEvent(event.id)}
-              className="p-1 rounded text-stone-500 hover:text-rose-700"
+              className="p-1.5 rounded-md text-stone-500 hover:text-rose-700 hover:bg-rose-100/60 transition-colors cursor-pointer"
               title="Delete milestone"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -628,36 +655,50 @@ function EventThumbnail({
   media,
   eventLabel,
   onClick,
+  align = "left",
 }: {
   media: ArchivalMedia;
   eventLabel: string;
   onClick: () => void;
+  align?: "left" | "right";
 }) {
+  const isRight = align === "right";
+
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      title={`Click to zoom ${media.mediaType === "newspaper" ? "clipping" : "photo"}`}
-      className="group relative w-full h-48 sm:h-56 rounded-xl overflow-hidden border border-[#E8E2D5] bg-white cursor-pointer shadow-xs hover:shadow-md transition-all duration-200 block text-left"
+    <div
+      className={`flex flex-col w-full items-start ${
+        isRight ? "md:items-end" : "md:items-start"
+      }`}
     >
-      <Image
-        src={media.imageUrl}
-        alt={media.caption || eventLabel}
-        fill
-        unoptimized
-        className="object-cover group-hover:scale-105 transition-transform duration-300"
-      />
-      <div className="absolute inset-0 bg-stone-950/20 group-hover:bg-stone-950/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-        <div className="px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-xs text-stone-900 text-xs font-serif font-semibold flex items-center gap-1.5 shadow-sm">
-          <ZoomIn className="w-3.5 h-3.5 text-[#F43F7A]" />
-          <span>Examine Scan</span>
+      <button
+        type="button"
+        onClick={onClick}
+        title={`Click to zoom ${media.mediaType === "newspaper" ? "clipping" : "photo"}: ${media.caption || eventLabel}`}
+        className="group relative inline-block max-w-full rounded-md overflow-hidden border border-[#D5CEC5] bg-white cursor-zoom-in shadow-xs hover:shadow-lg transition-all duration-300 text-left hover:-translate-y-0.5"
+      >
+        {/* Natural aspect ratio image without uniform cropping */}
+        <img
+          src={media.imageUrl}
+          alt={media.caption || eventLabel}
+          loading="lazy"
+          className="max-w-full max-h-[380px] sm:max-h-[480px] w-auto h-auto object-contain block transition-transform duration-300 group-hover:scale-[1.01]"
+        />
+        <div className="absolute inset-0 bg-stone-950/0 group-hover:bg-stone-950/15 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 pointer-events-none">
+          <div className="px-3 py-1.5 rounded-full bg-white/95 backdrop-blur-xs text-stone-900 text-xs font-sans font-semibold flex items-center gap-1.5 shadow-md">
+            <ZoomIn className="w-3.5 h-3.5 text-[#292524]" />
+            <span>Click to Zoom</span>
+          </div>
         </div>
-      </div>
+      </button>
       {media.caption && (
-        <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-stone-900/80 via-stone-900/40 to-transparent p-2.5 text-[11px] font-serif text-white/95 truncate">
+        <p
+          className={`mt-1.5 text-[11px] font-sans text-stone-500 italic max-w-xs leading-tight ${
+            isRight ? "md:text-right" : "md:text-left"
+          }`}
+        >
           {media.caption}
-        </div>
+        </p>
       )}
-    </button>
+    </div>
   );
 }

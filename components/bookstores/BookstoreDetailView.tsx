@@ -8,6 +8,7 @@ import { ArchivalMedia } from "@/db/schema";
 import { sortMediaByMostRecent } from "@/lib/utils/clipping-parser";
 import { BookmarkInspector } from "@/components/exhibit/BookmarkInspector";
 import { ClippingLightbox } from "@/components/exhibit/ClippingLightbox";
+import { BookmarkZoomLightbox } from "@/components/exhibit/BookmarkZoomLightbox";
 import { BookstoreVerticalTimeline } from "@/components/bookstores/BookstoreVerticalTimeline";
 import { BookstoreGoogleMap } from "@/components/bookstores/BookstoreGoogleMap";
 import {
@@ -636,11 +637,22 @@ export function BookstoreDetailView({ bookstore, availableStorefronts }: Booksto
         )}
       </AnimatePresence>
 
-      {/* Press Clipping / Photo Lightbox Popup */}
+      {/* Press Clipping / Photo Lightbox Popup with Bookmark Zoom Options */}
       {selectedLightboxMedia && (
-        <ClippingLightbox
-          media={selectedLightboxMedia}
+        <BookmarkZoomLightbox
+          isOpen={Boolean(selectedLightboxMedia)}
           onClose={() => setSelectedLightboxMedia(null)}
+          imageUrl={selectedLightboxMedia.imageUrl}
+          alt={selectedLightboxMedia.caption || "Archival clipping"}
+          title={selectedLightboxMedia.caption || "Archival Press Clipping"}
+          subtitle={
+            selectedLightboxMedia.sourcePublication
+              ? `${selectedLightboxMedia.sourcePublication}${
+                  selectedLightboxMedia.publicationDate ? ` · ${selectedLightboxMedia.publicationDate}` : ""
+                }`
+              : selectedLightboxMedia.publicationDate || undefined
+          }
+          notes={selectedLightboxMedia.transcriptionText}
         />
       )}
     </div>
