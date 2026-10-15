@@ -33,11 +33,14 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { TradeImageUploader } from "./TradeImageUploader";
-
+import { TraderLeaderboard } from "./TraderLeaderboard";
+import { computeTraderLeaderboard } from "@/lib/utils/trader-leaderboard";
+import { TradeProposal } from "@/db/schema";
 
 export interface TradingHubClientProps {
   initialBookmarks: BookmarkWithDetails[];
   initialContent?: Record<string, string>;
+  initialProposals?: TradeProposal[];
 }
 
 export interface FAQItem {
@@ -85,9 +88,14 @@ const DEFAULT_CONTENT: Record<string, string> = {
 export function TradingHubClient({
   initialBookmarks,
   initialContent = {},
+  initialProposals = [],
 }: TradingHubClientProps) {
   const searchParams = useSearchParams();
   const isEditing = searchParams?.get("edit") === "true";
+
+  const leaderboardEntries = useMemo(() => {
+    return computeTraderLeaderboard(initialProposals);
+  }, [initialProposals]);
 
   // Editable Page Content State
   const [content, setContent] = useState<Record<string, string>>({
@@ -865,6 +873,11 @@ export function TradingHubClient({
                 ))}
               </div>
             )}
+
+            {/* Trader Extraordinaires Leaderboard */}
+            <div className="pt-2">
+              <TraderLeaderboard entries={leaderboardEntries} />
+            </div>
           </aside>
         </div>
 

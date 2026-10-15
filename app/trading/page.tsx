@@ -1,6 +1,6 @@
 import React, { Suspense } from "react";
 import { getPageContent } from "@/lib/db/page-content";
-import { getTradeBookmarks } from "@/lib/db/queries";
+import { getTradeBookmarks, getAllTradeProposals } from "@/lib/db/queries";
 import { TradingHubClient } from "@/components/trading/TradingHubClient";
 
 export const dynamic = "force-dynamic";
@@ -12,9 +12,10 @@ export const metadata = {
 };
 
 export default async function TradingPage() {
-  const [content, tradeBookmarks] = await Promise.all([
+  const [content, tradeBookmarks, tradeProposals] = await Promise.all([
     getPageContent("trading"),
     getTradeBookmarks(),
+    getAllTradeProposals(),
   ]);
 
   return (
@@ -30,6 +31,7 @@ export default async function TradingPage() {
       <TradingHubClient
         initialBookmarks={tradeBookmarks}
         initialContent={content}
+        initialProposals={tradeProposals}
       />
     </Suspense>
   );
