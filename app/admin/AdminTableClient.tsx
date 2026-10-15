@@ -686,6 +686,18 @@ export function AdminTableClient({
   });
 
   const filteredBookstores = bookstores.filter((s) => {
+    // The flagship and 1st location are the same place; filter out redundant 1st location branch records
+    if (s.flagshipId) {
+      if (s.branchLabel && /1st\s*location|first\s*location|original\s*location|flagship/i.test(s.branchLabel)) {
+        return false;
+      }
+      if (/1st\s*location|first\s*location|original\s*location/i.test(s.name)) {
+        return false;
+      }
+      if (s.id.includes("1st-location")) {
+        return false;
+      }
+    }
     const q = search.toLowerCase();
     return (
       (s.name && s.name.toLowerCase().includes(q)) ||

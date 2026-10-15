@@ -122,27 +122,45 @@ export function BookstoresDirectoryClient({
   const [selectedCity, setSelectedCity] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
 
+  // The flagship store and 1st location are the same place; filter out duplicate 1st location branch records
+  const displayBookstores = useMemo(() => {
+    return bookstores.filter((s) => {
+      if (s.flagshipId) {
+        if (s.branchLabel && /1st\s*location|first\s*location|original\s*location|flagship/i.test(s.branchLabel)) {
+          return false;
+        }
+        if (/1st\s*location|first\s*location|original\s*location/i.test(s.name)) {
+          return false;
+        }
+        if (s.id.includes("1st-location")) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [bookstores]);
+
   const countries = useMemo(() => {
     const set = new Set<string>();
-    bookstores.forEach((s) => {
+    displayBookstores.forEach((s) => {
       if (s.country) set.add(s.country);
     });
     return Array.from(set).sort();
-  }, [bookstores]);
+  }, [displayBookstores]);
 
   const states = useMemo(() => {
     const set = new Set<string>();
-    bookstores.forEach((s) => {
+    displayBookstores.forEach((s) => {
       if (selectedCountry === "all" || s.country?.toLowerCase() === selectedCountry.toLowerCase()) {
         if (s.stateProvince) set.add(s.stateProvince);
       }
     });
     return Array.from(set).sort();
-  }, [bookstores, selectedCountry]);
+  }, [displayBookstores, selectedCountry]);
 
   const cities = useMemo(() => {
     const set = new Set<string>();
-    bookstores.forEach((s) => {
+    displayBookstores.forEach((s) => {
       const matchCountry =
         selectedCountry === "all" || s.country?.toLowerCase() === selectedCountry.toLowerCase();
       const matchState =
@@ -153,10 +171,10 @@ export function BookstoresDirectoryClient({
       }
     });
     return Array.from(set).sort();
-  }, [bookstores, selectedCountry, selectedState]);
+  }, [displayBookstores, selectedCountry, selectedState]);
 
   const filteredBookstores = useMemo(() => {
-    return bookstores.filter((store) => {
+    return displayBookstores.filter((store) => {
       if (selectedCountry !== "all" && store.country?.toLowerCase() !== selectedCountry.toLowerCase()) {
         return false;
       }

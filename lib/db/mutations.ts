@@ -259,14 +259,21 @@ export async function syncBranchBookstores(
     return;
   }
 
-  for (const [idx, loc] of bookstoreData.locations.entries()) {
-    // Secondary locations (idx > 0) or explicitly labeled branch locations
-    const isBranch =
-      idx > 0 ||
-      Boolean(loc.label && /branch|location/i.test(loc.label)) ||
-      (!loc.isMovedFrom && loc.label && !/flagship|main/i.test(loc.label));
+  const validBranchIds = new Set<string>();
 
-    if (!isBranch) continue;
+  for (const [idx, loc] of bookstoreData.locations.entries()) {
+    // Location 0 is the primary / 1st location (Flagship) of this bookstore itself; NEVER a separate branch store!
+    if (idx === 0) continue;
+
+    // Any location labeled as 1st location, original, or flagship is the flagship store itself
+    if (loc.label && /1st\s*location|first\s*location|flagship|original\s*location/i.test(loc.label)) {
+      continue;
+    }
+
+    // Historical relocations (addresses moved from) are address history, not a secondary branch store
+    if (loc.isMovedFrom) {
+      continue;
+    }
 
     const branchId =
       loc.id && !loc.id.startsWith("loc-")
@@ -274,6 +281,8 @@ export async function syncBranchBookstores(
         : generateSlug(`${bookstoreData.name}-${loc.label || "branch"}-${loc.city || bookstoreData.city || "store"}`);
 
     if (branchId === flagshipId) continue;
+
+    validBranchIds.add(branchId);
 
     const branchValues = {
       id: branchId,
@@ -307,6 +316,26 @@ export async function syncBranchBookstores(
         updatedAt: now,
       },
     });
+  }
+
+  // Clean up any obsolete/accidental branch entries for this flagship
+  // (e.g. redundant 1st-location branch records or deleted branch locations)
+  try {
+    const existingBranches = await db.select().from(bookstores).where(eq(bookstores.flagshipId, flagshipId));
+    for (const b of existingBranches) {
+      const isRedundant1stLocation =
+        (b.branchLabel && /1st\s*location|first\s*location|original\s*location|flagship/i.test(b.branchLabel)) ||
+        /1st\s*location|first\s*location|original\s*location/i.test(b.name) ||
+        b.id.includes("1st-location");
+
+      if (isRedundant1stLocation || !validBranchIds.has(b.id)) {
+        // Reassign any bookmarks to the flagship so they are not orphaned
+        await db.update(bookmarks).set({ bookstoreId: flagshipId }).where(eq(bookmarks.bookstoreId, b.id));
+        await db.delete(bookstores).where(eq(bookstores.id, b.id));
+      }
+    }
+  } catch (err) {
+    console.warn("Branch cleanup notice:", err);
   }
 }
 

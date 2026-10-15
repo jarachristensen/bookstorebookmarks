@@ -27,6 +27,25 @@ export async function ensureDb() {
       } catch (err) {
         console.warn("Storefronts auto-sync notice:", err);
       }
+      try {
+        // Clean up any legacy redundant 1st-location branch records pointing to a flagship
+        const allStores = await db.select().from(bookstores);
+        for (const store of allStores) {
+          if (store.flagshipId) {
+            const isRedundant =
+              (store.branchLabel && /1st\s*location|first\s*location|original\s*location|flagship/i.test(store.branchLabel)) ||
+              /1st\s*location|first\s*location|original\s*location/i.test(store.name) ||
+              store.id.includes("1st-location");
+
+            if (isRedundant) {
+              await db.update(bookmarks).set({ bookstoreId: store.flagshipId }).where(eq(bookmarks.bookstoreId, store.id));
+              await db.delete(bookstores).where(eq(bookstores.id, store.id));
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("Bookstore 1st-location cleanup notice:", err);
+      }
     })().catch((err) => {
       console.error("Database initialization error:", err);
       dbInitPromise = null;
@@ -198,7 +217,24 @@ export async function getBookmarkBySlug(slug: string): Promise<BookmarkWithDetai
  */
 export async function getAllBookstores(): Promise<BookstoreWithDetails[]> {
   await ensureDb();
-  const allStores = await db.select().from(bookstores).orderBy(asc(bookstores.name));
+  let allStores = await db.select().from(bookstores).orderBy(asc(bookstores.name));
+
+  // The flagship and 1st location are the same place; filter out duplicate 1st location branch records
+  allStores = allStores.filter((s) => {
+    if (s.flagshipId) {
+      if (s.branchLabel && /1st\s*location|first\s*location|original\s*location|flagship/i.test(s.branchLabel)) {
+        return false;
+      }
+      if (/1st\s*location|first\s*location|original\s*location/i.test(s.name)) {
+        return false;
+      }
+      if (s.id.includes("1st-location")) {
+        return false;
+      }
+    }
+    return true;
+  });
+
   allStores.sort(compareBookstoresAlphabetically);
   const allBookmarks = await db.select().from(bookmarks);
   const allMedia = await db.select().from(archivalMedia).orderBy(asc(archivalMedia.displayOrder));

@@ -78,4 +78,63 @@ describe("BookstoresDirectoryClient Component", () => {
     expect(screen.getByText("All States")).toBeDefined();
     expect(screen.getByText("CA")).toBeDefined();
   });
+
+  it("does not render duplicate separate cards when flagship and 1st location are in data", () => {
+    const storesWithDuplicate: BookstoreWithDetails[] = [
+      {
+        id: "book-west",
+        name: "Book West",
+        city: "Arroyo Grande",
+        stateProvince: "CA",
+        country: "United States",
+        streetAddress: "100 Branch St",
+        yearOpened: 1980,
+        yearClosed: null,
+        isStillOperating: true,
+        isFlagship: true,
+        flagshipId: null,
+        branchLabel: null,
+        founders: null,
+        specialties: null,
+        historicalBlurb: "Historic bookstore.",
+        notablePatronsTrivia: null,
+        websiteUrl: null,
+        locations: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        bookmarks: [],
+        archivalMedia: [],
+      },
+      {
+        id: "book-west-1st-location-original-arroyo-grande",
+        name: "Book West (1st Location (Original))",
+        city: "Arroyo Grande",
+        stateProvince: "CA",
+        country: "United States",
+        streetAddress: "100 Branch St",
+        yearOpened: 1980,
+        yearClosed: null,
+        isStillOperating: true,
+        isFlagship: false,
+        flagshipId: "book-west",
+        branchLabel: "1st Location (Original)",
+        founders: null,
+        specialties: null,
+        historicalBlurb: "Branch location of Book West.",
+        notablePatronsTrivia: null,
+        websiteUrl: null,
+        locations: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        bookmarks: [],
+        archivalMedia: [],
+      },
+    ];
+
+    render(<BookstoresDirectoryClient bookstores={storesWithDuplicate} />);
+
+    // Should only render Book West once as the flagship, not as a second 1st Location card
+    expect(screen.getByText("Book West")).toBeDefined();
+    expect(screen.queryByText("Book West (1st Location (Original))")).toBeNull();
+  });
 });

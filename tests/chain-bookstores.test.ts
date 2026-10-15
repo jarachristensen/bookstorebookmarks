@@ -174,5 +174,100 @@ describe("Chain Bookstores & Flagship / Branch Relationships", () => {
       await db.delete(bookstores).where(eq(bookstores.id, autoBranchId));
     }
   });
+
+  it("should never create a separate branch store for 1st Location (Flagship) and filter it out of getAllBookstores", async () => {
+    const singleStoreFlagshipId = `independent-flagship-${timestamp}`;
+    const redundant1stLocationId = `independent-flagship-1st-location-${timestamp}`;
+
+    try {
+      await saveBookstoreDossier({
+        bookstore: {
+          id: singleStoreFlagshipId,
+          name: "Independent Books",
+          city: "Arroyo Grande",
+          stateProvince: "CA",
+          country: "United States",
+          streetAddress: "100 Branch St",
+          isFlagship: true,
+          yearOpened: 1980,
+          isStillOperating: true,
+          historicalBlurb: "Historic independent bookstore.",
+          locations: [
+            {
+              id: "loc-1",
+              label: "1st Location (Flagship)",
+              streetAddress: "100 Branch St",
+              city: "Arroyo Grande",
+              stateProvince: "CA",
+              country: "United States",
+              isCurrent: true,
+            },
+          ],
+        },
+      });
+
+      // Confirm no separate branch was generated in bookstores table
+      const allBranches = await db.select().from(bookstores).where(eq(bookstores.flagshipId, singleStoreFlagshipId));
+      expect(allBranches.length).toBe(0);
+
+      // Now insert a legacy redundant 1st-location branch directly to simulate existing duplicate in DB
+      await db.insert(bookstores).values({
+        id: redundant1stLocationId,
+        name: "Independent Books (1st Location (Original))",
+        city: "Arroyo Grande",
+        stateProvince: "CA",
+        country: "United States",
+        streetAddress: "100 Branch St",
+        isFlagship: false,
+        flagshipId: singleStoreFlagshipId,
+        branchLabel: "1st Location (Original)",
+        yearOpened: 1980,
+        isStillOperating: true,
+        historicalBlurb: "Branch location of Independent Books.",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+
+      // getAllBookstores should filter it out and only return the primary flagship store
+      const allStores = await getAllBookstores();
+      const foundRedundant = allStores.find((s) => s.id === redundant1stLocationId);
+      const foundMain = allStores.find((s) => s.id === singleStoreFlagshipId);
+      expect(foundRedundant).toBeUndefined();
+      expect(foundMain).toBeDefined();
+
+      // Saving the flagship again should auto-clean up the redundant branch from the DB
+      await saveBookstoreDossier({
+        bookstore: {
+          id: singleStoreFlagshipId,
+          name: "Independent Books",
+          city: "Arroyo Grande",
+          stateProvince: "CA",
+          country: "United States",
+          streetAddress: "100 Branch St",
+          isFlagship: true,
+          yearOpened: 1980,
+          isStillOperating: true,
+          historicalBlurb: "Historic independent bookstore.",
+          locations: [
+            {
+              id: "loc-1",
+              label: "1st Location (Flagship)",
+              streetAddress: "100 Branch St",
+              city: "Arroyo Grande",
+              stateProvince: "CA",
+              country: "United States",
+              isCurrent: true,
+            },
+          ],
+        },
+      });
+
+      const branchesAfterSave = await db.select().from(bookstores).where(eq(bookstores.flagshipId, singleStoreFlagshipId));
+      expect(branchesAfterSave.length).toBe(0);
+    } finally {
+      await db.delete(bookstores).where(eq(bookstores.id, singleStoreFlagshipId));
+      await db.delete(bookstores).where(eq(bookstores.id, redundant1stLocationId));
+    }
+  });
 });
 
