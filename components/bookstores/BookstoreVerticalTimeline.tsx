@@ -373,7 +373,6 @@ export function BookstoreVerticalTimeline({
       {localLightboxMedia && (
         <ClippingLightbox
           media={localLightboxMedia}
-          bookstoreName={bookstore.name}
           onClose={() => setLocalLightboxMedia(null)}
         />
       )}
