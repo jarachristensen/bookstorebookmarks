@@ -89,5 +89,22 @@ describe("BookstoreVerticalTimeline Component", () => {
     const node2Wrapper = nodes[1].closest(".absolute");
     expect(node2Wrapper?.className).toContain("md:left-[40%]");
   });
+
+  it("calls onDeleteEvent when milestone delete button is clicked in editable mode", () => {
+    const onDeleteEvent = vi.fn();
+    render(
+      <BookstoreVerticalTimeline
+        bookstore={mockBookstore}
+        isEditable={true}
+        onDeleteEvent={onDeleteEvent}
+      />
+    );
+
+    const deleteButtons = screen.getAllByTitle("Delete milestone");
+    expect(deleteButtons.length).toBe(2);
+
+    fireEvent.click(deleteButtons[0]);
+    expect(onDeleteEvent).toHaveBeenCalledWith("ev-1");
+  });
 });
 

@@ -100,9 +100,16 @@ export function BookstoreVerticalTimeline({
 
   // Build timeline events dynamically
   const timelineEvents: TimelineEvent[] = useMemo(() => {
-    // If custom events exist, use them
-    if (storedCustomEvents && storedCustomEvents.length > 0) {
-      return storedCustomEvents
+    // If customEvents prop is explicitly provided, ALWAYS respect it (even if empty)!
+    const sourceList =
+      customEvents !== undefined
+        ? customEvents
+        : storedCustomEvents && storedCustomEvents.length > 0
+        ? storedCustomEvents
+        : null;
+
+    if (sourceList !== null) {
+      return sourceList
         .map((ev) => {
           let attachedMedia: ArchivalMedia | null = null;
           if (ev.mediaId) {
@@ -415,7 +422,18 @@ export function BookstoreVerticalTimeline({
           />
         </svg>
 
-        <div className="space-y-12 md:space-y-20 relative z-10">
+        {timelineEvents.length === 0 ? (
+          <div className="p-8 border-2 border-dashed border-[#E8E2D5] rounded-xl text-center space-y-2 bg-[#FAF8F5]">
+            <Calendar className="w-8 h-8 text-stone-400 mx-auto" />
+            <div className="font-serif font-bold text-stone-800 text-sm">
+              No Timeline Milestones
+            </div>
+            <p className="text-xs font-serif text-stone-500 max-w-sm mx-auto">
+              No milestones currently on the timeline. Click &ldquo;Add an Event&rdquo; above or check &ldquo;Add to Timeline&rdquo; on any archival clipping to add milestones.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-12 md:space-y-20 relative z-10">
           {timelineEvents.map((event, index) => {
             const isEven = index % 2 === 0;
             const hasMedia = Boolean(event.media && event.media.imageUrl);
@@ -515,6 +533,7 @@ export function BookstoreVerticalTimeline({
             );
           })}
         </div>
+        )}
 
         {/* Antique Broadside Bottom Rule */}
         <div className="border-b-2 border-stone-800 mt-14 max-w-4xl mx-auto" />

@@ -195,7 +195,10 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
   const [timelineEvents, setTimelineEvents] = useState<CustomTimelineEvent[]>(() => {
     if (initialData.timelineEvents) {
       try {
-        return JSON.parse(initialData.timelineEvents);
+        const parsed = JSON.parse(initialData.timelineEvents);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
       } catch {}
     }
     // Initial compilation from base bookstore data
@@ -654,7 +657,54 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
   };
 
   const handleDeleteEvent = (id: string) => {
-    setTimelineEvents((prev) => prev.filter((ev) => ev.id !== id));
+    setTimelineEvents((prev) => {
+      let current = prev;
+      if (current.length === 0) {
+        current = [
+          {
+            id: "ev-founding",
+            year: initialData.yearOpened,
+            label: "Grand Opening",
+            description: initialData.streetAddress
+              ? `${initialData.streetAddress}, ${initialData.city}`
+              : `Established in ${initialData.city}`,
+            type: "opening",
+          },
+        ];
+        mediaList.forEach((m, idx) => {
+          if (m.publicationDate) {
+            const yearMatch = m.publicationDate.match(/\b(18\d{2}|19\d{2}|20\d{2})\b/);
+            if (yearMatch) {
+              current.push({
+                id: `ev-media-${m.id || idx}`,
+                year: parseInt(yearMatch[0], 10),
+                label: m.sourcePublication || m.caption || "Press Clipping",
+                description: m.caption || `Historical documentation from ${m.publicationDate}.`,
+                type: "press",
+                mediaId: m.id,
+                mediaUrl: m.imageUrl,
+                mediaCaption: m.caption || undefined,
+              });
+            }
+          }
+        });
+      }
+
+      return current.filter((ev) => {
+        if (ev.id === id) return false;
+        if (
+          ev.mediaId &&
+          (ev.mediaId === id ||
+            `ev-${ev.mediaId}` === id ||
+            `ev-media-${ev.mediaId}` === id ||
+            id.startsWith(`ev-media-${ev.mediaId}`) ||
+            id.startsWith(`ev-${ev.mediaId}`))
+        ) {
+          return false;
+        }
+        return true;
+      });
+    });
   };
 
   // Save All Changes to Database
