@@ -223,7 +223,6 @@ export function MediaManager({
     if (fileArray.length === 0) return;
 
     setBulkUploading(true);
-    setOcrError("");
 
     const newItems: MediaItem[] = [];
 

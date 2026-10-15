@@ -531,7 +531,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
 
   const handleToggleTimelineForMedia = (media: ArchivalMedia, willAdd: boolean) => {
     if (willAdd) {
-      const matchYear = (text?: string): number => {
+      const matchYear = (text?: string | null): number => {
         if (!text) return 1950;
         const normalized = text.replace(/[_/\\.-]/g, " ");
         const m = normalized.match(/\b(18\d{2}|19\d{2}|20\d{2})\b/);

@@ -68,4 +68,26 @@ describe("BookstoreVerticalTimeline Component", () => {
     fireEvent.click(thumbnail);
     expect(onSelectMedia).toHaveBeenCalled();
   });
+
+  it("renders continuous serpentine SVG line and alternating 60%/40% milestone nodes", () => {
+    const { container } = render(<BookstoreVerticalTimeline bookstore={mockBookstore} />);
+
+    const svgTrack = screen.getByTestId("serpentine-svg");
+    expect(svgTrack).toBeDefined();
+
+    const path = svgTrack.querySelector("path");
+    expect(path).toBeDefined();
+
+    // Check alternating node classes
+    const nodes = container.querySelectorAll(".w-5.h-5.rounded-full");
+    expect(nodes.length).toBe(2);
+    // Node 1 container should have md:left-[60%]
+    const node1Wrapper = nodes[0].closest(".absolute");
+    expect(node1Wrapper?.className).toContain("md:left-[60%]");
+
+    // Node 2 container should have md:left-[40%]
+    const node2Wrapper = nodes[1].closest(".absolute");
+    expect(node2Wrapper?.className).toContain("md:left-[40%]");
+  });
 });
+

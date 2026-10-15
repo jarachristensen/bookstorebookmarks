@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { BookstoreWithDetails } from "@/lib/db/queries";
 import { BookstoreLocation, ArchivalMedia, CustomTimelineEvent } from "@/db/schema";
@@ -256,6 +256,133 @@ export function BookstoreVerticalTimeline({
     }
   };
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  const rowRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const dotRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [svgPath, setSvgPath] = useState<string>("");
+
+  const updateSvgPath = useCallback(() => {
+    if (!containerRef.current) return;
+    const contRect = containerRef.current.getBoundingClientRect();
+    const contWidth = contRect.width || 800;
+
+    const isDesktop = typeof window !== "undefined" && window.innerWidth >= 768;
+
+    const dots: { x: number; y: number }[] = [];
+    const rows: { top: number; bottom: number }[] = [];
+
+    for (let i = 0; i < timelineEvents.length; i++) {
+      const dotEl = dotRefs.current[i];
+      const rowEl = rowRefs.current[i];
+
+      if (dotEl && contRect.width > 0) {
+        const dRect = dotEl.getBoundingClientRect();
+        dots.push({
+          x: dRect.left + dRect.width / 2 - contRect.left,
+          y: dRect.top + dRect.height / 2 - contRect.top,
+        });
+      } else {
+        const defaultX = isDesktop
+          ? i % 2 === 0
+            ? contWidth * 0.6
+            : contWidth * 0.4
+          : 24;
+        dots.push({ x: defaultX, y: 70 + i * 260 });
+      }
+
+      if (rowEl && contRect.width > 0) {
+        const rRect = rowEl.getBoundingClientRect();
+        rows.push({
+          top: rRect.top - contRect.top,
+          bottom: rRect.bottom - contRect.top,
+        });
+      } else {
+        rows.push({
+          top: 30 + i * 260,
+          bottom: 230 + i * 260,
+        });
+      }
+    }
+
+    if (dots.length === 0) {
+      setSvgPath("");
+      return;
+    }
+
+    // Top vertical entry from 0 down to first dot
+    let d = `M ${dots[0].x} 0 L ${dots[0].x} ${dots[0].y}`;
+
+    for (let i = 0; i < dots.length - 1; i++) {
+      const p1 = dots[i];
+      const p2 = dots[i + 1];
+
+      if (Math.abs(p1.x - p2.x) < 8) {
+        // Straight line down (mobile or same column)
+        d += ` L ${p2.x} ${p2.y}`;
+      } else {
+        // Serpentine zig-zag S-curve
+        const rowBottom = rows[i]?.bottom ?? p1.y + 60;
+        const nextRowTop = rows[i + 1]?.top ?? p2.y - 60;
+        const midY = (rowBottom + nextRowTop) / 2;
+        const yTurn = Math.max(p1.y + 24, Math.min(p2.y - 24, midY));
+
+        const dir = p2.x > p1.x ? 1 : -1;
+        const maxR = Math.min(
+          24,
+          Math.abs(p2.x - p1.x) / 2,
+          Math.abs(yTurn - p1.y) / 2,
+          Math.abs(p2.y - yTurn) / 2
+        );
+        const R = Math.max(6, maxR);
+
+        // Vertical down to corner 1
+        d += ` L ${p1.x} ${yTurn - R}`;
+        // Corner 1: curve from vertical to horizontal
+        d += ` Q ${p1.x} ${yTurn}, ${p1.x + dir * R} ${yTurn}`;
+        // Horizontal cross-over
+        d += ` L ${p2.x - dir * R} ${yTurn}`;
+        // Corner 2: curve from horizontal to vertical down
+        d += ` Q ${p2.x} ${yTurn}, ${p2.x} ${yTurn + R}`;
+        // Vertical down to next dot
+        d += ` L ${p2.x} ${p2.y}`;
+      }
+    }
+
+    // Terminate past the last event
+    const lastDot = dots[dots.length - 1];
+    const lastRow = rows[rows.length - 1];
+    const endY = Math.max(lastDot.y + 40, (lastRow?.bottom ?? lastDot.y) + 24);
+    d += ` L ${lastDot.x} ${endY}`;
+
+    setSvgPath(d);
+  }, [timelineEvents]);
+
+  useEffect(() => {
+    updateSvgPath();
+
+    const handleResize = () => {
+      updateSvgPath();
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    let observer: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined" && containerRef.current) {
+      observer = new ResizeObserver(() => {
+        updateSvgPath();
+      });
+      observer.observe(containerRef.current);
+    }
+
+    const timer = setTimeout(updateSvgPath, 150);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      if (observer) observer.disconnect();
+      clearTimeout(timer);
+    };
+  }, [updateSvgPath]);
+
   return (
     <div className="w-full my-8">
       {/* Antique Broadside Header */}
@@ -272,101 +399,125 @@ export function BookstoreVerticalTimeline({
       </div>
 
       {/* Timeline Stream */}
-      <div className="relative max-w-4xl mx-auto px-4">
-        {/* Continuous Serpentine Background Track */}
-        <div className="absolute left-6 md:left-1/2 top-4 bottom-4 -translate-x-1/2 w-0.5 bg-gradient-to-b from-stone-800 via-[#18181B] to-stone-400 pointer-events-none" />
+      <div ref={containerRef} className="relative max-w-4xl mx-auto px-4 pb-8">
+        {/* Continuous Serpentine SVG Line */}
+        <svg
+          className="absolute inset-0 w-full h-full pointer-events-none z-0"
+          data-testid="serpentine-svg"
+        >
+          <path
+            d={svgPath}
+            fill="none"
+            stroke="#292524"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
 
-        <div className="space-y-10 md:space-y-16">
+        <div className="space-y-12 md:space-y-20 relative z-10">
           {timelineEvents.map((event, index) => {
             const isEven = index % 2 === 0;
             const hasMedia = Boolean(event.media && event.media.imageUrl);
 
             return (
-              <div key={event.id} className="relative pl-10 md:pl-0">
+              <div
+                key={event.id}
+                ref={(el) => {
+                  rowRefs.current[index] = el;
+                }}
+                className="relative pl-12 md:pl-0"
+              >
                 {/* Milestone Node Dot */}
-                <div className="absolute left-6 md:left-1/2 top-5 md:top-1/2 -translate-x-1/2 md:-translate-y-1/2 z-10 flex items-center justify-center">
+                <div
+                  ref={(el) => {
+                    dotRefs.current[index] = el;
+                  }}
+                  className={`absolute top-6 z-20 flex items-center justify-center -translate-x-1/2 left-6 ${
+                    isEven ? "md:left-[60%]" : "md:left-[40%]"
+                  }`}
+                >
                   <div className="w-5 h-5 rounded-full bg-stone-900 border-2 border-[#FAF8F5] shadow-xs flex items-center justify-center">
                     <div className="w-1.5 h-1.5 rounded-full bg-[#FAF8F5]" />
                   </div>
                 </div>
 
                 {hasMedia ? (
-                  <div
-                    className={`flex flex-col md:flex-row items-center gap-6 md:gap-14 ${
-                      isEven ? "md:flex-row" : "md:flex-row-reverse"
-                    }`}
-                  >
-                    {/* Text Card */}
-                    <div className="w-full md:w-1/2">
-                      <EventCardContent
-                        event={event}
-                        align={isEven ? "right" : "left"}
-                        isEditable={isEditable}
-                        onEditEvent={onEditEvent}
-                        onDeleteEvent={onDeleteEvent}
-                        getTypeIcon={getTypeIcon}
-                      />
-                    </div>
-
-                    {/* Thumbnail Image */}
-                    <div className="w-full md:w-1/2">
-                      <EventThumbnail
-                        media={event.media!}
-                        eventLabel={event.label}
-                        onClick={() => handleMediaClick(event.media!)}
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  /* Expanded Event Without Media - Expands across step */
-                  <div className="w-full max-w-xl mx-auto">
-                    <div className="p-5 rounded-xl border border-[#E8E2D5] bg-[#FAF8F5] shadow-xs text-center space-y-2">
-                      <div className="flex items-center justify-center gap-2">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-stone-900 text-stone-100 shadow-2xs">
-                          {getTypeIcon(event.type)}
-                          <span>{event.year}</span>
-                        </span>
+                  isEven ? (
+                    /* Even Index (Event 1, 3, 5...): Dot at 60%, Text on Left (54%), Media on Right (38%) */
+                    <div className="flex flex-col md:flex-row items-start justify-between gap-6 md:gap-0">
+                      {/* Left: Text Card */}
+                      <div className="w-full md:w-[54%] md:pr-8">
+                        <EventCardContent
+                          event={event}
+                          align="right"
+                          isEditable={isEditable}
+                          onEditEvent={onEditEvent}
+                          onDeleteEvent={onDeleteEvent}
+                          getTypeIcon={getTypeIcon}
+                        />
                       </div>
 
-                      <h3 className="text-base font-serif font-bold text-stone-900 uppercase tracking-wide">
-                        {event.label}
-                      </h3>
-
-                      <p className="text-xs font-serif text-stone-700 leading-relaxed max-w-md mx-auto">
-                        {event.description}
-                      </p>
-
-                      {isEditable && (
-                        <div className="flex items-center justify-center gap-2 pt-2 border-t border-[#E8E2D5]">
-                          {onEditEvent && (
-                            <button
-                              type="button"
-                              onClick={() => onEditEvent(event)}
-                              className="p-1 rounded text-stone-500 hover:text-stone-900"
-                              title="Edit milestone"
-                            >
-                              <Pencil className="w-3.5 h-3.5" />
-                            </button>
-                          )}
-                          {onDeleteEvent && (
-                            <button
-                              type="button"
-                              onClick={() => onDeleteEvent(event.id)}
-                              className="p-1 rounded text-stone-500 hover:text-rose-700"
-                              title="Delete milestone"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          )}
-                        </div>
-                      )}
+                      {/* Right: Media Thumbnail */}
+                      <div className="w-full md:w-[38%] md:ml-auto">
+                        <EventThumbnail
+                          media={event.media!}
+                          eventLabel={event.label}
+                          onClick={() => handleMediaClick(event.media!)}
+                        />
+                      </div>
                     </div>
+                  ) : (
+                    /* Odd Index (Event 2, 4, 6...): Dot at 40%, Media on Left (38%), Text on Right (54%) */
+                    <div className="flex flex-col-reverse md:flex-row items-start justify-between gap-6 md:gap-0">
+                      {/* Left: Media Thumbnail */}
+                      <div className="w-full md:w-[38%]">
+                        <EventThumbnail
+                          media={event.media!}
+                          eventLabel={event.label}
+                          onClick={() => handleMediaClick(event.media!)}
+                        />
+                      </div>
+
+                      {/* Right: Text Card */}
+                      <div className="w-full md:w-[54%] md:ml-auto md:pl-8">
+                        <EventCardContent
+                          event={event}
+                          align="left"
+                          isEditable={isEditable}
+                          onEditEvent={onEditEvent}
+                          onDeleteEvent={onDeleteEvent}
+                          getTypeIcon={getTypeIcon}
+                        />
+                      </div>
+                    </div>
+                  )
+                ) : (
+                  /* Event Without Media */
+                  <div
+                    className={`w-full ${
+                      isEven
+                        ? "md:w-[54%] md:pr-8"
+                        : "md:w-[54%] md:ml-auto md:pl-8"
+                    }`}
+                  >
+                    <EventCardContent
+                      event={event}
+                      align={isEven ? "right" : "left"}
+                      isEditable={isEditable}
+                      onEditEvent={onEditEvent}
+                      onDeleteEvent={onDeleteEvent}
+                      getTypeIcon={getTypeIcon}
+                    />
                   </div>
                 )}
               </div>
             );
           })}
         </div>
+
+        {/* Antique Broadside Bottom Rule */}
+        <div className="border-b-2 border-stone-800 mt-14 max-w-4xl mx-auto" />
       </div>
 
       {/* Lightbox Modal */}
