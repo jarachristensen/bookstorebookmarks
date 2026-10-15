@@ -15,6 +15,7 @@ import {
 } from "@/db/schema";
 import { eq, asc, desc, gt } from "drizzle-orm";
 import { autoSyncStorefronts } from "@/lib/utils/storefront-sync";
+import { compareBookstoresAlphabetically } from "@/lib/utils/sorting";
 
 let dbInitPromise: Promise<void> | null = null;
 export async function ensureDb() {
@@ -198,6 +199,7 @@ export async function getBookmarkBySlug(slug: string): Promise<BookmarkWithDetai
 export async function getAllBookstores(): Promise<BookstoreWithDetails[]> {
   await ensureDb();
   const allStores = await db.select().from(bookstores).orderBy(asc(bookstores.name));
+  allStores.sort(compareBookstoresAlphabetically);
   const allBookmarks = await db.select().from(bookmarks);
   const allMedia = await db.select().from(archivalMedia).orderBy(asc(archivalMedia.displayOrder));
 

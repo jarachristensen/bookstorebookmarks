@@ -8,6 +8,7 @@ import {
   resolveStorefrontImage,
   DEFAULT_STOREFRONT_IMAGE,
 } from "@/lib/utils/storefront";
+import { compareBookstoresAlphabetically } from "@/lib/utils/sorting";
 import { Building2 } from "lucide-react";
 
 export interface BookstoresDirectoryClientProps {
@@ -193,7 +194,7 @@ export function BookstoresDirectoryClient({
         );
       }
       return true;
-    });
+    }).sort(compareBookstoresAlphabetically);
   }, [bookstores, search, selectedCountry, selectedState, selectedCity, selectedStatus]);
 
   return (
