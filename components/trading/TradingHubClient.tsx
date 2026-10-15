@@ -960,10 +960,11 @@ export function TradingHubClient({
               <div className="flex items-center gap-2 shrink-0">
                 <Button
                   type="button"
+                  size="lg"
                   onClick={() => setIsProposalModalOpen(true)}
-                  className="bg-[#F43F7A] hover:bg-[#E11D48] text-white font-serif text-xs font-bold gap-2 px-4 py-2.5 shadow-md cursor-pointer"
+                  className="bg-[#F43F7A] hover:bg-[#E11D48] text-white font-serif text-sm sm:text-base font-bold gap-2.5 px-6 py-3.5 rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
                 >
-                  <Send className="w-3.5 h-3.5" />
+                  <Send className="w-4 h-4 sm:w-5 sm:h-5" />
                   <span>Propose Trade ({totalTradeItemsCount})</span>
                 </Button>
               </div>

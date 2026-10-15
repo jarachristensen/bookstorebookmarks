@@ -477,9 +477,9 @@ export function OtherBookmarksHubClient({
                 </button>
                 <button
                   onClick={handleOpenProposal}
-                  className="px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-serif font-bold shadow-xs flex items-center gap-1.5 transition-all cursor-pointer"
+                  className="px-6 py-3.5 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm sm:text-base font-serif font-bold shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] flex items-center gap-2.5 transition-all cursor-pointer"
                 >
-                  <Send className="w-3.5 h-3.5" />
+                  <Send className="w-4 h-4 sm:w-5 sm:h-5" />
                   <span>Propose Trade ({totalTradeItemsCount})</span>
                 </button>
               </div>
