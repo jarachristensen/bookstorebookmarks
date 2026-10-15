@@ -894,7 +894,7 @@ export function TradingHubClient({
                 <div className="min-w-0 space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="font-serif font-bold text-sm text-stone-100">
-                      {totalTradeItemsCount} {totalTradeItemsCount === 1 ? "Item" : "Items"} in Trade Tray
+                      {totalTradeItemsCount} {totalTradeItemsCount === 1 ? "Bookmark" : "Bookmarks"} in Trade Tray
                     </span>
                     <button
                       type="button"
