@@ -573,7 +573,7 @@ export function BookstoreDetailView({ bookstore, availableStorefronts }: Booksto
               </Link>
             )}
 
-            {/* List branches if flagship */}
+            {/* List branches or sister branches */}
             {bookstore.branches?.map((branch) => (
               <Link
                 key={branch.id}

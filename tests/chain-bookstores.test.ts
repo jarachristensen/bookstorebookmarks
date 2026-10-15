@@ -93,6 +93,9 @@ describe("Chain Bookstores & Flagship / Branch Relationships", () => {
     expect(branch1?.flagshipStore).toBeDefined();
     expect(branch1?.flagshipStore?.id).toBe(flagshipId);
     expect(branch1?.flagshipStore?.name).toBe("Borders Book Shop (Flagship)");
+    expect(branch1?.branches).toBeDefined();
+    expect(branch1?.branches?.length).toBe(1);
+    expect(branch1?.branches?.[0].id).toBe(branchId2);
 
     // 5. Test Query on Flagship -> should have branches array resolved
     const flagship = await getBookstoreById(flagshipId);

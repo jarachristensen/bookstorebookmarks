@@ -3,7 +3,7 @@
  */
 export function getSortableName(name: string): string {
   if (!name) return "";
-  return name.replace(/^(the|a|an)\s+/i, "").trim();
+  return name.trim().replace(/^(the|a|an)\s+/i, "").trim();
 }
 
 export function compareBookstoresAlphabetically<T extends { name: string }>(a: T, b: T): number {

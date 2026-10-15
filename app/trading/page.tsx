@@ -2,6 +2,7 @@ import React, { Suspense } from "react";
 import { getPageContent } from "@/lib/db/page-content";
 import { getTradeBookmarks, getAllTradeProposals } from "@/lib/db/queries";
 import { TradingHubClient } from "@/components/trading/TradingHubClient";
+import { computeTraderLeaderboard } from "@/lib/utils/trader-leaderboard";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +19,8 @@ export default async function TradingPage() {
     getAllTradeProposals(),
   ]);
 
+  const leaderboard = computeTraderLeaderboard(tradeProposals);
+
   return (
     <Suspense
       fallback={
@@ -31,7 +34,7 @@ export default async function TradingPage() {
       <TradingHubClient
         initialBookmarks={tradeBookmarks}
         initialContent={content}
-        initialProposals={tradeProposals}
+        initialLeaderboard={leaderboard}
       />
     </Suspense>
   );

@@ -28,10 +28,11 @@ export function computeTraderLeaderboard(proposals: any[] = []): TraderLeaderboa
     (p) => p && (p.status === "accepted" || p.status === "completed")
   );
 
-  const collectorMap = new Map<string, { totalBookmarks: number; tradesCount: number }>();
+  const collectorMap = new Map<string, { displayName: string; totalBookmarks: number; tradesCount: number }>();
 
   for (const p of accepted) {
-    const name = p.collectorName?.trim() || "Anonymous";
+    const rawName = p.collectorName?.trim() || "Anonymous";
+    const groupKey = rawName.toLowerCase();
     let count = 0;
 
     try {
@@ -54,16 +55,21 @@ export function computeTraderLeaderboard(proposals: any[] = []): TraderLeaderboa
 
     if (count <= 0) count = 1;
 
-    const current = collectorMap.get(name) || { totalBookmarks: 0, tradesCount: 0 };
-    collectorMap.set(name, {
+    const current = collectorMap.get(groupKey) || {
+      displayName: rawName,
+      totalBookmarks: 0,
+      tradesCount: 0,
+    };
+    collectorMap.set(groupKey, {
+      displayName: current.displayName,
       totalBookmarks: current.totalBookmarks + count,
       tradesCount: current.tradesCount + 1,
     });
   }
 
-  return Array.from(collectorMap.entries())
-    .map(([name, stats]) => ({
-      collectorInitials: formatCollectorInitials(name),
+  return Array.from(collectorMap.values())
+    .map((stats) => ({
+      collectorInitials: formatCollectorInitials(stats.displayName),
       totalBookmarksTraded: stats.totalBookmarks,
       tradesCount: stats.tradesCount,
     }))

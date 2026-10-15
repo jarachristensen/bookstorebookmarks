@@ -140,9 +140,21 @@ export function AdminTableClient({
   ).length;
 
   const handleAcceptTrade = async (proposal: TradeProposal) => {
+    let qtyMap = new Map<string, number>();
+    try {
+      const items = JSON.parse(proposal.requestedBookmarksSnapshot || "[]");
+      if (Array.isArray(items)) {
+        items.forEach((item: any) => {
+          if (item.id) qtyMap.set(item.id, Number(item.quantity) || 1);
+        });
+      }
+    } catch {}
+
+    const totalCopies = Array.from(qtyMap.values()).reduce((sum, q) => sum + q, 0) || 1;
+
     if (
       !confirm(
-        `Accept this trade from ${proposal.collectorName}? This will automatically deduct 1 copy from the duplicate inventory for each requested bookmark.`
+        `Accept this trade from ${proposal.collectorName}? This will automatically deduct the requested copies (${totalCopies} total) from duplicate inventory.`
       )
     ) {
       return;
@@ -174,9 +186,10 @@ export function AdminTableClient({
       setBookmarks((prev) =>
         prev.map((bm) => {
           if (reqIds.includes(bm.id)) {
+            const deductQty = qtyMap.get(bm.id) || 1;
             return {
               ...bm,
-              tradeQuantity: Math.max(0, (bm.tradeQuantity || 1) - 1),
+              tradeQuantity: Math.max(0, (bm.tradeQuantity || 0) - deductQty),
             };
           }
           return bm;
@@ -187,9 +200,10 @@ export function AdminTableClient({
       setOtherBookmarks((prev) =>
         prev.map((obm) => {
           if (reqIds.includes(obm.id)) {
+            const deductQty = qtyMap.get(obm.id) || 1;
             return {
               ...obm,
-              tradeQuantity: Math.max(0, (obm.tradeQuantity || 1) - 1),
+              tradeQuantity: Math.max(0, (obm.tradeQuantity || 0) - deductQty),
             };
           }
           return obm;
@@ -204,7 +218,9 @@ export function AdminTableClient({
       );
 
       setTradeSuccessMsg(
-        `Trade accepted! 1 duplicate copy was deducted for ${reqIds.length} requested bookmark${
+        `Trade accepted! ${totalCopies} duplicate ${
+          totalCopies === 1 ? "copy was" : "copies were"
+        } deducted for ${reqIds.length} requested bookmark${
           reqIds.length === 1 ? "" : "s"
         }.`
       );

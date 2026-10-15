@@ -302,6 +302,7 @@ export async function syncBranchBookstores(
         country: branchValues.country,
         streetAddress: branchValues.streetAddress,
         branchLabel: branchValues.branchLabel,
+        yearClosed: branchValues.yearClosed,
         isStillOperating: branchValues.isStillOperating,
         updatedAt: now,
       },
@@ -694,15 +695,26 @@ export async function updateTradeProposalStatus(
       bookmarkIds = JSON.parse(proposal.requestedBookmarkIds);
     } catch {}
 
+    let qtyMap = new Map<string, number>();
+    try {
+      const items = JSON.parse(proposal.requestedBookmarksSnapshot || "[]");
+      if (Array.isArray(items)) {
+        items.forEach((item: any) => {
+          if (item.id) qtyMap.set(item.id, Number(item.quantity) || 1);
+        });
+      }
+    } catch {}
+
     for (const bmId of bookmarkIds) {
       if (!bmId) continue;
+      const deductQty = qtyMap.get(bmId) || 1;
       // 1. Try bookstore bookmarks
       const bm = await db.query.bookmarks.findFirst({
         where: eq(bookmarks.id, bmId),
       });
       if (bm) {
         const currentQty = typeof bm.tradeQuantity === "number" ? bm.tradeQuantity : 0;
-        const newQty = Math.max(0, currentQty - 1);
+        const newQty = Math.max(0, currentQty - deductQty);
         await db
           .update(bookmarks)
           .set({ tradeQuantity: newQty, updatedAt: now })
@@ -714,7 +726,7 @@ export async function updateTradeProposalStatus(
         });
         if (nonBm) {
           const currentQty = typeof nonBm.tradeQuantity === "number" ? nonBm.tradeQuantity : 0;
-          const newQty = Math.max(0, currentQty - 1);
+          const newQty = Math.max(0, currentQty - deductQty);
           await db
             .update(nonBookstoreBookmarks)
             .set({ tradeQuantity: newQty, updatedAt: now })

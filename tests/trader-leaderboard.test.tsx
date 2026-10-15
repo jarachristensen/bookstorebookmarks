@@ -91,6 +91,29 @@ describe("Trader Extraordinaires Leaderboard Utilities & Component", () => {
     it("returns empty array when proposals list is empty", () => {
       expect(computeTraderLeaderboard([])).toEqual([]);
     });
+
+    it("groups proposals case-insensitively to prevent split entries", () => {
+      const proposals = [
+        {
+          id: "p1",
+          collectorName: "Jane Doe",
+          status: "accepted",
+          requestedBookmarksSnapshot: JSON.stringify([{ id: "bm1", quantity: 2 }]),
+        },
+        {
+          id: "p2",
+          collectorName: "jane doe",
+          status: "completed",
+          requestedBookmarksSnapshot: JSON.stringify([{ id: "bm2", quantity: 3 }]),
+        },
+      ];
+
+      const leaderboard = computeTraderLeaderboard(proposals);
+      expect(leaderboard).toHaveLength(1);
+      expect(leaderboard[0].collectorInitials).toBe("J. D.");
+      expect(leaderboard[0].totalBookmarksTraded).toBe(5);
+      expect(leaderboard[0].tradesCount).toBe(2);
+    });
   });
 
   describe("<TraderLeaderboard />", () => {

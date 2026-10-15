@@ -142,6 +142,54 @@ describe("Trade Proposals & Duplicate Inventory Management", () => {
     expect(tradeInventory.some((b) => b.id === bm2Id)).toBe(false); // 0 copies left
   });
 
+  it("should decrement multi-copy requested quantities when accepting trade proposal", async () => {
+    const timestamp = Date.now();
+    const storeId = `store-multi-${timestamp}`;
+    const bmId = `bm-multi-${timestamp}`;
+
+    await saveBookmarkAndBookstore({
+      bookmark: {
+        id: bmId,
+        bookstoreId: storeId,
+        title: "Multi Copy Specimen",
+        frontImageUrl: "/test.jpg",
+        material: "Cardstock",
+        dimensions: '2" x 7"',
+        condition: "Good",
+        tradeQuantity: 5,
+      },
+      bookstore: {
+        id: storeId,
+        name: "Multi Copy Books",
+        city: "Boston",
+        country: "United States",
+        yearOpened: 1990,
+        historicalBlurb: "Test blurb",
+      },
+    });
+
+    const proposalId = await createTradeProposal({
+      collectorName: "Alice Collector",
+      collectorEmail: "alice@example.com",
+      offeredItems: "Historic ephemera",
+      requestedBookmarkIds: [bmId],
+      requestedBookmarksSnapshot: [
+        {
+          id: bmId,
+          title: "Multi Copy Specimen",
+          accessionNo: "BM-MULTI",
+          quantity: 3,
+        },
+      ],
+    });
+
+    const success = await updateTradeProposalStatus(proposalId, "accepted");
+    expect(success).toBe(true);
+
+    const bmAfter = await getBookmarkBySlug(bmId);
+    expect(bmAfter?.tradeQuantity).toBe(2); // 5 - 3 = 2
+  });
+
   it("should validate and create trade proposal via POST /api/trades", async () => {
     const req = new NextRequest("http://localhost:3000/api/trades", {
       method: "POST",

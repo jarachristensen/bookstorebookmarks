@@ -13,7 +13,7 @@ import {
   NonBookstoreBookmark,
   NonBookstoreTag,
 } from "@/db/schema";
-import { eq, asc, desc, gt } from "drizzle-orm";
+import { eq, asc, desc, gt, and, ne } from "drizzle-orm";
 import { autoSyncStorefronts } from "@/lib/utils/storefront-sync";
 import { compareBookstoresAlphabetically } from "@/lib/utils/sorting";
 
@@ -245,10 +245,18 @@ export async function getBookstoreById(id: string): Promise<BookstoreWithDetails
     })) || null;
   }
 
-  const branches = await db.query.bookstores.findMany({
-    where: eq(bookstores.flagshipId, id),
-    orderBy: [asc(bookstores.name)],
-  });
+  let branches: Bookstore[] = [];
+  if (store.flagshipId) {
+    branches = await db.query.bookstores.findMany({
+      where: and(eq(bookstores.flagshipId, store.flagshipId), ne(bookstores.id, store.id)),
+      orderBy: [asc(bookstores.name)],
+    });
+  } else {
+    branches = await db.query.bookstores.findMany({
+      where: eq(bookstores.flagshipId, id),
+      orderBy: [asc(bookstores.name)],
+    });
+  }
 
   return {
     ...store,

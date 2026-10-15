@@ -64,9 +64,12 @@ export function TraderLeaderboard({ entries }: TraderLeaderboardProps) {
                 {/* Left: Rank & Initials */}
                 <div className="flex items-center gap-2.5">
                   <div
-                    className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-mono border ${rankBadgeClass}`}
+                    className={`${
+                      Icon ? "h-6 px-1.5 gap-1" : "w-6 h-6"
+                    } rounded-full flex items-center justify-center text-[11px] font-mono border ${rankBadgeClass}`}
                   >
-                    {rank}
+                    {Icon && <Icon className="w-3.5 h-3.5 shrink-0" />}
+                    <span>{rank}</span>
                   </div>
                   <div>
                     <span className="font-bold text-stone-900 tracking-wide">

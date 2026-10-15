@@ -11,6 +11,7 @@ describe("Article-Insensitive Sorting Utilities", () => {
       expect(getSortableName("a book store")).toBe("book store");
       expect(getSortableName("An Antique Shop")).toBe("Antique Shop");
       expect(getSortableName("an antique shop")).toBe("antique shop");
+      expect(getSortableName("  The Owls Nest  ")).toBe("Owls Nest");
     });
 
     it("does not strip words that simply start with the letters of articles", () => {
