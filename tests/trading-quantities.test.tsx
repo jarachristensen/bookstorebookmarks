@@ -47,7 +47,7 @@ describe("Bazaar Multiple Copies Trade Quantity Selection", () => {
     },
   };
 
-  it("increments and decrements trade quantity in TradingHubClient up to available inventory", async () => {
+  it("increments and decrements trade quantity directly on bookmark card up to available inventory", async () => {
     render(
       <TradingHubClient
         initialBookmarks={[mockBookmark]}
@@ -55,34 +55,67 @@ describe("Bazaar Multiple Copies Trade Quantity Selection", () => {
       />
     );
 
-    // 1. Add to Trade Tray
+    // 1. Initial state: "+ Add" button is present on the card
     const addBtn = screen.getByRole("button", { name: /add/i });
+    expect(addBtn).toBeDefined();
     fireEvent.click(addBtn);
 
-    // Verify initial quantity is 1
+    // 2. Button turns into stepper with quantity 1
     const qtyBadge = screen.getByTestId("qty-bm-trade-multi");
     expect(qtyBadge.textContent).toBe("1");
 
-    // 2. Click + to increment to 2
+    // 3. Click + to increment to 2
     const incBtn = screen.getByRole("button", { name: /increase city lights bookseller bookmark quantity/i });
     fireEvent.click(incBtn);
     expect(qtyBadge.textContent).toBe("2");
 
-    // 3. Click + to increment to 3 (max inventory)
+    // 4. Click + to increment to 3 (max inventory)
     fireEvent.click(incBtn);
     expect(qtyBadge.textContent).toBe("3");
     expect(incBtn.hasAttribute("disabled")).toBe(true);
 
-    // 4. Click − to decrement back to 2
+    // 5. Click − to decrement back to 2
     const decBtn = screen.getByRole("button", { name: /decrease city lights bookseller bookmark quantity/i });
     fireEvent.click(decBtn);
     expect(qtyBadge.textContent).toBe("2");
     expect(incBtn.hasAttribute("disabled")).toBe(false);
 
-    // 5. Decrement to 1 (minimum quantity)
+    // 6. Click − to decrement back to 1
     fireEvent.click(decBtn);
     expect(qtyBadge.textContent).toBe("1");
-    expect(decBtn.hasAttribute("disabled")).toBe(true);
+
+    // 7. Click − when at 1 removes bookmark from tray and restores "+ Add" button
+    fireEvent.click(decBtn);
+    expect(screen.queryByTestId("qty-bm-trade-multi")).toBeNull();
+    expect(screen.getByRole("button", { name: /add/i })).toBeDefined();
+  });
+
+  it("disables the + button when only 1 copy is available", async () => {
+    const singleCopyBookmark = {
+      ...mockBookmark,
+      id: "bm-single-copy",
+      title: "Unique Strand Bookmark",
+      tradeQuantity: 1,
+    };
+
+    render(
+      <TradingHubClient
+        initialBookmarks={[singleCopyBookmark]}
+        initialContent={{}}
+      />
+    );
+
+    // Click "+ Add"
+    const addBtn = screen.getByRole("button", { name: /add/i });
+    fireEvent.click(addBtn);
+
+    // Stepper shows 1
+    const qtyBadge = screen.getByTestId("qty-bm-single-copy");
+    expect(qtyBadge.textContent).toBe("1");
+
+    // + button is disabled because only 1 copy is available
+    const incBtn = screen.getByRole("button", { name: /increase unique strand bookmark quantity/i });
+    expect(incBtn.hasAttribute("disabled")).toBe(true);
   });
 
   it("submits trade proposal with chosen copy quantities in payload", async () => {

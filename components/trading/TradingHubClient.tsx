@@ -375,6 +375,67 @@ export function TradingHubClient({
   }, [filteredBookmarks]);
 
   // Card Renderers
+  const renderTradeActionButton = (bookmark: BookmarkWithDetails) => {
+    const isSelected = selectedBookmarks.some((b) => b.id === bookmark.id);
+    const currentQty = selectedQuantities[bookmark.id] || 1;
+    const maxQty = Math.max(1, bookmark.tradeQuantity || 1);
+
+    if (!isSelected) {
+      return (
+        <button
+          type="button"
+          onClick={() => toggleBookmarkSelection(bookmark)}
+          className="inline-flex items-center justify-center gap-1.5 px-4 py-1.5 text-xs font-serif rounded-full transition-all cursor-pointer bg-white hover:bg-[#FAF8F5] text-stone-700 border border-[#E8E2D5] hover:border-[#F43F7A]/60 shadow-2xs hover:shadow-xs active:scale-95"
+        >
+          <Plus className="w-3.5 h-3.5 text-[#F43F7A]" />
+          <span>Add</span>
+        </button>
+      );
+    }
+
+    return (
+      <div className="inline-flex items-center justify-center rounded-full bg-[#2563EB] text-white shadow-xs border border-blue-600 px-1 py-0.5">
+        <button
+          type="button"
+          aria-label={`Decrease ${bookmark.title} quantity`}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (currentQty <= 1) {
+              removeSelectedBookmark(bookmark.id);
+            } else {
+              updateQuantity(bookmark.id, -1, maxQty);
+            }
+          }}
+          className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-white/20 active:bg-white/30 text-white transition-colors cursor-pointer text-xs font-bold leading-none select-none"
+          title={currentQty <= 1 ? "Remove from trade tray" : "Decrease quantity"}
+        >
+          −
+        </button>
+        <span
+          className="text-xs font-mono font-bold px-2.5 text-center min-w-[20px] select-none text-white"
+          data-testid={`qty-${bookmark.id}`}
+        >
+          {currentQty}
+        </span>
+        <button
+          type="button"
+          aria-label={`Increase ${bookmark.title} quantity`}
+          disabled={currentQty >= maxQty}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (currentQty < maxQty) {
+              updateQuantity(bookmark.id, 1, maxQty);
+            }
+          }}
+          className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-white/20 active:bg-white/30 text-white transition-colors cursor-pointer text-xs font-bold leading-none select-none disabled:opacity-35 disabled:hover:bg-transparent disabled:cursor-not-allowed"
+          title={currentQty >= maxQty ? "Maximum available copies selected" : "Add another copy"}
+        >
+          +
+        </button>
+      </div>
+    );
+  };
+
   const renderPortraitCard = (bookmark: BookmarkWithDetails) => {
     const isSelected = selectedBookmarks.some((b) => b.id === bookmark.id);
     const qty = bookmark.tradeQuantity || 1;
@@ -435,29 +496,9 @@ export function TradingHubClient({
             )}
           </div>
 
-          {/* Small Centered Add Button */}
+          {/* Small Centered Add / Quantity Button */}
           <div className="flex justify-center pt-1">
-            <button
-              type="button"
-              onClick={() => toggleBookmarkSelection(bookmark)}
-              className={`inline-flex items-center justify-center gap-1.5 px-4 py-1.5 text-xs font-serif rounded-full transition-all cursor-pointer ${
-                isSelected
-                  ? "bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold shadow-xs"
-                  : "bg-white hover:bg-[#FAF8F5] text-stone-700 border border-[#E8E2D5] hover:border-[#F43F7A]/60 shadow-2xs"
-              }`}
-            >
-              {isSelected ? (
-                <>
-                  <Check className="w-3.5 h-3.5 text-white" />
-                  <span>Added</span>
-                </>
-              ) : (
-                <>
-                  <Plus className="w-3.5 h-3.5 text-[#F43F7A]" />
-                  <span>Add</span>
-                </>
-              )}
-            </button>
+            {renderTradeActionButton(bookmark)}
           </div>
         </div>
       </div>
@@ -524,29 +565,9 @@ export function TradingHubClient({
             )}
           </div>
 
-          {/* Small Centered Add Button */}
+          {/* Small Centered Add / Quantity Button */}
           <div className="flex justify-center pt-1">
-            <button
-              type="button"
-              onClick={() => toggleBookmarkSelection(bookmark)}
-              className={`inline-flex items-center justify-center gap-1.5 px-4 py-1.5 text-xs font-serif rounded-full transition-all cursor-pointer ${
-                isSelected
-                  ? "bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold shadow-xs"
-                  : "bg-white hover:bg-[#FAF8F5] text-stone-700 border border-[#E8E2D5] hover:border-[#F43F7A]/60 shadow-2xs"
-              }`}
-            >
-              {isSelected ? (
-                <>
-                  <Check className="w-3.5 h-3.5 text-white" />
-                  <span>Added</span>
-                </>
-              ) : (
-                <>
-                  <Plus className="w-3.5 h-3.5 text-[#F43F7A]" />
-                  <span>Add</span>
-                </>
-              )}
-            </button>
+            {renderTradeActionButton(bookmark)}
           </div>
         </div>
       </div>
@@ -904,7 +925,6 @@ export function TradingHubClient({
                   <div className="flex items-center gap-2 overflow-x-auto py-0.5 max-w-md">
                     {selectedBookmarks.map((b) => {
                       const qty = selectedQuantities[b.id] || 1;
-                      const maxQty = Math.max(1, b.tradeQuantity || 1);
                       return (
                         <div
                           key={b.id}
@@ -912,30 +932,14 @@ export function TradingHubClient({
                         >
                           <span className="truncate max-w-[120px] text-[11px]">{b.title}</span>
 
-                          {/* Quantity Controls */}
-                          <div className="inline-flex items-center gap-1 bg-stone-900 border border-stone-700 rounded-md px-1 py-0.5 ml-1">
-                            <button
-                              type="button"
-                              aria-label={`Decrease ${b.title} quantity`}
-                              onClick={() => updateQuantity(b.id, -1, maxQty)}
-                              disabled={qty <= 1}
-                              className="w-3.5 h-3.5 flex items-center justify-center text-stone-400 hover:text-white disabled:opacity-30 disabled:hover:text-stone-400 cursor-pointer text-[10px]"
+                          {qty > 1 && (
+                            <span
+                              className="text-[10px] font-mono font-bold text-amber-300 ml-0.5"
+                              data-testid={`tray-qty-${b.id}`}
                             >
-                              −
-                            </button>
-                            <span className="text-[10px] font-mono font-bold text-amber-200 px-0.5" data-testid={`qty-${b.id}`}>
-                              {qty}
+                              ×{qty}
                             </span>
-                            <button
-                              type="button"
-                              aria-label={`Increase ${b.title} quantity`}
-                              onClick={() => updateQuantity(b.id, 1, maxQty)}
-                              disabled={qty >= maxQty}
-                              className="w-3.5 h-3.5 flex items-center justify-center text-stone-400 hover:text-white disabled:opacity-30 disabled:hover:text-stone-400 cursor-pointer text-[10px]"
-                            >
-                              +
-                            </button>
-                          </div>
+                          )}
 
                           <button
                             type="button"
