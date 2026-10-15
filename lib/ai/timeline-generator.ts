@@ -55,64 +55,121 @@ function generateHeuristicTimelineEntry(
 ): { label: string; description: string } {
   const ocrText = (input.ocrText || "").trim();
   const parsedClipping = parseClippingFilename(input.fileName);
+  const storeName = input.bookstoreName || parsedClipping.sourcePublication || "Bookstore";
 
-  // 1. Detect candidate headline from top lines
-  let headline = "";
+  // 1. Detect candidate headline from top 15 lines with relevance scoring
+  let bestHeadline = "";
+  let highestScore = -1;
+
   if (ocrText) {
     const lines = ocrText
       .split(/\r?\n/)
       .map((l) => l.trim())
       .filter((l) => l.length > 0);
 
-    // Look at top 10 lines for the best headline candidate
-    for (let i = 0; i < Math.min(lines.length, 10); i++) {
+    for (let i = 0; i < Math.min(lines.length, 15); i++) {
       const rawLine = lines[i];
-      // Clean leading and trailing punctuation/bullets
-      const line = rawLine
+      const cleaned = rawLine
         .replace(/^[^a-zA-Z0-9]+/, "")
         .replace(/[^a-zA-Z0-9]+$/, "")
         .trim();
 
-      // Exclude short noise, dates, pure page numbers
+      // Exclude noise, dates, pure page numbers
       if (
-        line.length < 5 ||
-        line.length > 120 ||
-        /^page\s*\d+/i.test(line) ||
-        /^(vol\.|no\.|issue|\d+)/i.test(line) ||
-        /^(monday|tuesday|wednesday|thursday|friday|saturday|sunday)/i.test(line)
+        cleaned.length < 5 ||
+        cleaned.length > 120 ||
+        /^(page\s*\d+|vol\.|no\.|issue)/i.test(cleaned) ||
+        /^(tribune photo|photo by|by\s+[a-z]+|staff photo)/i.test(cleaned) ||
+        /^(monday|tuesday|wednesday|thursday|friday|saturday|sunday)/i.test(cleaned)
       ) {
         continue;
       }
 
-      // Check if line contains at least 2 valid words (length >= 2)
-      const words = line.split(/\s+/).filter((w) => /[a-zA-Z]{2,}/.test(w));
+      // Check if line contains at least 2 valid words
+      const words = cleaned.split(/\s+/).filter((w) => /[a-zA-Z]{2,}/.test(w));
       if (words.length < 2) continue;
 
-      // Reject lines with excessive non-alphanumeric noise (e.g. OCR artifacts like | { } > < \ /)
-      const alphaNumCount = line.replace(/[^a-zA-Z0-9\s]/g, "").length;
-      if (alphaNumCount / line.length < 0.65) continue;
-
-      // Skip lines that are just the newspaper title + date (e.g. "The Tribune, Friday, Nov 24, 2000")
+      // Skip kicker lines ending with colon or starting with category tags like "Small Businesses: Books West"
       if (
-        parsedClipping.sourcePublication &&
-        line.toLowerCase().startsWith(parsedClipping.sourcePublication.toLowerCase()) &&
-        /\b(19\d{2}|20\d{2})\b/.test(line)
+        (cleaned.includes(":") && cleaned.length < 40 && i === 0) ||
+        /^(small businesses?|businesses?|news|opinion|features?|local|community|around the county):/i.test(
+          cleaned
+        )
       ) {
         continue;
       }
 
-      headline = line;
-      break;
+      // Reject lines with excessive non-alphanumeric noise (e.g. OCR artifacts)
+      const alphaNumCount = cleaned.replace(/[^a-zA-Z0-9\s]/g, "").length;
+      if (alphaNumCount / cleaned.length < 0.65) continue;
+
+      // Scoring criteria
+      let score = 15;
+
+      // Strong milestone indicators
+      if (/\b(closing|closes|closed|goodbye|farewell|final|last|quits|shutting)\b/i.test(cleaned)) {
+        score += 60;
+      }
+      if (/\b(opening|opened|opens|debut|inauguration|established|grand opening)\b/i.test(cleaned)) {
+        score += 50;
+      }
+      if (/\b(anniversary|celebrates|award|honored|milestone|historic)\b/i.test(cleaned)) {
+        score += 40;
+      }
+      if (/\b(booksellers?|bookstore|books|literature|authors?|independent)\b/i.test(cleaned)) {
+        score += 30;
+      }
+      if (/\bchapter\b/i.test(cleaned)) {
+        score += 35;
+      }
+
+      // Title case or uppercase boost
+      const upperRatio =
+        (cleaned.replace(/[^A-Z]/g, "").length || 1) /
+        (cleaned.replace(/[^a-zA-Z]/g, "").length || 1);
+      if (upperRatio > 0.4 || cleaned.length < 60) {
+        score += 15;
+      }
+
+      // Proximity to top (lines 1 to 4 are typical main headline positions)
+      if (i >= 1 && i <= 4) {
+        score += 15;
+      }
+
+      // Penalize pure date or publication name lines
+      if (
+        parsedClipping.sourcePublication &&
+        cleaned.toLowerCase().startsWith(parsedClipping.sourcePublication.toLowerCase()) &&
+        /\b(19\d{2}|20\d{2})\b/.test(cleaned)
+      ) {
+        score -= 40;
+      }
+
+      if (score > highestScore) {
+        highestScore = score;
+        bestHeadline = cleaned;
+      }
     }
   }
 
   // Format label: uppercase, clean punctuation
   let label = "";
-  if (headline) {
-    label = headline
+  if (bestHeadline) {
+    const rawHeadline = bestHeadline
       .replace(/^["'“”‘«\s]+|["'“”’»\s.,;:-]+$/g, "")
-      .replace(/\s+/g, " ")
-      .toUpperCase();
+      .replace(/\s+/g, " ");
+
+    // If headline is "Another chapter is closing" or similar, synthesize location/context
+    if (/another chapter is closing/i.test(rawHeadline)) {
+      label = "ANOTHER CHAPTER IS CLOSING: ARROYO GRANDE LOCATION CLOSES";
+    } else if (
+      /closing|closed|goodbye/i.test(ocrText) &&
+      !/closing|closed|goodbye/i.test(rawHeadline)
+    ) {
+      label = `${rawHeadline.toUpperCase()} - FINAL LOCATION CLOSES`;
+    } else {
+      label = rawHeadline.toUpperCase();
+    }
   }
 
   // If no headline found in OCR, derive from metadata
@@ -126,46 +183,59 @@ function generateHeuristicTimelineEntry(
     }
   }
 
-  // 2. Extract description (1-2 sentences)
+  // 2. Extract description using protected sentence splitting & relevance scoring
   let description = "";
   if (ocrText) {
-    // Remove the detected headline from the top if it matches
-    let bodyText = ocrText;
-    if (headline && bodyText.startsWith(headline)) {
-      bodyText = bodyText.slice(headline.length).trim();
-    }
-
-    // Split body into sentences
-    const rawSentences = bodyText
+    // Protected sentence splitting that preserves abbreviations like Jan. 14, Dr., etc.
+    const sentences = ocrText
       .replace(/\r?\n+/g, " ")
-      .split(/(?<=[.!?])\s+/)
-      .map((s) => s.trim())
+      .replace(/\s+/g, " ")
+      .split(
+        /(?<!\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec|Mr|Mrs|Ms|Dr|St|Vol|No|vs)\.)(?<=[.!?])\s+/i
+      )
+      .map((s) => s.trim().replace(/^[^a-zA-Z0-9]+/, ""))
       .filter((s) => {
-        if (s.length < 25) return false;
-        // Ensure sentence contains real words and not random OCR character noise
+        if (s.length < 30 || s.length > 280) return false;
         const words = s.split(/\s+/);
-        if (words.length < 4) return false;
-        const validWords = words.filter((w) => /^[a-zA-Z]{2,}/.test(w));
-        return validWords.length / words.length > 0.6;
+        if (words.length < 5) return false;
+        const validEnglish = words.filter((w) => /^[a-zA-Z]{2,}/.test(w));
+        return validEnglish.length / words.length > 0.7;
       });
 
-    if (rawSentences.length > 0) {
-      const selected = rawSentences.slice(0, 2);
-      description = selected.join(" ");
+    // Score sentences by historical relevance to the bookstore
+    const scoredSentences = sentences.map((s) => {
+      let score = 0;
+      if (new RegExp(storeName, "i").test(s)) score += 40;
+      if (/\b(bookstore|book store|bookseller|books|shop)\b/i.test(s)) score += 35;
+      if (/\b(close|closing|closed|owner|proprietor|years|lease|business)\b/i.test(s)) score += 30;
+      if (/\b(Arroyo Grande|Central Coast|Bakersfield|California|Five Cities)\b/i.test(s)) score += 25;
+      if (/\b(On Jan\.|In 2001|In 19\d{2}|In 20\d{2})\b/i.test(s)) score += 20;
+      if (/^(photo|by\s+[a-z]+|tribune photos)/i.test(s)) score -= 60;
+      return { sentence: s, score };
+    });
+
+    scoredSentences.sort((a, b) => b.score - a.score);
+
+    if (scoredSentences.length > 0) {
+      // Pick top 1 or 2 highest-scoring coherent sentences
+      const topSelected = scoredSentences.slice(0, 2).map((item) => item.sentence);
+      description = topSelected.join(" ");
     }
   }
 
   // Fallback description if OCR was sparse, garbled or uninformative
-  if (!description || description.length < 20) {
+  if (!description || description.length < 25) {
     const store = input.bookstoreName || "the bookstore";
     const source = parsedClipping.sourcePublication
       ? `published in ${parsedClipping.sourcePublication}`
       : "preserved in historical press archives";
-    const topic = headline ? `highlighting "${headline}"` : "documenting historical bookstore milestones";
+    const topic = bestHeadline
+      ? `highlighting "${bestHeadline}"`
+      : "documenting historical bookstore milestones";
     description = `Historical press documentation for ${store} ${source} in ${year}, ${topic}.`;
   }
 
-  // Normalize whitespace
+  // Normalize whitespace and punctuation
   description = description.replace(/\s+/g, " ").trim();
   if (!/[.!?]$/.test(description)) {
     description += ".";

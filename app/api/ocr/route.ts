@@ -32,6 +32,9 @@ export async function POST(req: NextRequest) {
     }
 
     worker = await createWorker("eng");
+    await worker.setParameters({
+      tessedit_pageseg_mode: 3 as any, // PSM.AUTO: Fully automatic page segmentation for multi-column newspapers
+    });
 
     const ret = await worker.recognize(imageSource);
     await worker.terminate();

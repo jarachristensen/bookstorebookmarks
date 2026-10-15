@@ -362,46 +362,42 @@ export function MediaManager({
 
     try {
       const ocrTask = (async () => {
-        // 1. Attempt client-side browser WebAssembly OCR first
+        // 1. Prefer server-side route which runs full PSM.AUTO multi-column layout separation
         try {
-          setOcrStatusText("Loading Tesseract...");
-          const Tesseract = await import("tesseract.js");
-
-          setOcrStatusText("Recognizing scan...");
-          const result = await Tesseract.recognize(item.imageUrl, "eng", {
-            logger: (m) => {
-              if (m.status === "recognizing text" && typeof m.progress === "number") {
-                setOcrStatusText(`Scanning: ${Math.round(m.progress * 100)}%`);
-              } else if (m.status) {
-                setOcrStatusText(`${m.status.replace(/_/g, " ")}...`);
-              }
-            },
-          });
-
-          const extracted = (result.data.text || "")
-            .replace(/\r\n/g, "\n")
-            .replace(/[ \t]+/g, " ")
-            .replace(/\n{3,}/g, "\n\n")
-            .trim();
-
-          return extracted;
-        } catch (clientErr) {
-          console.warn("Client-side OCR failed, falling back to server route:", clientErr);
-
-          // 2. Fallback to API route if client-side WASM encounters issues
-          setOcrStatusText("Processing on server...");
+          setOcrStatusText("Extracting article text via server engine...");
           const res = await fetch("/api/ocr", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ imageUrl: item.imageUrl }),
           });
 
-          const data = await res.json();
-          if (!res.ok) {
-            throw new Error(data.error || "OCR extraction failed");
+          if (res.ok) {
+            const data = await res.json();
+            if (data.text) {
+              return data.text as string;
+            }
           }
-          return data.text as string;
+        } catch (serverErr) {
+          console.warn("Server OCR failed, trying browser WebAssembly:", serverErr);
         }
+
+        // 2. Client-side browser WebAssembly fallback with PSM.AUTO
+        setOcrStatusText("Processing scan in browser...");
+        const { createWorker, PSM } = await import("tesseract.js");
+        const worker = await createWorker("eng");
+        await worker.setParameters({
+          tessedit_pageseg_mode: (PSM && PSM.AUTO) || (3 as any),
+        });
+        const result = await worker.recognize(item.imageUrl);
+        await worker.terminate();
+
+        const extracted = (result.data.text || "")
+          .replace(/\r\n/g, "\n")
+          .replace(/[ \t]+/g, " ")
+          .replace(/\n{3,}/g, "\n\n")
+          .trim();
+
+        return extracted;
       })();
 
       const text = await Promise.race([ocrTask, timeoutPromise]);

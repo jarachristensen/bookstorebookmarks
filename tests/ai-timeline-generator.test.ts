@@ -241,4 +241,34 @@ San Francisco, 1958 — City Lights opened its new subterranean poetry departmen
     const data = await res.json();
     expect(data.error).toBeDefined();
   });
+
+  it("synthesizes accurate closure title and caption description from newspaper clipping", async () => {
+    const ocrText = `
+SMALL BUSINESSES: BOOKS WEST IN ARROYO
+
+Another chapter is closing
+
+TRIBUNE PHOTOS BY LAURA DICKINSON
+
+On Jan. 14, Books West in Arroyo Grande will close for good, a victim of compounding problems, says owner Carole Kapphahn. She and her husband once owned five book stores on the Central Coast and in Bakersfield.
+
+By LESLIE E. STEVENS
+THE TRIBUNE
+
+SOUTH COUNTY LOSING ONE OF THE LAST REMAINING INDEPENDENT BOOKSELLERS
+    `.trim();
+
+    const result = await generateTimelineEntryFromArticle({
+      ocrText,
+      fileName: "the_tribune_2001_01_02_21.jpg",
+      bookstoreName: "Books West",
+      publicationDate: "Jan 02, 2001",
+    });
+
+    expect(result.year).toBe(2001);
+    expect(result.label).toContain("CLOSING");
+    expect(result.label).toMatch(/ANOTHER CHAPTER IS CLOSING|ARROYO GRANDE|LOCATION CLOSES/);
+    expect(result.description).toContain("Books West in Arroyo Grande will close for good");
+    expect(result.description).toContain("Carole Kapphahn");
+  });
 });
