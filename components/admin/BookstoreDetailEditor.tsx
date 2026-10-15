@@ -62,14 +62,26 @@ export function BookstoreDetailEditor({
     if (initialData?.locations) {
       try {
         const parsed = JSON.parse(initialData.locations);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map((loc, idx) => {
+            if (
+              idx === 0 &&
+              (!loc.label ||
+                loc.label === "1st Location" ||
+                loc.label === "1st Location (Original)")
+            ) {
+              return { ...loc, label: "1st Location (Flagship)" };
+            }
+            return loc;
+          });
+        }
       } catch {}
     }
     if (initialData?.streetAddress) {
       return [
         {
           id: `loc-${Date.now()}`,
-          label: "1st Location",
+          label: "1st Location (Flagship)",
           streetAddress: initialData.streetAddress,
           city: initialData.city,
           stateProvince: initialData.stateProvince || "",
@@ -83,7 +95,7 @@ export function BookstoreDetailEditor({
     return [
       {
         id: `loc-${Date.now()}`,
-        label: "1st Location",
+        label: "1st Location (Flagship)",
         streetAddress: "",
         city: initialData?.city || "",
         stateProvince: initialData?.stateProvince || "",
@@ -495,35 +507,39 @@ export function BookstoreDetailEditor({
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div className="sm:col-span-3 p-4 rounded-xl bg-[#FAF8F5] border border-[#E8E2D5] flex items-center justify-between gap-4">
-            <div className="space-y-0.5">
-              <label htmlFor="isFlagshipCheckbox" className="text-xs font-serif font-bold text-stone-900 cursor-pointer">
-                Flagship Location (Primary / Original Storefront)
-              </label>
-              <p className="text-[11px] font-sans text-stone-500">
-                Check this if this location is the historical flagship store for this chain.
-              </p>
+          {!formData.flagshipId ? (
+            <div className="sm:col-span-3 p-4 rounded-xl bg-blue-50/70 border border-blue-200 flex items-center justify-between gap-4">
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-serif font-bold text-stone-900">
+                    1st Location is Flagship Store
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#2563EB] text-white">
+                    Combined
+                  </span>
+                </div>
+                <p className="text-[11px] font-sans text-stone-600">
+                  The 1st location (founding address in Section 2 below) serves as this bookstore&apos;s primary flagship storefront.
+                </p>
+              </div>
             </div>
-            <input
-              type="checkbox"
-              id="isFlagshipCheckbox"
-              data-1p-ignore
-              checked={formData.isFlagship}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  isFlagship: e.target.checked,
-                  flagshipId: e.target.checked ? "" : formData.flagshipId,
-                  branchLabel: e.target.checked
-                    ? "Flagship Location"
-                    : formData.branchLabel === "Flagship Location"
-                    ? ""
-                    : formData.branchLabel,
-                })
-              }
-              className="w-5 h-5 rounded text-[#2563EB] border-[#E8E2D5] focus:ring-[#2563EB]/30 cursor-pointer shrink-0"
-            />
-          </div>
+          ) : (
+            <div className="sm:col-span-3 p-4 rounded-xl bg-amber-50/70 border border-amber-200 flex items-center justify-between gap-4">
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-serif font-bold text-stone-900">
+                    Branch Store Location
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#F59E0B] text-white">
+                    Branch
+                  </span>
+                </div>
+                <p className="text-[11px] font-sans text-stone-600">
+                  This bookstore is an affiliated branch location linked to its parent flagship store.
+                </p>
+              </div>
+            </div>
+          )}
 
           <div>
             <label className="block text-xs font-mono text-stone-600 mb-1">
@@ -555,27 +571,36 @@ export function BookstoreDetailEditor({
             />
           </div>
 
-          {!formData.isFlagship && (
-            <div>
-              <label className="block text-xs font-mono text-stone-600 mb-1">
-                PARENT FLAGSHIP BOOKSTORE
-              </label>
-              <select
-                value={formData.flagshipId}
-                onChange={(e) => setFormData({ ...formData, flagshipId: e.target.value })}
-                className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif"
-              >
-                <option value="">(None / Independent Single Bookstore)</option>
-                {allStores
-                  .filter((s) => s.id !== formData.id)
-                  .map((store) => (
-                    <option key={store.id} value={store.id}>
-                      {store.name} — {store.city}{store.stateProvince ? `, ${store.stateProvince}` : ""} {store.isFlagship ? "★ (Flagship)" : ""}
-                    </option>
-                  ))}
-              </select>
-            </div>
-          )}
+          <div>
+            <label className="block text-xs font-mono text-stone-600 mb-1">
+              PARENT FLAGSHIP BOOKSTORE (OPTIONAL)
+            </label>
+            <select
+              value={formData.flagshipId}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  flagshipId: e.target.value,
+                  isFlagship: !e.target.value,
+                  branchLabel: e.target.value
+                    ? formData.branchLabel === "1st Location (Flagship)"
+                      ? "Branch Location"
+                      : formData.branchLabel
+                    : "1st Location (Flagship)",
+                })
+              }
+              className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif"
+            >
+              <option value="">(None / Independent Single Bookstore)</option>
+              {allStores
+                .filter((s) => s.id !== formData.id)
+                .map((store) => (
+                  <option key={store.id} value={store.id}>
+                    {store.name} — {store.city}{store.stateProvince ? `, ${store.stateProvince}` : ""} {store.isFlagship ? "★ (Flagship)" : ""}
+                  </option>
+                ))}
+            </select>
+          </div>
         </div>
       </section>
 
@@ -630,13 +655,22 @@ export function BookstoreDetailEditor({
                     #{index + 1}
                   </span>
 
+                  {index === 0 && !formData.flagshipId && (
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#2563EB] text-white">
+                      Flagship Store
+                    </span>
+                  )}
+
                   {/* Location Label Sequence Dropdown */}
                   <select
                     value={loc.label}
                     onChange={(e) => updateLocation(index, { label: e.target.value })}
                     className="text-xs font-serif font-bold bg-white border border-[#E8E2D5] rounded px-2.5 py-1 text-stone-900 focus:outline-none"
                   >
-                    <option value="1st Location">1st Location (Original)</option>
+                    <option value="1st Location (Flagship)">1st Location (Flagship)</option>
+                    {(loc.label === "1st Location" || loc.label === "1st Location (Original)") && (
+                      <option value={loc.label}>1st Location (Flagship)</option>
+                    )}
                     <option value="2nd Location">2nd Location</option>
                     <option value="3rd Location">3rd Location</option>
                     <option value="4th Location">4th Location</option>

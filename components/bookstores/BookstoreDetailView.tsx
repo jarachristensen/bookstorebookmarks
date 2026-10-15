@@ -178,7 +178,7 @@ export function BookstoreDetailView({ bookstore, availableStorefronts }: Booksto
 
             {bookstore.isFlagship && (
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#2563EB] text-white shadow-xs tracking-wider">
-                FLAGSHIP LOCATION
+                1ST LOCATION (FLAGSHIP)
               </span>
             )}
 

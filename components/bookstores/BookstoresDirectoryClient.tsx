@@ -80,7 +80,7 @@ function BookstoreCard({ store, availableStorefronts, priority = false }: Bookst
             </h3>
             {store.isFlagship && (
               <span className="inline-block mt-1 px-2 py-0.5 rounded text-[9px] font-mono font-bold tracking-wider uppercase bg-[#2563EB]/10 text-[#2563EB] border border-[#2563EB]/20">
-                Flagship Store
+                1st Location (Flagship)
               </span>
             )}
             {store.branchLabel && !store.isFlagship && (

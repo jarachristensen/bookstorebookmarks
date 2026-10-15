@@ -1526,7 +1526,7 @@ export function AdminTableClient({
                           </Link>
                           {s.isFlagship && (
                             <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-[#2563EB]/15 text-[#2563EB] border border-[#2563EB]/30">
-                              FLAGSHIP
+                              1ST LOCATION (FLAGSHIP)
                             </span>
                           )}
                         </div>
