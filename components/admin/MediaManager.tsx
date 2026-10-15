@@ -18,6 +18,7 @@ import { ImageDropzone } from "./ImageDropzone";
 import { parseClippingFilename } from "@/lib/utils/clipping-parser";
 import { compressImageIfNeeded } from "@/lib/utils/image-compressor";
 import { generateTimelineEntryFromArticle } from "@/lib/ai/timeline-generator";
+import { CustomTimelineEvent } from "@/db/schema";
 
 export interface MediaItem {
   id?: string;
@@ -34,22 +35,29 @@ export interface MediaItem {
 export interface MediaManagerProps {
   mediaList: MediaItem[];
   onChange: (newList: MediaItem[]) => void;
+  timelineEvents?: CustomTimelineEvent[];
+  onTimelineEventsChange?: (newEvents: CustomTimelineEvent[]) => void;
   onAutoAddToTimeline?: (entry: {
     year: number;
     label: string;
     description: string;
     mediaItem: MediaItem;
   }) => void;
+  bookstoreName?: string;
   autoAddToTimeline?: boolean;
 }
 
 export function MediaManager({
   mediaList,
   onChange,
+  timelineEvents,
+  onTimelineEventsChange,
   onAutoAddToTimeline,
+  bookstoreName,
   autoAddToTimeline: initialAutoAdd = true,
 }: MediaManagerProps) {
   const [autoAddToTimeline, setAutoAddToTimeline] = useState<boolean>(initialAutoAdd);
+  const [analyzingIndex, setAnalyzingIndex] = useState<number | null>(null);
   const [ocrLoadingIndex, setOcrLoadingIndex] = useState<number | null>(null);
   const [ocrStatusText, setOcrStatusText] = useState<string>("");
   const [ocrError, setOcrError] = useState<string>("");
@@ -89,6 +97,153 @@ export function MediaManager({
       isStorefront: idx === selectedIndex ? !item.isStorefront : false,
     }));
     onChange(next);
+  };
+
+  const isItemInTimeline = (item: MediaItem, index: number): boolean => {
+    if (!timelineEvents) return false;
+    return timelineEvents.some((ev) => {
+      if (item.id && ev.mediaId) {
+        return ev.mediaId === item.id;
+      }
+      if (item.id) {
+        return ev.id === `ev-${item.id}` || ev.id.startsWith(`ev-${item.id}-`);
+      }
+      if (item.imageUrl && ev.mediaUrl) {
+        return ev.mediaUrl === item.imageUrl;
+      }
+      return ev.id === `ev-media-${index}`;
+    });
+  };
+
+  const handleAiScanAndGenerate = async (index: number) => {
+    const item = mediaList[index];
+    if (!item) return;
+    if (!item.imageUrl) {
+      setOcrError("Please upload an image scan first before running AI scanning.");
+      return;
+    }
+
+    setOcrError("");
+    setAnalyzingIndex(index);
+    setOcrStatusText("Scanning text & synthesizing milestone...");
+
+    try {
+      let text = (item.transcriptionText || "").trim();
+
+      // If no OCR transcription text yet, extract it via /api/ocr
+      if (!text) {
+        try {
+          const res = await fetch("/api/ocr", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ imageUrl: item.imageUrl }),
+          });
+          if (res.ok) {
+            const ocrData = await res.json();
+            text = (ocrData.text || "").trim();
+            if (text) {
+              updateMedia(index, { transcriptionText: text });
+            }
+          }
+        } catch (ocrErr) {
+          console.warn("OCR route failed, using metadata fallback:", ocrErr);
+        }
+      }
+
+      // Generate timeline entry via AI generator
+      const entry = await generateTimelineEntryFromArticle({
+        ocrText: text || undefined,
+        fileName: item.caption,
+        publicationDate: item.publicationDate || undefined,
+        bookstoreName: bookstoreName || item.sourcePublication || undefined,
+      });
+
+      // Update media title/caption if it was generic
+      const isGenericCaption =
+        !item.caption ||
+        item.caption === "Archival Press Clipping" ||
+        /\.(jpe?g|png|webp|svg)$/i.test(item.caption) ||
+        /\([A-Z][a-z]{2}\s+\d{1,2},\s+\d{4}\)/.test(item.caption);
+
+      const updates: Partial<MediaItem> = {};
+      if (isGenericCaption && entry.label) {
+        updates.caption = entry.label;
+      }
+      if (!item.publicationDate && entry.year) {
+        updates.publicationDate = String(entry.year);
+      }
+      if (text && (!item.transcriptionText || item.transcriptionText.trim() === "")) {
+        updates.transcriptionText = text;
+      }
+      if (Object.keys(updates).length > 0) {
+        updateMedia(index, updates);
+      }
+
+      // Add to timeline
+      const milestoneId = `ev-${item.id || Date.now()}-${index}`;
+      const newEvent: CustomTimelineEvent = {
+        id: milestoneId,
+        year: entry.year,
+        label: entry.label,
+        description: entry.description,
+        type: "press",
+        mediaId: item.id,
+        mediaUrl: item.imageUrl,
+        mediaCaption: entry.label,
+      };
+
+      if (onTimelineEventsChange) {
+        const currentEvents = timelineEvents || [];
+        const filtered = currentEvents.filter(
+          (ev) =>
+            ev.mediaId !== item.id &&
+            ev.id !== milestoneId &&
+            ev.id !== `ev-${item.id}` &&
+            !ev.id.startsWith(`ev-${item.id}-`)
+        );
+        onTimelineEventsChange([...filtered, newEvent]);
+      }
+
+      if (onAutoAddToTimeline) {
+        onAutoAddToTimeline({
+          year: entry.year,
+          label: entry.label,
+          description: entry.description,
+          mediaItem: { ...item, ...updates },
+        });
+      }
+    } catch (err: any) {
+      console.error("AI Scan Error:", err);
+      setOcrError(err.message || "Failed to analyze clipping with AI.");
+    } finally {
+      setAnalyzingIndex(null);
+      setOcrStatusText("");
+    }
+  };
+
+  const handleToggleItemTimeline = async (index: number, willAdd: boolean) => {
+    const item = mediaList[index];
+    if (!item) return;
+
+    if (willAdd) {
+      await handleAiScanAndGenerate(index);
+    } else {
+      if (onTimelineEventsChange && timelineEvents) {
+        const filtered = timelineEvents.filter((ev) => {
+          if (item.id && ev.mediaId) {
+            return ev.mediaId !== item.id;
+          }
+          if (item.id) {
+            return ev.id !== `ev-${item.id}` && !ev.id.startsWith(`ev-${item.id}-`);
+          }
+          if (item.imageUrl && ev.mediaUrl) {
+            return ev.mediaUrl !== item.imageUrl;
+          }
+          return ev.id !== `ev-media-${index}`;
+        });
+        onTimelineEventsChange(filtered);
+      }
+    }
   };
 
   const handleImageUploaded = (index: number, url: string, file?: File) => {
@@ -168,20 +323,6 @@ export function MediaManager({
           isStorefront: file.name.toLowerCase().includes("storefront"),
         };
         newItems.push(newItem);
-
-        if (autoAddToTimeline && onAutoAddToTimeline) {
-          generateTimelineEntryFromArticle({
-            fileName: file.name,
-            publicationDate: parsed.publicationDate,
-          }).then((entry) => {
-            onAutoAddToTimeline({
-              year: entry.year,
-              label: entry.label,
-              description: entry.description,
-              mediaItem: newItem,
-            });
-          }).catch((err) => console.error("Auto-add timeline error:", err));
-        }
       } catch (err) {
         console.error("Failed uploading bulk file:", file.name, err);
       }
@@ -308,18 +449,6 @@ export function MediaManager({
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <label className="flex items-center gap-1.5 text-xs font-serif text-stone-700 cursor-pointer select-none bg-white px-2 py-1 rounded border border-[#E8E2D5]">
-            <input
-              type="checkbox"
-              aria-label="Auto-add to Timeline"
-              checked={autoAddToTimeline}
-              onChange={(e) => setAutoAddToTimeline(e.target.checked)}
-              className="w-3.5 h-3.5 rounded border-[#E8E2D5] text-[#F43F7A] focus:ring-[#F43F7A]"
-            />
-            <Sparkles className="w-3.5 h-3.5 text-[#F43F7A]" />
-            <span>Auto-add to Timeline</span>
-          </label>
-
           <Button
             type="button"
             variant="outline"
@@ -450,6 +579,42 @@ export function MediaManager({
                       }`}
                     />
                     <span>{item.isStorefront ? "Storefront Hero" : "Tag as Storefront"}</span>
+                  </button>
+
+                  {/* Individual Timeline Checkbox for this specific item */}
+                  <label className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-serif transition-colors cursor-pointer border bg-white border-[#E8E2D5] hover:border-[#F43F7A]">
+                    <input
+                      type="checkbox"
+                      aria-label={`Add item #${index + 1} to Timeline`}
+                      checked={isItemInTimeline(item, index)}
+                      onChange={(e) => handleToggleItemTimeline(index, e.target.checked)}
+                      className="w-3.5 h-3.5 rounded border-[#E8E2D5] text-[#F43F7A] focus:ring-[#F43F7A]"
+                    />
+                    <Sparkles className="w-3 h-3 text-[#F43F7A]" />
+                    <span className={isItemInTimeline(item, index) ? "font-bold text-stone-900" : "text-stone-600"}>
+                      {isItemInTimeline(item, index) ? "In Timeline" : "Add to Timeline"}
+                    </span>
+                  </label>
+
+                  {/* Dedicated AI Scan & Synthesize Button */}
+                  <button
+                    type="button"
+                    onClick={() => handleAiScanAndGenerate(index)}
+                    disabled={analyzingIndex === index || !item.imageUrl}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-serif border border-[#F43F7A]/30 text-[#F43F7A] bg-[#F43F7A]/5 hover:bg-[#F43F7A]/15 transition-all cursor-pointer disabled:opacity-50"
+                    title="Extract article text with OCR and synthesize timeline milestone title & summary"
+                  >
+                    {analyzingIndex === index ? (
+                      <>
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        <span>AI Scanning...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-3 h-3" />
+                        <span>Scan with AI</span>
+                      </>
+                    )}
                   </button>
                 </div>
 

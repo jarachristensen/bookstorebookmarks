@@ -508,29 +508,6 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
           createdAt: new Date().toISOString(),
         };
         uploadedItems.push(newMediaItem);
-
-        if (autoAddToTimeline) {
-          try {
-            const entry = await generateTimelineEntryFromArticle({
-              fileName: file.name,
-              publicationDate: parsed.publicationDate,
-              bookstoreName: name || initialData.name,
-            });
-            const autoEvent: CustomTimelineEvent = {
-              id: `ev-auto-${Date.now()}-${i}`,
-              year: entry.year,
-              label: entry.label,
-              description: entry.description,
-              type: "press",
-              mediaId: newMediaItem.id,
-              mediaUrl: newMediaItem.imageUrl,
-              mediaCaption: newMediaItem.caption,
-            };
-            setTimelineEvents((prev) => [...prev, autoEvent]);
-          } catch (autoErr) {
-            console.error("Auto-add timeline entry error:", autoErr);
-          }
-        }
       } catch (err) {
         console.error(`Failed to process ${file.name}:`, err);
       }
@@ -541,6 +518,120 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
     setBulkStatus(`Successfully added ${uploadedItems.length} archival items!`);
     setTimeout(() => setBulkStatus(""), 4000);
     if (bulkInputRef.current) bulkInputRef.current.value = "";
+  };
+
+  const [analyzingMediaId, setAnalyzingMediaId] = useState<string | null>(null);
+
+  const isItemInTimeline = (media: ArchivalMedia): boolean => {
+    return timelineEvents.some(
+      (ev) =>
+        (media.id && ev.mediaId === media.id) ||
+        (media.id && ev.id === `ev-${media.id}`) ||
+        (media.id && ev.id.startsWith(`ev-${media.id}-`)) ||
+        (media.imageUrl && ev.mediaUrl === media.imageUrl)
+    );
+  };
+
+  const handleAiScanClipping = async (media: ArchivalMedia) => {
+    if (!media.imageUrl) return;
+    setAnalyzingMediaId(media.id);
+
+    try {
+      let text = (media.transcriptionText || "").trim();
+
+      // If no OCR text yet, extract it via /api/ocr
+      if (!text) {
+        try {
+          const res = await fetch("/api/ocr", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ imageUrl: media.imageUrl }),
+          });
+          if (res.ok) {
+            const data = await res.json();
+            text = (data.text || "").trim();
+          }
+        } catch (ocrErr) {
+          console.warn("OCR route failed, using metadata fallback:", ocrErr);
+        }
+      }
+
+      // Generate timeline entry via AI generator
+      const entry = await generateTimelineEntryFromArticle({
+        ocrText: text || undefined,
+        fileName: media.caption,
+        publicationDate: media.publicationDate || undefined,
+        bookstoreName: name || initialData.name || media.sourcePublication || undefined,
+      });
+
+      // Update media headline and transcription
+      const isGenericCaption =
+        !media.caption ||
+        media.caption === "Archival Press Clipping" ||
+        /\.(jpe?g|png|webp|svg)$/i.test(media.caption) ||
+        /\([A-Z][a-z]{2}\s+\d{1,2},\s+\d{4}\)/.test(media.caption);
+
+      const updatedCaption = isGenericCaption && entry.label ? entry.label : media.caption;
+      const updatedDate = !media.publicationDate && entry.year ? String(entry.year) : media.publicationDate;
+
+      setMediaList((prev) =>
+        prev.map((m) =>
+          m.id === media.id
+            ? {
+                ...m,
+                caption: updatedCaption,
+                publicationDate: updatedDate,
+                transcriptionText: text || m.transcriptionText,
+              }
+            : m
+        )
+      );
+
+      // Add or update milestone in timelineEvents
+      const milestoneId = `ev-${media.id}`;
+      const newEvent: CustomTimelineEvent = {
+        id: milestoneId,
+        year: entry.year,
+        label: entry.label,
+        description: entry.description,
+        type: "press",
+        mediaId: media.id,
+        mediaUrl: media.imageUrl,
+        mediaCaption: entry.label,
+      };
+
+      setTimelineEvents((prev) => {
+        const filtered = prev.filter(
+          (ev) =>
+            ev.mediaId !== media.id &&
+            ev.id !== milestoneId &&
+            !ev.id.startsWith(`ev-${media.id}-`)
+        );
+        return [...filtered, newEvent].sort((a, b) => a.year - b.year);
+      });
+    } catch (err) {
+      console.error("AI scanning error:", err);
+    } finally {
+      setAnalyzingMediaId(null);
+    }
+  };
+
+  const handleToggleTimelineForMedia = async (media: ArchivalMedia, willAdd: boolean) => {
+    if (willAdd) {
+      await handleAiScanClipping(media);
+    } else {
+      setTimelineEvents((prev) =>
+        prev.filter(
+          (ev) =>
+            !(
+              (media.id && ev.mediaId === media.id) ||
+              (media.id && ev.id === `ev-${media.id}`) ||
+              (media.id && ev.id.startsWith(`ev-${media.id}-`)) ||
+              (media.imageUrl && ev.mediaUrl === media.imageUrl)
+            )
+        )
+      );
+    }
   };
 
   // Timeline Event Management
@@ -1405,18 +1496,6 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
               {/* Upload Buttons based on active tab */}
               {activeMediaTab === "clippings" ? (
                 <div className="flex flex-wrap items-center gap-2">
-                  <label className="flex items-center gap-1.5 text-xs font-serif text-stone-700 cursor-pointer select-none bg-white px-2 py-1 rounded border border-[#E8E2D5]">
-                    <input
-                      type="checkbox"
-                      aria-label="Auto-add to Timeline"
-                      checked={autoAddToTimeline}
-                      onChange={(e) => setAutoAddToTimeline(e.target.checked)}
-                      className="w-3.5 h-3.5 rounded border-[#E8E2D5] text-[#F43F7A] focus:ring-[#F43F7A]"
-                    />
-                    <Sparkles className="w-3.5 h-3.5 text-[#F43F7A]" />
-                    <span>Auto-add to Timeline</span>
-                  </label>
-
                   <input
                     ref={bulkInputRef}
                     type="file"
@@ -1556,6 +1635,45 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
+
+                        {/* Individual Timeline Controls Toolbar */}
+                        <div className="flex items-center justify-between pt-2 border-t border-[#E8E2D5]/70 text-xs">
+                          <div className="flex items-center gap-2">
+                            <label className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-serif transition-colors cursor-pointer border bg-white border-[#E8E2D5] hover:border-[#F43F7A]">
+                              <input
+                                type="checkbox"
+                                aria-label={`Add clipping ${media.caption} to Timeline`}
+                                checked={isItemInTimeline(media)}
+                                onChange={(e) => handleToggleTimelineForMedia(media, e.target.checked)}
+                                className="w-3.5 h-3.5 rounded border-[#E8E2D5] text-[#F43F7A] focus:ring-[#F43F7A]"
+                              />
+                              <Sparkles className="w-3 h-3 text-[#F43F7A]" />
+                              <span className={isItemInTimeline(media) ? "font-bold text-stone-900" : "text-stone-600"}>
+                                {isItemInTimeline(media) ? "In Timeline" : "Add to Timeline"}
+                              </span>
+                            </label>
+
+                            <button
+                              type="button"
+                              onClick={() => handleAiScanClipping(media)}
+                              disabled={analyzingMediaId === media.id || !media.imageUrl}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-serif border border-[#F43F7A]/30 text-[#F43F7A] bg-[#F43F7A]/5 hover:bg-[#F43F7A]/15 transition-all cursor-pointer disabled:opacity-50"
+                              title="Extract article text with OCR and synthesize timeline headline & summary"
+                            >
+                              {analyzingMediaId === media.id ? (
+                                <>
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                  <span>AI Scanning...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Sparkles className="w-3 h-3" />
+                                  <span>Scan with AI</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -1660,29 +1778,46 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
 
                           {/* Top Carousel Placement Controls */}
                           <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-[#E8E2D5] text-[11px] font-serif">
-                            <label className="inline-flex items-center gap-1.5 cursor-pointer font-medium text-stone-900">
-                              <input
-                                type="checkbox"
-                                checked={isCarouselPhoto}
-                                onChange={(e) => {
-                                  const checked = e.target.checked;
-                                  setMediaList((prev) =>
-                                    prev.map((m) =>
-                                      m.id === media.id
-                                        ? {
-                                            ...m,
-                                            isStorefront: checked,
-                                            mediaType: "photo",
-                                            mediaTag: checked ? (m.mediaTag || "storefront") : null,
-                                          }
-                                        : m
-                                    )
-                                  );
-                                }}
-                                className="rounded text-[#F43F7A] focus:ring-[#2563EB]"
-                              />
-                              <span>Show in Top Photo Carousel</span>
-                            </label>
+                            <div className="flex items-center gap-3">
+                              <label className="inline-flex items-center gap-1.5 cursor-pointer font-medium text-stone-900">
+                                <input
+                                  type="checkbox"
+                                  checked={isCarouselPhoto}
+                                  onChange={(e) => {
+                                    const checked = e.target.checked;
+                                    setMediaList((prev) =>
+                                      prev.map((m) =>
+                                        m.id === media.id
+                                          ? {
+                                              ...m,
+                                              isStorefront: checked,
+                                              mediaType: "photo",
+                                              mediaTag: checked ? (m.mediaTag || "storefront") : null,
+                                            }
+                                          : m
+                                      )
+                                    );
+                                  }}
+                                  className="rounded text-[#F43F7A] focus:ring-[#2563EB]"
+                                />
+                                <span>Show in Top Photo Carousel</span>
+                              </label>
+
+                              {/* Timeline Checkbox for Photo */}
+                              <label className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-serif transition-colors cursor-pointer border bg-white border-[#E8E2D5] hover:border-[#F43F7A]">
+                                <input
+                                  type="checkbox"
+                                  aria-label={`Add photo ${media.caption} to Timeline`}
+                                  checked={isItemInTimeline(media)}
+                                  onChange={(e) => handleToggleTimelineForMedia(media, e.target.checked)}
+                                  className="w-3 h-3 rounded border-[#E8E2D5] text-[#F43F7A] focus:ring-[#F43F7A]"
+                                />
+                                <Sparkles className="w-3 h-3 text-[#F43F7A]" />
+                                <span className={isItemInTimeline(media) ? "font-bold text-stone-900" : "text-stone-600"}>
+                                  {isItemInTimeline(media) ? "In Timeline" : "Add to Timeline"}
+                                </span>
+                              </label>
+                            </div>
 
                             {isCarouselPhoto && (
                               <select

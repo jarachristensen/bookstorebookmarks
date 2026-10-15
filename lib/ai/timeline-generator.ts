@@ -64,25 +64,45 @@ function generateHeuristicTimelineEntry(
       .map((l) => l.trim())
       .filter((l) => l.length > 0);
 
-    // Look at top 5 lines for a headline candidate
-    for (let i = 0; i < Math.min(lines.length, 5); i++) {
-      const line = lines[i];
+    // Look at top 10 lines for the best headline candidate
+    for (let i = 0; i < Math.min(lines.length, 10); i++) {
+      const rawLine = lines[i];
+      // Clean leading and trailing punctuation/bullets
+      const line = rawLine
+        .replace(/^[^a-zA-Z0-9]+/, "")
+        .replace(/[^a-zA-Z0-9]+$/, "")
+        .trim();
+
       // Exclude short noise, dates, pure page numbers
       if (
-        line.length >= 4 &&
-        line.length <= 110 &&
-        !/^page\s*\d+/i.test(line) &&
-        !/^(vol\.|no\.|issue|\d+)/i.test(line)
+        line.length < 5 ||
+        line.length > 120 ||
+        /^page\s*\d+/i.test(line) ||
+        /^(vol\.|no\.|issue|\d+)/i.test(line) ||
+        /^(monday|tuesday|wednesday|thursday|friday|saturday|sunday)/i.test(line)
       ) {
-        // High likelihood of headline if uppercase or title-case
-        const uppercaseRatio =
-          (line.replace(/[^A-Z]/g, "").length || 1) /
-          (line.replace(/[^a-zA-Z]/g, "").length || 1);
-        if (uppercaseRatio > 0.4 || line.length < 60) {
-          headline = line;
-          break;
-        }
+        continue;
       }
+
+      // Check if line contains at least 2 valid words (length >= 2)
+      const words = line.split(/\s+/).filter((w) => /[a-zA-Z]{2,}/.test(w));
+      if (words.length < 2) continue;
+
+      // Reject lines with excessive non-alphanumeric noise (e.g. OCR artifacts like | { } > < \ /)
+      const alphaNumCount = line.replace(/[^a-zA-Z0-9\s]/g, "").length;
+      if (alphaNumCount / line.length < 0.65) continue;
+
+      // Skip lines that are just the newspaper title + date (e.g. "The Tribune, Friday, Nov 24, 2000")
+      if (
+        parsedClipping.sourcePublication &&
+        line.toLowerCase().startsWith(parsedClipping.sourcePublication.toLowerCase()) &&
+        /\b(19\d{2}|20\d{2})\b/.test(line)
+      ) {
+        continue;
+      }
+
+      headline = line;
+      break;
     }
   }
 
@@ -120,7 +140,14 @@ function generateHeuristicTimelineEntry(
       .replace(/\r?\n+/g, " ")
       .split(/(?<=[.!?])\s+/)
       .map((s) => s.trim())
-      .filter((s) => s.length > 20 && /[a-zA-Z]/.test(s));
+      .filter((s) => {
+        if (s.length < 25) return false;
+        // Ensure sentence contains real words and not random OCR character noise
+        const words = s.split(/\s+/);
+        if (words.length < 4) return false;
+        const validWords = words.filter((w) => /^[a-zA-Z]{2,}/.test(w));
+        return validWords.length / words.length > 0.6;
+      });
 
     if (rawSentences.length > 0) {
       const selected = rawSentences.slice(0, 2);
@@ -128,14 +155,14 @@ function generateHeuristicTimelineEntry(
     }
   }
 
-  // Fallback description if OCR was sparse or uninformative
-  if (!description || description.length < 15) {
-    const subject = input.bookstoreName
-      ? `${input.bookstoreName}`
-      : parsedClipping.sourcePublication
-      ? `${parsedClipping.sourcePublication}`
-      : "bookstore history";
-    description = `Archival press clipping and documentation preserved for ${subject} from ${year}.`;
+  // Fallback description if OCR was sparse, garbled or uninformative
+  if (!description || description.length < 20) {
+    const store = input.bookstoreName || "the bookstore";
+    const source = parsedClipping.sourcePublication
+      ? `published in ${parsedClipping.sourcePublication}`
+      : "preserved in historical press archives";
+    const topic = headline ? `highlighting "${headline}"` : "documenting historical bookstore milestones";
+    description = `Historical press documentation for ${store} ${source} in ${year}, ${topic}.`;
   }
 
   // Normalize whitespace
@@ -241,6 +268,25 @@ export async function generateTimelineEntryFromArticle(
   input: GenerateTimelineInput
 ): Promise<GeneratedTimelineEntry> {
   const year = extractYearFromInput(input);
+
+  // If executing in browser, attempt to invoke server endpoint which has access to server environment keys
+  if (typeof window !== "undefined") {
+    try {
+      const res = await fetch("/api/timeline/generate-entry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.entry && data.entry.label) {
+          return data.entry;
+        }
+      }
+    } catch {
+      // Gracefully fall back to local execution
+    }
+  }
 
   // If Gemini or OpenAI keys are configured, try calling them
   const geminiKey = process.env.GEMINI_API_KEY;

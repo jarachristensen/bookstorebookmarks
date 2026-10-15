@@ -4,8 +4,9 @@ import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { BookstoreWithDetails } from "@/lib/db/queries";
-import { BookstoreLocation } from "@/db/schema";
+import { BookstoreLocation, CustomTimelineEvent } from "@/db/schema";
 import { MediaManager, MediaItem } from "@/components/admin/MediaManager";
+import { BookstoreVerticalTimeline } from "@/components/bookstores/BookstoreVerticalTimeline";
 import { Button } from "@/components/ui/Button";
 import {
   Building2,
@@ -140,6 +141,29 @@ export function BookstoreDetailEditor({
     })) || []
   );
 
+  const [timelineEvents, setTimelineEvents] = useState<CustomTimelineEvent[]>(() => {
+    if (initialData?.timelineEvents) {
+      try {
+        const parsed = JSON.parse(initialData.timelineEvents);
+        if (Array.isArray(parsed)) return parsed;
+      } catch {}
+    }
+    const initialEvents: CustomTimelineEvent[] = [];
+    const openYear = parseInt(formData.yearOpened, 10);
+    if (!isNaN(openYear) && openYear > 1800) {
+      initialEvents.push({
+        id: "ev-init-founding",
+        year: openYear,
+        label: "Grand Opening",
+        description: formData.streetAddress
+          ? `${formData.streetAddress}, ${formData.city}`
+          : `Established in ${formData.city}`,
+        type: "opening",
+      });
+    }
+    return initialEvents;
+  });
+
   // Multi-location operations
   const addLocation = (isBranch = false) => {
     const nextIndex = locations.length + 1;
@@ -213,6 +237,7 @@ export function BookstoreDetailEditor({
             .map((t: string) => t.trim())
             .filter(Boolean),
           websiteUrl: formData.websiteUrl || null,
+          timelineEvents: timelineEvents,
         },
         archivalMedia: archivalMedia.map((m, idx) => ({
           ...m,
@@ -739,7 +764,35 @@ export function BookstoreDetailEditor({
         <MediaManager
           mediaList={archivalMedia}
           onChange={setArchivalMedia}
+          timelineEvents={timelineEvents}
+          onTimelineEventsChange={setTimelineEvents}
+          bookstoreName={formData.name}
         />
+
+        {/* Timeline Preview & Milestones */}
+        {timelineEvents.length > 0 && (
+          <div className="pt-6 border-t border-[#E8E2D5] space-y-3">
+            <div className="flex items-center justify-between">
+              <h4 className="font-serif text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-[#F43F7A]" />
+                <span>Timeline Milestones ({timelineEvents.length})</span>
+              </h4>
+              <span className="text-[11px] font-serif text-stone-500">
+                Check &ldquo;Add to Timeline&rdquo; on any clipping or photo above to add it to this timeline.
+              </span>
+            </div>
+            <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E8E2D5]">
+              <BookstoreVerticalTimeline
+                bookstore={{ ...formData, archivalMedia } as any}
+                customEvents={timelineEvents}
+                isEditable={true}
+                onDeleteEvent={(eventId) =>
+                  setTimelineEvents((prev) => prev.filter((ev) => ev.id !== eventId))
+                }
+              />
+            </div>
+          </div>
+        )}
       </section>
 
       {/* 4. Historical Dossier Blurb & Curatorial Lore */}
