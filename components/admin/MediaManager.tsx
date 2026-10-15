@@ -18,6 +18,7 @@ import { ImageDropzone } from "./ImageDropzone";
 import { parseClippingFilename } from "@/lib/utils/clipping-parser";
 import { compressImageIfNeeded } from "@/lib/utils/image-compressor";
 import { generateTimelineEntryFromArticle } from "@/lib/ai/timeline-generator";
+import { cleanOcrTranscription } from "@/lib/utils/ocr-sanitizer";
 import { CustomTimelineEvent } from "@/db/schema";
 
 export interface MediaItem {
@@ -140,7 +141,7 @@ export function MediaManager({
           });
           if (res.ok) {
             const ocrData = await res.json();
-            text = (ocrData.text || "").trim();
+            text = cleanOcrTranscription(ocrData.text || "");
             if (text) {
               updateMedia(index, { transcriptionText: text });
             }
@@ -391,22 +392,18 @@ export function MediaManager({
         const result = await worker.recognize(item.imageUrl);
         await worker.terminate();
 
-        const extracted = (result.data.text || "")
-          .replace(/\r\n/g, "\n")
-          .replace(/[ \t]+/g, " ")
-          .replace(/\n{3,}/g, "\n\n")
-          .trim();
-
+        const extracted = cleanOcrTranscription(result.data.text || "");
         return extracted;
       })();
 
       const text = await Promise.race([ocrTask, timeoutPromise]);
 
       if (text && text.trim().length > 0) {
-        updateMedia(index, { transcriptionText: text.trim() });
+        const cleaned = cleanOcrTranscription(text);
+        updateMedia(index, { transcriptionText: cleaned });
         if (autoAddToTimeline && onAutoAddToTimeline) {
           generateTimelineEntryFromArticle({
-            ocrText: text.trim(),
+            ocrText: cleaned,
             fileName: item.caption,
             publicationDate: item.publicationDate,
             bookstoreName: item.sourcePublication,

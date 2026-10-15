@@ -1,4 +1,5 @@
 import { parseClippingFilename } from "@/lib/utils/clipping-parser";
+import { cleanOcrTranscription } from "@/lib/utils/ocr-sanitizer";
 
 export interface GeneratedTimelineEntry {
   year: number;
@@ -54,7 +55,7 @@ function generateHeuristicTimelineEntry(
   input: GenerateTimelineInput,
   year: number
 ): { label: string; description: string } {
-  const ocrText = (input.ocrText || "").trim();
+  const ocrText = cleanOcrTranscription(input.ocrText || "");
   const parsedClipping = parseClippingFilename(input.fileName);
   const storeName = input.bookstoreName || parsedClipping.sourcePublication || "Books West";
   const normalized = ocrText.toLowerCase();
@@ -412,7 +413,12 @@ async function callOpenAI(
 export async function generateTimelineEntryFromArticle(
   input: GenerateTimelineInput
 ): Promise<GeneratedTimelineEntry> {
-  const year = extractYearFromInput(input);
+  const sanitizedOcr = cleanOcrTranscription(input.ocrText || "");
+  const sanitizedInput: GenerateTimelineInput = {
+    ...input,
+    ocrText: sanitizedOcr,
+  };
+  const year = extractYearFromInput(sanitizedInput);
 
   // If executing in browser, attempt to invoke server endpoint which has access to server environment keys
   if (typeof window !== "undefined") {
@@ -420,7 +426,7 @@ export async function generateTimelineEntryFromArticle(
       const res = await fetch("/api/timeline/generate-entry", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(input),
+        body: JSON.stringify(sanitizedInput),
       });
       if (res.ok) {
         const data = await res.json();
@@ -441,11 +447,11 @@ export async function generateTimelineEntryFromArticle(
     const prompt = `
 Analyze this bookstore newspaper clipping/article to extract a timeline milestone entry.
 Year: ${year}
-Bookstore: ${input.bookstoreName || "Unknown"}
-File: ${input.fileName || ""}
-Publication Date: ${input.publicationDate || ""}
+Bookstore: ${sanitizedInput.bookstoreName || "Unknown"}
+File: ${sanitizedInput.fileName || ""}
+Publication Date: ${sanitizedInput.publicationDate || ""}
 OCR Text:
-${(input.ocrText || "").slice(0, 3000)}
+${sanitizedOcr.slice(0, 3000)}
 
 Return a JSON object with:
 - "label": A concise, high-impact uppercase title for the milestone (e.g. "HOWL OBSCENITY TRIAL ACQUITTAL" or "POETRY ROOM INAUGURATION")
@@ -470,7 +476,7 @@ Return a JSON object with:
   }
 
   // Heuristic generation fallback
-  const fallback = generateHeuristicTimelineEntry(input, year);
+  const fallback = generateHeuristicTimelineEntry(sanitizedInput, year);
   return {
     year,
     label: fallback.label,

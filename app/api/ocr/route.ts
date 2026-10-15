@@ -3,6 +3,7 @@ import { getAdminSession } from "@/lib/auth";
 import path from "path";
 import fs from "fs";
 import { createWorker } from "tesseract.js";
+import { cleanOcrTranscription } from "@/lib/utils/ocr-sanitizer";
 
 export const dynamic = "force-dynamic";
 
@@ -40,12 +41,8 @@ export async function POST(req: NextRequest) {
     await worker.terminate();
     worker = null;
 
-    // Clean up recognized text
-    const cleanedText = (ret.data.text || "")
-      .replace(/\r\n/g, "\n")
-      .replace(/[ \t]+/g, " ")
-      .replace(/\n{3,}/g, "\n\n")
-      .trim();
+    // Clean up recognized text and remove halftone dot-matrix noise
+    const cleanedText = cleanOcrTranscription(ret.data.text || "");
 
     return NextResponse.json({
       text: cleanedText,

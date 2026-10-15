@@ -15,6 +15,7 @@ import {
 import { parseClippingFilename, sortMediaByMostRecent } from "@/lib/utils/clipping-parser";
 import { compressImageIfNeeded } from "@/lib/utils/image-compressor";
 import { generateTimelineEntryFromArticle } from "@/lib/ai/timeline-generator";
+import { cleanOcrTranscription } from "@/lib/utils/ocr-sanitizer";
 import {
   MapPin,
   Calendar,
@@ -537,7 +538,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
     setAnalyzingMediaId(media.id);
 
     try {
-      let text = (media.transcriptionText || "").trim();
+      let text = cleanOcrTranscription(media.transcriptionText || "");
 
       // If no OCR text yet, extract it via /api/ocr
       if (!text) {
@@ -549,7 +550,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
           });
           if (res.ok) {
             const data = await res.json();
-            text = (data.text || "").trim();
+            text = cleanOcrTranscription(data.text || "");
           }
         } catch (ocrErr) {
           console.warn("OCR route failed, using metadata fallback:", ocrErr);
