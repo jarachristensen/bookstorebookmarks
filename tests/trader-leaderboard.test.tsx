@@ -133,7 +133,7 @@ describe("Trader Extraordinaires Leaderboard Utilities & Component", () => {
 
       render(<TraderLeaderboard entries={mockEntries} />);
 
-      expect(screen.getByText(/trader extraordinaires/i)).toBeDefined();
+      expect(screen.getByText(/top traders/i)).toBeDefined();
       expect(screen.getByText(/collector j\. d\./i)).toBeDefined();
       expect(screen.getByText(/collector a\. s\./i)).toBeDefined();
       expect(screen.getByText("6")).toBeDefined();

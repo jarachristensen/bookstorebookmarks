@@ -268,7 +268,7 @@ describe("TradingHubClient Component", () => {
     expect(screen.getByText("What condition are these duplicate bookmarks in?")).toBeDefined();
   });
 
-  it("renders the Trader Extraordinaires leaderboard using initialLeaderboard prop", () => {
+  it("renders the Top Traders leaderboard using initialLeaderboard prop", () => {
     render(
       <TradingHubClient
         initialBookmarks={mockTradeBookmarks}
@@ -282,7 +282,7 @@ describe("TradingHubClient Component", () => {
       />
     );
 
-    expect(screen.getByText(/trader extraordinaires/i)).toBeDefined();
+    expect(screen.getByText(/top traders/i)).toBeDefined();
     expect(screen.getByText(/collector j\. d\./i)).toBeDefined();
     expect(screen.getByText("5")).toBeDefined();
     expect(screen.getByText(/2 swaps completed/i)).toBeDefined();

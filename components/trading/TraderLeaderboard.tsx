@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Trophy, Award, Medal, Sparkles, BookOpen } from "lucide-react";
+import { Trophy, Award, Medal, BookOpen } from "lucide-react";
 import { TraderLeaderboardEntry } from "@/lib/utils/trader-leaderboard";
 
 export interface TraderLeaderboardProps {
@@ -17,9 +17,8 @@ export function TraderLeaderboard({ entries }: TraderLeaderboardProps) {
           <Trophy className="w-5 h-5 text-amber-700" />
         </div>
         <div>
-          <h3 className="font-serif font-black text-lg text-stone-900 tracking-tight flex items-center gap-1.5">
-            <span>Trader Extraordinaires</span>
-            <Sparkles className="w-3.5 h-3.5 text-amber-500 inline-block" />
+          <h3 className="font-serif font-black text-lg text-stone-900 tracking-tight">
+            Top Traders
           </h3>
           <p className="text-xs font-serif text-stone-500">
             Most active collectors by accepted trade volume
@@ -35,7 +34,7 @@ export function TraderLeaderboard({ entries }: TraderLeaderboardProps) {
             No completed swaps recorded yet.
           </p>
           <p className="text-[11px] font-sans text-stone-400">
-            Propose an exchange above to be crowned our first Trader Extraordinaire!
+            Propose an exchange above to be crowned our first top trader!
           </p>
         </div>
       ) : (
