@@ -9,9 +9,9 @@ import { ArchivalMedia, CustomTimelineEvent, BookstoreLocation } from "@/db/sche
 import { BookmarkInspector } from "@/components/exhibit/BookmarkInspector";
 import { ClippingLightbox } from "@/components/exhibit/ClippingLightbox";
 import {
-  BookstoreHorizontalTimeline,
+  BookstoreVerticalTimeline,
   TimelineEvent,
-} from "@/components/bookstores/BookstoreHorizontalTimeline";
+} from "@/components/bookstores/BookstoreVerticalTimeline";
 import { parseClippingFilename, sortMediaByMostRecent } from "@/lib/utils/clipping-parser";
 import { compressImageIfNeeded } from "@/lib/utils/image-compressor";
 import { generateTimelineEntryFromArticle } from "@/lib/ai/timeline-generator";
@@ -1307,7 +1307,7 @@ export function BookstoreVisualEditor({ initialData }: BookstoreVisualEditorProp
           </Button>
         </div>
 
-        <BookstoreHorizontalTimeline
+        <BookstoreVerticalTimeline
           bookstore={{ ...initialData, archivalMedia: mediaList }}
           customEvents={timelineEvents}
           isEditable={true}

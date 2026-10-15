@@ -8,7 +8,7 @@ import { ArchivalMedia } from "@/db/schema";
 import { sortMediaByMostRecent } from "@/lib/utils/clipping-parser";
 import { BookmarkInspector } from "@/components/exhibit/BookmarkInspector";
 import { ClippingLightbox } from "@/components/exhibit/ClippingLightbox";
-import { BookstoreHorizontalTimeline } from "@/components/bookstores/BookstoreHorizontalTimeline";
+import { BookstoreVerticalTimeline } from "@/components/bookstores/BookstoreVerticalTimeline";
 import { BookstoreGoogleMap } from "@/components/bookstores/BookstoreGoogleMap";
 import {
   MapPin,
@@ -358,18 +358,9 @@ export function BookstoreDetailView({ bookstore, availableStorefronts }: Booksto
         </div>
       </div>
 
-      {/* 4. Middle Section: Horizontal Heritage & Relocation Timeline */}
+      {/* 4. Middle Section: Vertical Serpentine Timeline */}
       <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="font-serif text-sm font-mono font-bold uppercase tracking-wider text-[#F43F7A]">
-            Timeline
-          </h2>
-          <span className="text-xs font-sans text-stone-500 italic hidden sm:inline">
-            Click any milestone with a clipping or photo to inspect it
-          </span>
-        </div>
-
-        <BookstoreHorizontalTimeline
+        <BookstoreVerticalTimeline
           bookstore={bookstore}
           onSelectMedia={(media) => setSelectedLightboxMedia(media)}
         />
