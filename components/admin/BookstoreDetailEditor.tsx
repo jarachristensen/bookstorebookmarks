@@ -174,18 +174,19 @@ export function BookstoreDetailEditor({
     return initialEvents;
   });
 
+  const [isBranchSelected, setIsBranchSelected] = useState<boolean>(Boolean(initialData?.flagshipId));
+
   // Multi-location operations
-  const addLocation = (isBranch = false) => {
+  const addLocation = () => {
     const nextIndex = locations.length + 1;
-    const label = isBranch
-      ? `New Location / Branch`
-      : nextIndex === 2
-      ? "2nd Location"
-      : nextIndex === 3
-      ? "3rd Location"
-      : nextIndex === 4
-      ? "4th Location"
-      : `${nextIndex}th Location`;
+    const label =
+      nextIndex === 2
+        ? "2nd Location (Relocated)"
+        : nextIndex === 3
+        ? "3rd Location (Relocated)"
+        : nextIndex === 4
+        ? "4th Location (Relocated)"
+        : `${nextIndex}th Location (Relocated)`;
 
     setLocations([
       ...locations,
@@ -497,111 +498,162 @@ export function BookstoreDetailEditor({
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-[#2563EB] border border-blue-200 hover:bg-blue-100 text-xs font-serif font-bold transition-all"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>+ Add Branch Store to this Chain</span>
+              <span>+ Add Branch Store to this Flagship</span>
             </Link>
           )}
         </div>
 
         <p className="text-xs font-serif text-stone-500 italic">
-          Configure whether this bookstore is a primary flagship store or an individual branch of a multi-store network (e.g. Borders, B. Dalton). Each branch maintains its own storefront diecut image and bookmarks while linking back to the flagship parent.
+          Configure whether this bookstore is a primary flagship store or an individual branch of a multi-store chain (e.g. Books West, Borders). Each branch is entered as its own bookstore with its own address and diecut storefront cutout, tied back to the flagship parent.
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {!formData.flagshipId ? (
-            <div className="sm:col-span-3 p-4 rounded-xl bg-blue-50/70 border border-blue-200 flex items-center justify-between gap-4">
-              <div className="space-y-0.5">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-serif font-bold text-stone-900">
-                    1st Location is Flagship Store
-                  </span>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#2563EB] text-white">
-                    Combined
-                  </span>
-                </div>
-                <p className="text-[11px] font-sans text-stone-600">
-                  The 1st location (founding address in Section 2 below) serves as this bookstore&apos;s primary flagship storefront.
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="sm:col-span-3 p-4 rounded-xl bg-amber-50/70 border border-amber-200 flex items-center justify-between gap-4">
-              <div className="space-y-0.5">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-serif font-bold text-stone-900">
-                    Branch Store Location
-                  </span>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#F59E0B] text-white">
-                    Branch
-                  </span>
-                </div>
-                <p className="text-[11px] font-sans text-stone-600">
-                  This bookstore is an affiliated branch location linked to its parent flagship store.
-                </p>
-              </div>
-            </div>
-          )}
-
-          <div>
-            <label className="block text-xs font-mono text-stone-600 mb-1">
-              CHAIN / BRAND NAME (OPTIONAL)
-            </label>
+        {/* Flagship vs Branch Checkboxes */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <label
+            className={`flex items-start gap-3 p-4 rounded-xl border transition-all cursor-pointer ${
+              formData.isFlagship && !formData.flagshipId
+                ? "bg-blue-50/80 border-[#2563EB] ring-1 ring-[#2563EB]/20"
+                : "bg-[#FAF8F5] border-[#E8E2D5] hover:border-blue-300"
+            }`}
+          >
             <input
-              type="text"
-              data-1p-ignore
-              autoComplete="off"
-              placeholder="e.g. Borders Book Shop"
-              value={formData.chainName}
-              onChange={(e) => setFormData({ ...formData, chainName: e.target.value })}
-              className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-mono text-stone-600 mb-1">
-              BRANCH DESCRIPTOR / SUBTITLE
-            </label>
-            <input
-              type="text"
-              data-1p-ignore
-              autoComplete="off"
-              placeholder="e.g. Ann Arbor Flagship, Chestnut Hill, State St."
-              value={formData.branchLabel}
-              onChange={(e) => setFormData({ ...formData, branchLabel: e.target.value })}
-              className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-mono text-stone-600 mb-1">
-              PARENT FLAGSHIP BOOKSTORE (OPTIONAL)
-            </label>
-            <select
-              value={formData.flagshipId}
-              onChange={(e) =>
+              type="checkbox"
+              checked={Boolean(formData.isFlagship && !formData.flagshipId)}
+              onChange={(e) => {
+                const checked = e.target.checked;
+                setIsBranchSelected(false);
                 setFormData({
                   ...formData,
-                  flagshipId: e.target.value,
-                  isFlagship: !e.target.value,
-                  branchLabel: e.target.value
-                    ? formData.branchLabel === "1st Location (Flagship)"
-                      ? "Branch Location"
-                      : formData.branchLabel
-                    : "1st Location (Flagship)",
-                })
-              }
-              className="w-full px-3 py-2 text-sm bg-[#FAF8F5] border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 font-serif"
-            >
-              <option value="">(None / Independent Single Bookstore)</option>
-              {allStores
-                .filter((s) => s.id !== formData.id)
-                .map((store) => (
-                  <option key={store.id} value={store.id}>
-                    {store.name} — {store.city}{store.stateProvince ? `, ${store.stateProvince}` : ""} {store.isFlagship ? "★ (Flagship)" : ""}
-                  </option>
-                ))}
-            </select>
-          </div>
+                  isFlagship: checked,
+                  flagshipId: "",
+                  branchLabel: checked ? "1st Location (Flagship)" : "",
+                });
+              }}
+              className="mt-0.5 h-4 w-4 rounded border-stone-300 text-[#2563EB] focus:ring-[#2563EB]"
+            />
+            <div className="space-y-0.5">
+              <span className="text-xs font-serif font-bold text-stone-900 block">
+                ★ Flagship Bookstore (Founding / Primary Store)
+              </span>
+              <p className="text-[11px] font-sans text-stone-600">
+                Mark as the flagship store. The 1st location serves as this bookstore&apos;s primary founding storefront. Other branches will link back to this store.
+              </p>
+            </div>
+          </label>
+
+          <label
+            className={`flex items-start gap-3 p-4 rounded-xl border transition-all cursor-pointer ${
+              Boolean(formData.flagshipId) || isBranchSelected
+                ? "bg-amber-50/80 border-[#F59E0B] ring-1 ring-[#F59E0B]/20"
+                : "bg-[#FAF8F5] border-[#E8E2D5] hover:border-amber-300"
+            }`}
+          >
+            <input
+              type="checkbox"
+              checked={Boolean(formData.flagshipId) || isBranchSelected}
+              onChange={(e) => {
+                const checked = e.target.checked;
+                setIsBranchSelected(checked);
+                if (checked) {
+                  setFormData({
+                    ...formData,
+                    isFlagship: false,
+                    branchLabel:
+                      formData.branchLabel && formData.branchLabel !== "1st Location (Flagship)"
+                        ? formData.branchLabel
+                        : "Branch Location",
+                  });
+                } else {
+                  setFormData({
+                    ...formData,
+                    flagshipId: "",
+                    branchLabel: "",
+                  });
+                }
+              }}
+              className="mt-0.5 h-4 w-4 rounded border-stone-300 text-[#F59E0B] focus:ring-[#F59E0B]"
+            />
+            <div className="space-y-0.5">
+              <span className="text-xs font-serif font-bold text-stone-900 block">
+                Branch of a Flagship Bookstore
+              </span>
+              <p className="text-[11px] font-sans text-stone-600">
+                Mark as an affiliated branch location. Select its parent flagship from the dropdown below to organize it under that store.
+              </p>
+            </div>
+          </label>
         </div>
+
+        {/* Branch Configuration Details (Visible when Branch is selected) */}
+        {(Boolean(formData.flagshipId) || isBranchSelected) && (
+          <div className="p-4 sm:p-5 rounded-xl bg-amber-50/40 border border-amber-200/80 space-y-4 animate-in fade-in duration-200">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs font-mono font-bold text-stone-700 mb-1">
+                  PARENT FLAGSHIP BOOKSTORE *
+                </label>
+                <select
+                  value={formData.flagshipId}
+                  onChange={(e) => {
+                    const selId = e.target.value;
+                    const parentStore = allStores.find((s) => s.id === selId);
+                    setFormData({
+                      ...formData,
+                      flagshipId: selId,
+                      isFlagship: false,
+                      chainName: formData.chainName || parentStore?.chainName || parentStore?.name || "",
+                      branchLabel:
+                        formData.branchLabel && formData.branchLabel !== "1st Location (Flagship)"
+                          ? formData.branchLabel
+                          : "Branch Location",
+                    });
+                  }}
+                  className="w-full px-3 py-2 text-sm bg-white border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#F59E0B]/30 font-serif"
+                >
+                  <option value="">— Select a Flagship Bookstore —</option>
+                  {allStores
+                    .filter((s) => s.id !== formData.id)
+                    .map((store) => (
+                      <option key={store.id} value={store.id}>
+                        {store.name} — {store.city}
+                        {store.stateProvince ? `, ${store.stateProvince}` : ""} {store.isFlagship ? "★ (Flagship)" : ""}
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono text-stone-600 mb-1">
+                  BRANCH DESCRIPTOR / SUBTITLE
+                </label>
+                <input
+                  type="text"
+                  data-1p-ignore
+                  autoComplete="off"
+                  placeholder="e.g. Atascadero Branch, Lompoc Branch"
+                  value={formData.branchLabel}
+                  onChange={(e) => setFormData({ ...formData, branchLabel: e.target.value })}
+                  className="w-full px-3 py-2 text-sm bg-white border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#F59E0B]/30 font-serif"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono text-stone-600 mb-1">
+                  CHAIN / BRAND NAME (OPTIONAL)
+                </label>
+                <input
+                  type="text"
+                  data-1p-ignore
+                  autoComplete="off"
+                  placeholder="e.g. Books West, Borders"
+                  value={formData.chainName}
+                  onChange={(e) => setFormData({ ...formData, chainName: e.target.value })}
+                  className="w-full px-3 py-2 text-sm bg-white border border-[#E8E2D5] rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#F59E0B]/30 font-serif"
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* 2. Multi-Location & Relocation History Manager */}
@@ -613,7 +665,7 @@ export function BookstoreDetailEditor({
               <span>2. Multi-Location &amp; Relocation History</span>
             </h2>
             <p className="text-xs font-serif text-stone-500 italic pt-0.5">
-              Record physical addresses across time, tag sequence (1st, 2nd, 3rd location), mark relocations, or add concurrent branches.
+              Record physical address relocations across time (1st Location, 2nd Location, etc.). Individual branches should be created as their own bookstore entry and linked to this flagship store.
             </p>
           </div>
 
@@ -622,22 +674,11 @@ export function BookstoreDetailEditor({
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => addLocation(false)}
+              onClick={() => addLocation()}
               className="text-xs font-serif flex items-center gap-1 bg-white border-[#E8E2D5]"
             >
               <Plus className="w-3.5 h-3.5 text-[#F43F7A]" />
               <span>Add Relocation</span>
-            </Button>
-
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => addLocation(true)}
-              className="text-xs font-serif flex items-center gap-1 bg-[#F59E0B]/10 border-[#F59E0B]/30 text-stone-900"
-            >
-              <Plus className="w-3.5 h-3.5 text-[#F59E0B]" />
-              <span>Add Concurrent Branch</span>
             </Button>
           </div>
         </div>

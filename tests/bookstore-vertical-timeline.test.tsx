@@ -142,5 +142,50 @@ describe("BookstoreVerticalTimeline Component", () => {
     expect(screen.getByTitle("Zoom Out (-)")).toBeDefined();
     expect(screen.getByTitle(/Reset Zoom/i)).toBeDefined();
   });
+
+  it("renders branch store opening milestone on flagship timeline with branch storefront and year", () => {
+    const flagshipWithBranches: any = {
+      id: "books-west-arroyo-grande",
+      name: "Books West",
+      city: "Arroyo Grande",
+      yearOpened: 1974,
+      isFlagship: true,
+      branches: [
+        {
+          id: "books-west-atascadero",
+          name: "Books West Atascadero",
+          city: "Atascadero",
+          stateProvince: "CA",
+          streetAddress: "6500 Morro Rd",
+          yearOpened: 1980,
+          archivalMedia: [
+            {
+              id: "media-atascadero",
+              imageUrl: "/images/storefronts/bookswestatascadero-storefront.png",
+              caption: "Books West Atascadero Storefront",
+              isStorefront: true,
+            },
+          ],
+        },
+      ],
+      archivalMedia: [
+        {
+          id: "media-ag",
+          imageUrl: "/images/storefronts/bookswest-storefront.png",
+          caption: "Books West Arroyo Grande",
+          isStorefront: true,
+        },
+      ],
+    };
+
+    render(<BookstoreVerticalTimeline bookstore={flagshipWithBranches} />);
+
+    // Should display founding event (1974) and branch opening event (1980)
+    expect(screen.getByText("1974")).toBeDefined();
+    expect(screen.getByText("1980")).toBeDefined();
+    expect(screen.getByText(/Branch Opened: Books West Atascadero/i)).toBeDefined();
+    expect(screen.getByText(/6500 Morro Rd, Atascadero/i)).toBeDefined();
+  });
 });
+
 

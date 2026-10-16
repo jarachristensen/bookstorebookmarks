@@ -2,13 +2,16 @@
 
 import React, { useMemo, useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { BookstoreWithDetails } from "@/lib/db/queries";
 import { BookstoreLocation, ArchivalMedia, CustomTimelineEvent } from "@/db/schema";
+import { resolveStorefrontImage } from "@/lib/utils/storefront";
 import {
   Calendar,
   Pencil,
   Trash2,
   ZoomIn,
+  ArrowRight,
 } from "lucide-react";
 import { BookmarkZoomLightbox } from "@/components/exhibit/BookmarkZoomLightbox";
 
@@ -21,10 +24,12 @@ export interface TimelineEvent {
   media?: ArchivalMedia | null;
   mediaId?: string;
   mediaUrl?: string;
+  branchId?: string;
 }
 
 export interface BookstoreVerticalTimelineProps {
   bookstore: BookstoreWithDetails;
+  availableStorefronts?: string[];
   onSelectMedia?: (media: ArchivalMedia) => void;
   customEvents?: CustomTimelineEvent[];
   isEditable?: boolean;
@@ -34,6 +39,7 @@ export interface BookstoreVerticalTimelineProps {
 
 export function BookstoreVerticalTimeline({
   bookstore,
+  availableStorefronts,
   onSelectMedia,
   customEvents,
   isEditable = false,
@@ -256,8 +262,55 @@ export function BookstoreVerticalTimeline({
       });
     }
 
+    // 5. Branch Opening Milestones for Flagship Timeline
+    if (bookstore.branches && bookstore.branches.length > 0) {
+      bookstore.branches.forEach((branch) => {
+        const branchEventId = `ev-branch-${branch.id}`;
+        if (events.some((e) => e.id === branchEventId || e.branchId === branch.id)) return;
+
+        const branchStorefront =
+          branch.archivalMedia?.find((m) => m.isStorefront) ||
+          branch.archivalMedia?.find((m) => m.mediaTag === "storefront") ||
+          branch.archivalMedia?.find((m) => m.mediaType === "photo") ||
+          null;
+
+        const storefrontUrl =
+          branchStorefront?.imageUrl ||
+          resolveStorefrontImage(branch, availableStorefronts);
+
+        const branchMediaObj: ArchivalMedia = branchStorefront || {
+          id: `branch-storefront-${branch.id}`,
+          bookstoreId: branch.id,
+          mediaType: "photo",
+          imageUrl: storefrontUrl,
+          caption: `${branch.name} Storefront`,
+          sourcePublication: null,
+          publicationDate: String(branch.yearOpened),
+          transcriptionText: null,
+          isStorefront: true,
+          mediaTag: "storefront",
+          displayOrder: 0,
+          createdAt: new Date().toISOString(),
+        };
+
+        const branchAddress = branch.streetAddress
+          ? `${branch.streetAddress}, ${branch.city}${branch.stateProvince ? `, ${branch.stateProvince}` : ""}`
+          : `${branch.city}${branch.stateProvince ? `, ${branch.stateProvince}` : ""}`;
+
+        events.push({
+          id: branchEventId,
+          year: branch.yearOpened,
+          label: `Branch Opened: ${branch.name}`,
+          description: branchAddress,
+          type: "opening",
+          media: branchMediaObj,
+          branchId: branch.id,
+        });
+      });
+    }
+
     return events.sort((a, b) => a.year - b.year);
-  }, [bookstore, storedCustomEvents, parsedLocations, storefrontMedia]);
+  }, [bookstore, storedCustomEvents, parsedLocations, storefrontMedia, availableStorefronts, customEvents]);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const rowRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -617,6 +670,23 @@ function EventCardContent({
       >
         {event.description}
       </p>
+
+      {/* Branch Link (if milestone represents an affiliated branch) */}
+      {event.branchId && (
+        <div
+          className={`pt-1.5 flex ${
+            isRight ? "md:justify-end" : "md:justify-start"
+          }`}
+        >
+          <Link
+            href={`/bookstores/${event.branchId}`}
+            className="inline-flex items-center gap-1.5 text-xs font-serif font-bold text-[#2563EB] hover:text-[#F43F7A] transition-colors"
+          >
+            <span>Explore branch dossier</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+      )}
 
       {/* Editable Controls */}
       {isEditable && (

@@ -13,7 +13,7 @@ import {
   NonBookstoreBookmark,
   NonBookstoreTag,
 } from "@/db/schema";
-import { eq, asc, desc, gt, and, ne } from "drizzle-orm";
+import { eq, asc, desc, gt, and, ne, inArray } from "drizzle-orm";
 import { autoSyncStorefronts } from "@/lib/utils/storefront-sync";
 import { compareBookstoresAlphabetically } from "@/lib/utils/sorting";
 
@@ -74,8 +74,8 @@ export type BookmarkWithDetails = Bookmark & {
 export type BookstoreWithDetails = Bookstore & {
   bookmarks: Bookmark[];
   archivalMedia: ArchivalMedia[];
-  flagshipStore?: Bookstore | null;
-  branches?: Bookstore[];
+  flagshipStore?: (Bookstore & { archivalMedia?: ArchivalMedia[] }) | null;
+  branches?: (Bookstore & { archivalMedia?: ArchivalMedia[] })[];
 };
 
 /**
@@ -274,24 +274,50 @@ export async function getBookstoreById(id: string): Promise<BookstoreWithDetails
     orderBy: [asc(archivalMedia.displayOrder)],
   });
 
-  let flagshipStore: Bookstore | null = null;
+  let flagshipStore: (Bookstore & { archivalMedia?: ArchivalMedia[] }) | null = null;
   if (store.flagshipId) {
-    flagshipStore = (await db.query.bookstores.findFirst({
+    const fs = await db.query.bookstores.findFirst({
       where: eq(bookstores.id, store.flagshipId),
-    })) || null;
+    });
+    if (fs) {
+      const fsMedia = await db.query.archivalMedia.findMany({
+        where: eq(archivalMedia.bookstoreId, fs.id),
+        orderBy: [asc(archivalMedia.displayOrder)],
+      });
+      flagshipStore = { ...fs, archivalMedia: fsMedia };
+    }
   }
 
-  let branches: Bookstore[] = [];
+  let rawBranches: Bookstore[] = [];
   if (store.flagshipId) {
-    branches = await db.query.bookstores.findMany({
+    rawBranches = await db.query.bookstores.findMany({
       where: and(eq(bookstores.flagshipId, store.flagshipId), ne(bookstores.id, store.id)),
       orderBy: [asc(bookstores.name)],
     });
   } else {
-    branches = await db.query.bookstores.findMany({
+    rawBranches = await db.query.bookstores.findMany({
       where: eq(bookstores.flagshipId, id),
       orderBy: [asc(bookstores.name)],
     });
+  }
+
+  let branches: (Bookstore & { archivalMedia?: ArchivalMedia[] })[] = [];
+  if (rawBranches.length > 0) {
+    const branchIds = rawBranches.map((b) => b.id);
+    const allBranchMedia = await db.query.archivalMedia.findMany({
+      where: inArray(archivalMedia.bookstoreId, branchIds),
+      orderBy: [asc(archivalMedia.displayOrder)],
+    });
+    const mediaByStore = new Map<string, ArchivalMedia[]>();
+    for (const m of allBranchMedia) {
+      const list = mediaByStore.get(m.bookstoreId) || [];
+      list.push(m);
+      mediaByStore.set(m.bookstoreId, list);
+    }
+    branches = rawBranches.map((b) => ({
+      ...b,
+      archivalMedia: mediaByStore.get(b.id) || [],
+    }));
   }
 
   return {

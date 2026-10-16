@@ -11,6 +11,7 @@ import { ClippingLightbox } from "@/components/exhibit/ClippingLightbox";
 import { BookmarkZoomLightbox } from "@/components/exhibit/BookmarkZoomLightbox";
 import { BookstoreVerticalTimeline } from "@/components/bookstores/BookstoreVerticalTimeline";
 import { BookstoreGoogleMap } from "@/components/bookstores/BookstoreGoogleMap";
+import { BookstoreCard } from "@/components/bookstores/BookstoreCard";
 import {
   MapPin,
   Calendar,
@@ -363,6 +364,7 @@ export function BookstoreDetailView({ bookstore, availableStorefronts }: Booksto
       <section className="space-y-3">
         <BookstoreVerticalTimeline
           bookstore={bookstore}
+          availableStorefronts={availableStorefronts}
           onSelectMedia={(media) => setSelectedLightboxMedia(media)}
         />
       </section>
@@ -540,71 +542,33 @@ export function BookstoreDetailView({ bookstore, availableStorefronts }: Booksto
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pt-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
             {/* If this is a branch, display the Flagship Store first */}
             {bookstore.flagshipStore && (
-              <Link
+              <BookstoreCard
                 key={bookstore.flagshipStore.id}
-                href={`/bookstores/${bookstore.flagshipStore.id}`}
-                className="group p-4 rounded-xl border border-[#2563EB]/40 bg-blue-50/40 hover:bg-white hover:border-[#2563EB] transition-all shadow-2xs hover:shadow-xs flex flex-col justify-between space-y-3"
-              >
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-1">
-                    <span className="text-[10px] font-mono font-bold text-[#2563EB] uppercase tracking-wider">
-                      Flagship Store
-                    </span>
-                    <span className="text-[10px] font-mono text-stone-500">
-                      {bookstore.flagshipStore.yearOpened}–{bookstore.flagshipStore.isStillOperating ? "Pres." : bookstore.flagshipStore.yearClosed || "Closed"}
-                    </span>
-                  </div>
-                  <h4 className="font-serif text-sm font-bold text-stone-900 group-hover:text-[#2563EB] transition-colors">
-                    {bookstore.flagshipStore.name}
-                  </h4>
-                  <p className="font-sans text-xs text-stone-600 mt-1 flex items-center gap-1">
-                    <MapPin className="w-3 h-3 text-[#F59E0B] shrink-0" />
-                    <span className="truncate">
-                      {bookstore.flagshipStore.city}{bookstore.flagshipStore.stateProvince ? `, ${bookstore.flagshipStore.stateProvince}` : ""}
-                    </span>
-                  </p>
-                </div>
-                <div className="text-[11px] font-serif font-bold text-[#2563EB] group-hover:underline flex items-center gap-1 pt-2 border-t border-blue-200/60">
-                  <span>View flagship dossier</span>
-                  <span>→</span>
-                </div>
-              </Link>
+                store={{
+                  ...bookstore.flagshipStore,
+                  bookmarks: [],
+                  archivalMedia: bookstore.flagshipStore.archivalMedia || [],
+                }}
+                availableStorefronts={availableStorefronts}
+                priority={true}
+              />
             )}
 
             {/* List branches or sister branches */}
-            {bookstore.branches?.map((branch) => (
-              <Link
+            {bookstore.branches?.map((branch, idx) => (
+              <BookstoreCard
                 key={branch.id}
-                href={`/bookstores/${branch.id}`}
-                className="group p-4 rounded-xl border border-[#E8E2D5] bg-[#FAF8F5] hover:bg-white hover:border-[#2563EB]/40 transition-all shadow-2xs hover:shadow-xs flex flex-col justify-between space-y-3"
-              >
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-1">
-                    <span className="text-[10px] font-mono font-bold text-[#2563EB] uppercase tracking-wider">
-                      {branch.branchLabel || "Branch Location"}
-                    </span>
-                    <span className="text-[10px] font-mono text-stone-500">
-                      {branch.yearOpened}–{branch.isStillOperating ? "Pres." : branch.yearClosed || "Closed"}
-                    </span>
-                  </div>
-                  <h4 className="font-serif text-sm font-bold text-stone-900 group-hover:text-[#F43F7A] transition-colors">
-                    {branch.name}
-                  </h4>
-                  <p className="font-sans text-xs text-stone-600 mt-1 flex items-center gap-1">
-                    <MapPin className="w-3 h-3 text-[#F59E0B] shrink-0" />
-                    <span className="truncate">
-                      {branch.city}{branch.stateProvince ? `, ${branch.stateProvince}` : ""}
-                    </span>
-                  </p>
-                </div>
-                <div className="text-[11px] font-serif font-bold text-[#F43F7A] group-hover:underline flex items-center gap-1 pt-2 border-t border-[#E8E2D5]/60">
-                  <span>Explore branch page</span>
-                  <span>→</span>
-                </div>
-              </Link>
+                store={{
+                  ...branch,
+                  bookmarks: [],
+                  archivalMedia: branch.archivalMedia || [],
+                }}
+                availableStorefronts={availableStorefronts}
+                priority={idx < 3}
+              />
             ))}
           </div>
         </section>

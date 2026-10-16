@@ -269,5 +269,148 @@ describe("Chain Bookstores & Flagship / Branch Relationships", () => {
       await db.delete(bookstores).where(eq(bookstores.id, redundant1stLocationId));
     }
   });
+
+  it("preserves independently added branch stores when re-saving a flagship bookstore (Books West workflow)", async () => {
+    const booksWestFlagshipId = `bookswest-flagship-${timestamp}`;
+    const booksWestAtascaderoId = `bookswest-atascadero-${timestamp}`;
+    const booksWestLompocId = `bookswest-lompoc-${timestamp}`;
+
+    try {
+      // 1. Enter the flagship bookstore first (e.g. Books West Arroyo Grande) with 1st location and relocation
+      await saveBookstoreDossier({
+        bookstore: {
+          id: booksWestFlagshipId,
+          name: "Books West",
+          city: "Arroyo Grande",
+          stateProvince: "CA",
+          country: "United States",
+          streetAddress: "105 E Branch St",
+          isFlagship: true,
+          flagshipId: null,
+          yearOpened: 1974,
+          yearClosed: 1988,
+          isStillOperating: false,
+          historicalBlurb: "Flagship location in Arroyo Grande.",
+          locations: [
+            {
+              id: "loc-ag-1",
+              label: "1st Location",
+              streetAddress: "105 E Branch St",
+              city: "Arroyo Grande",
+              stateProvince: "CA",
+              yearsActive: "1974–1980",
+              isMovedFrom: true,
+            },
+            {
+              id: "loc-ag-2",
+              label: "2nd Location (Relocated)",
+              streetAddress: "130 W Branch St",
+              city: "Arroyo Grande",
+              stateProvince: "CA",
+              yearsActive: "1980–1988",
+              isCurrent: false,
+            },
+          ],
+        },
+      });
+
+      // 2. Add branch 1: Books West Atascadero as its own bookstore tied to flagship
+      await saveBookstoreDossier({
+        bookstore: {
+          id: booksWestAtascaderoId,
+          name: "Books West Atascadero",
+          city: "Atascadero",
+          stateProvince: "CA",
+          country: "United States",
+          streetAddress: "6500 Morro Rd",
+          isFlagship: false,
+          flagshipId: booksWestFlagshipId,
+          branchLabel: "Atascadero Branch",
+          yearOpened: 1980,
+          yearClosed: 1985,
+          isStillOperating: false,
+          historicalBlurb: "Atascadero branch bookstore.",
+        },
+      });
+
+      // 3. Add branch 2: Books West Lompoc as its own bookstore tied to flagship
+      await saveBookstoreDossier({
+        bookstore: {
+          id: booksWestLompocId,
+          name: "Books West Lompoc",
+          city: "Lompoc",
+          stateProvince: "CA",
+          country: "United States",
+          streetAddress: "120 H St",
+          isFlagship: false,
+          flagshipId: booksWestFlagshipId,
+          branchLabel: "Lompoc Branch",
+          yearOpened: 1982,
+          yearClosed: 1986,
+          isStillOperating: false,
+          historicalBlurb: "Lompoc branch bookstore.",
+        },
+      });
+
+      // 4. Re-save the flagship bookstore (editing narrative, hours, or relocations)
+      await saveBookstoreDossier({
+        bookstore: {
+          id: booksWestFlagshipId,
+          name: "Books West",
+          city: "Arroyo Grande",
+          stateProvince: "CA",
+          country: "United States",
+          streetAddress: "105 E Branch St",
+          isFlagship: true,
+          flagshipId: null,
+          yearOpened: 1974,
+          yearClosed: 1988,
+          isStillOperating: false,
+          historicalBlurb: "Updated history of Books West Arroyo Grande.",
+          locations: [
+            {
+              id: "loc-ag-1",
+              label: "1st Location",
+              streetAddress: "105 E Branch St",
+              city: "Arroyo Grande",
+              stateProvince: "CA",
+              yearsActive: "1974–1980",
+              isMovedFrom: true,
+            },
+            {
+              id: "loc-ag-2",
+              label: "2nd Location (Relocated)",
+              streetAddress: "130 W Branch St",
+              city: "Arroyo Grande",
+              stateProvince: "CA",
+              yearsActive: "1980–1988",
+              isCurrent: false,
+            },
+          ],
+        },
+      });
+
+      // 5. Verify the independently created branch bookstores were NOT deleted
+      const atascadero = await getBookstoreById(booksWestAtascaderoId);
+      const lompoc = await getBookstoreById(booksWestLompocId);
+      expect(atascadero).toBeDefined();
+      expect(lompoc).toBeDefined();
+      expect(atascadero?.flagshipId).toBe(booksWestFlagshipId);
+      expect(lompoc?.flagshipId).toBe(booksWestFlagshipId);
+
+      // 6. Verify flagship query returns both branches
+      const flagship = await getBookstoreById(booksWestFlagshipId);
+      expect(flagship).toBeDefined();
+      expect(flagship?.branches?.length).toBe(2);
+      const branchIds = flagship?.branches?.map((b) => b.id);
+      expect(branchIds).toContain(booksWestAtascaderoId);
+      expect(branchIds).toContain(booksWestLompocId);
+    } finally {
+      await db.delete(bookstores).where(eq(bookstores.id, booksWestFlagshipId));
+      await db.delete(bookstores).where(eq(bookstores.id, booksWestAtascaderoId));
+      await db.delete(bookstores).where(eq(bookstores.id, booksWestLompocId));
+    }
+  });
 });
+
 
