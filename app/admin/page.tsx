@@ -24,6 +24,7 @@ import {
   Lock,
   Building2,
   ArrowLeftRight,
+  Calendar,
 } from "lucide-react";
 import { AdminTableClient } from "./AdminTableClient";
 
@@ -80,6 +81,12 @@ export default async function AdminDashboardPage() {
             </div>
 
             <div className="flex items-center gap-3">
+              <Link href="/releases" target="_blank">
+                <Button variant="outline" size="sm" className="text-xs font-serif bg-white border-blue-200 text-blue-700 hover:bg-blue-50">
+                  Release Notes ↗
+                </Button>
+              </Link>
+
               <Link href="/otherbookmarks" target="_blank">
                 <Button variant="outline" size="sm" className="text-xs font-serif bg-white border-purple-200 text-purple-700 hover:bg-purple-50">
                   Ephemera Bazaar ↗
@@ -174,6 +181,13 @@ export default async function AdminDashboardPage() {
                 <span>Export (JSON)</span>
               </Button>
             </a>
+
+            <Link href="/releases">
+              <Button variant="outline" size="sm" className="text-xs font-serif flex items-center gap-1.5 bg-white border-[#E8E2D5] text-stone-700 hover:text-[#2563EB]">
+                <Calendar className="w-3.5 h-3.5 text-[#2563EB]" />
+                <span>Release Notes</span>
+              </Button>
+            </Link>
 
             <Link href="/admin/bookstores/new">
               <Button variant="outline" size="sm" className="text-xs font-serif flex items-center gap-1.5 bg-white border-[#E8E2D5]">

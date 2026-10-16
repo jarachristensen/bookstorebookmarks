@@ -15,36 +15,71 @@ import {
   Sparkles,
   KeyRound,
   FileText,
+  Plus,
+  Trash2,
 } from "lucide-react";
 
-const DEFAULT_RELEASE_CONTENT: Record<string, string> = {
-  release_date: "October 2026",
-  release_title: "October 2026 Archive Release",
-  release_notes: `### What's New & Enhancements
+export interface ReleaseItem {
+  id: string;
+  date: string;
+  title: string;
+  notes: string;
+}
+
+export const DEFAULT_RELEASES: ReleaseItem[] = [
+  {
+    id: "release-october-2026",
+    date: "October 2026",
+    title: "October 2026 Archive Release",
+    notes: `### What's New & Enhancements
 - **Timeline Photo & Newspaper Clippings**: Historical facts and newspaper articles on bookstore timelines now display interactive specimen thumbnails with full click-to-zoom inspection.
 - **Storefront Archival Isolation**: Bookstore detail dossiers now exclusively showcase authentic historical interior and exterior photography, cleanly separating them from directory cutout images.
 - **Streamlined Curator Cabinet**: Refined administrative counters, simplified data workflows, and modernized bookmark media uploaders.
 - **Simplified Map Controls**: Streamlined location exploration for historic and multi-location bookshops.`,
-};
+  },
+];
 
 export interface EditableReleasesPageProps {
   initialContent?: Record<string, string>;
 }
 
+function parseInitialReleases(initialContent: Record<string, string>): ReleaseItem[] {
+  if (initialContent.releases_json) {
+    try {
+      const parsed = JSON.parse(initialContent.releases_json);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    } catch {}
+  }
+
+  if (initialContent.release_title || initialContent.release_date || initialContent.release_notes) {
+    return [
+      {
+        id: "release-legacy-1",
+        date: initialContent.release_date || DEFAULT_RELEASES[0].date,
+        title: initialContent.release_title || DEFAULT_RELEASES[0].title,
+        notes: initialContent.release_notes || DEFAULT_RELEASES[0].notes,
+      },
+    ];
+  }
+
+  return DEFAULT_RELEASES;
+}
+
 export function EditableReleasesPage({
   initialContent = {},
 }: EditableReleasesPageProps) {
-  const [content, setContent] = useState<Record<string, string>>({
-    ...DEFAULT_RELEASE_CONTENT,
-    ...initialContent,
-  });
+  const [releases, setReleases] = useState<ReleaseItem[]>(() =>
+    parseInitialReleases(initialContent)
+  );
 
-  const [savedSnapshot, setSavedSnapshot] = useState<Record<string, string>>({
-    ...DEFAULT_RELEASE_CONTENT,
-    ...initialContent,
-  });
+  const [savedSnapshot, setSavedSnapshot] = useState<ReleaseItem[]>(() =>
+    parseInitialReleases(initialContent)
+  );
 
   const [isEditing, setIsEditing] = useState(false);
+  const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -61,29 +96,68 @@ export function EditableReleasesPage({
       const draft = localStorage.getItem("draft_page_releases");
       if (draft) {
         const parsed = JSON.parse(draft);
-        if (parsed && typeof parsed === "object") {
-          setContent((prev) => ({ ...prev, ...parsed }));
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setReleases(parsed);
         }
       }
     } catch {}
   }, []);
 
-  const handleChange = (key: string, value: string) => {
-    setContent((prev) => {
-      const updated = { ...prev, [key]: value };
+  // Sync draft to local storage while editing
+  useEffect(() => {
+    if (isEditing) {
       try {
-        localStorage.setItem("draft_page_releases", JSON.stringify(updated));
+        localStorage.setItem("draft_page_releases", JSON.stringify(releases));
       } catch {}
-      return updated;
+    }
+  }, [releases, isEditing]);
+
+  const handleAddRelease = () => {
+    const newReleaseId = `release-${Date.now()}`;
+    const now = new Date();
+    const currentMonthYear = now.toLocaleDateString("en-US", {
+      month: "long",
+      year: "numeric",
     });
+
+    // Reference formatting based on the first release notes post
+    const newPost: ReleaseItem = {
+      id: newReleaseId,
+      date: currentMonthYear,
+      title: `${currentMonthYear} Archive Release`,
+      notes: `### What's New & Enhancements
+- **Feature Name**: Description of the new functionality or archival update.
+- **Storefront & Ephemera**: Details on improvements and streamlined workflows.
+- **Fixes & Polish**: Resolved layout issues, performance polish, and bug fixes.`,
+    };
+
+    setReleases((prev) => [newPost, ...prev]);
+    setIsEditing(true);
+    setEditingPostId(newReleaseId);
+  };
+
+  const handleChangeRelease = (
+    id: string,
+    field: keyof ReleaseItem,
+    value: string
+  ) => {
+    setReleases((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, [field]: value } : r))
+    );
+  };
+
+  const handleDeleteRelease = (id: string) => {
+    if (releases.length <= 1) return;
+    setReleases((prev) => prev.filter((r) => r.id !== id));
   };
 
   const handleCancel = () => {
-    setContent(savedSnapshot);
+    setReleases(savedSnapshot);
+    setIsEditing(false);
+    setEditingPostId(null);
     try {
       localStorage.removeItem("draft_page_releases");
     } catch {}
-    setIsEditing(false);
     setSaveError("");
   };
 
@@ -100,10 +174,17 @@ export function EditableReleasesPage({
         headers["x-curator-passphrase"] = overridePassphrase;
       }
 
+      const sectionsPayload: Record<string, string> = {
+        releases_json: JSON.stringify(releases),
+        release_date: releases[0]?.date || "",
+        release_title: releases[0]?.title || "",
+        release_notes: releases[0]?.notes || "",
+      };
+
       const res = await fetch("/api/pages/releases", {
         method: "PUT",
         headers,
-        body: JSON.stringify({ sections: content }),
+        body: JSON.stringify({ sections: sectionsPayload }),
       });
 
       if (res.status === 401) {
@@ -118,8 +199,9 @@ export function EditableReleasesPage({
 
       const data = await res.json();
       if (data.success && data.content) {
-        setSavedSnapshot({ ...DEFAULT_RELEASE_CONTENT, ...data.content });
-        setContent({ ...DEFAULT_RELEASE_CONTENT, ...data.content });
+        const updated = parseInitialReleases(data.content);
+        setSavedSnapshot(updated);
+        setReleases(updated);
         try {
           localStorage.removeItem("draft_page_releases");
         } catch {}
@@ -127,6 +209,7 @@ export function EditableReleasesPage({
 
       setSaveSuccess(true);
       setIsEditing(false);
+      setEditingPostId(null);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err: any) {
       setSaveError(err.message || "Failed to save release notes.");
@@ -177,7 +260,7 @@ export function EditableReleasesPage({
               </span>
               <div className="flex items-center gap-1.5 text-xs text-stone-500 font-mono">
                 <Calendar className="w-3.5 h-3.5 text-[#2563EB]" />
-                <span>{content.release_date}</span>
+                <span>{releases[0]?.date || "Current"}</span>
               </div>
             </div>
             <h1 className="text-3xl sm:text-4xl font-black text-stone-900 tracking-tight">
@@ -189,12 +272,26 @@ export function EditableReleasesPage({
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Add Release Button */}
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleAddRelease}
+              className="text-xs font-serif flex items-center gap-1.5 bg-[#F43F7A] hover:bg-[#E11D48] text-white shadow-xs cursor-pointer font-bold"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add Release</span>
+            </Button>
+
             {!isEditing ? (
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => setIsEditing(true)}
+                onClick={() => {
+                  setIsEditing(true);
+                  setEditingPostId(releases[0]?.id || null);
+                }}
                 className="text-xs font-serif flex items-center gap-1.5 bg-white border-stone-300 text-stone-700 hover:text-[#F43F7A] hover:border-[#F43F7A] shadow-2xs cursor-pointer"
               >
                 <Pencil className="w-3.5 h-3.5" />
@@ -251,69 +348,135 @@ export function EditableReleasesPage({
           </div>
         )}
 
-        {/* Content Section: View Mode vs Edit Mode */}
-        {isEditing ? (
-          <div className="bg-white border border-[#E8E2D5] rounded-2xl shadow-xs p-6 sm:p-8 space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-stone-700">
-                  Release Date:
-                </label>
-                <input
-                  type="text"
-                  value={content.release_date || ""}
-                  onChange={(e) => handleChange("release_date", e.target.value)}
-                  placeholder="e.g. October 2026"
-                  className="w-full px-3 py-2 text-sm bg-stone-50 border border-[#E8E2D5] rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
-                />
+        {/* Chronological Release Notes Timeline / Feed */}
+        <div className="space-y-8">
+          {releases.map((rel, index) => {
+            const isThisPostEditing = isEditing;
+
+            if (isThisPostEditing) {
+              return (
+                <div
+                  key={rel.id}
+                  className="bg-white border-2 border-[#2563EB]/40 rounded-2xl shadow-sm p-6 sm:p-8 space-y-6 relative"
+                >
+                  <div className="flex items-center justify-between border-b border-[#E8E2D5] pb-3">
+                    <span className="text-xs font-mono font-bold text-[#2563EB] uppercase tracking-wider flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Release Post #{releases.length - index}</span>
+                    </span>
+
+                    {releases.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteRelease(rel.id)}
+                        className="text-xs text-stone-400 hover:text-rose-600 flex items-center gap-1 transition-colors cursor-pointer"
+                        title="Delete this release post"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Delete</span>
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="block text-xs font-bold text-stone-700">
+                        Release Date:
+                      </label>
+                      <input
+                        type="text"
+                        value={rel.date}
+                        onChange={(e) =>
+                          handleChangeRelease(rel.id, "date", e.target.value)
+                        }
+                        placeholder="e.g. October 2026"
+                        className="w-full px-3 py-2 text-sm bg-stone-50 border border-[#E8E2D5] rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="block text-xs font-bold text-stone-700">
+                        Release Title / Version:
+                      </label>
+                      <input
+                        type="text"
+                        value={rel.title}
+                        onChange={(e) =>
+                          handleChangeRelease(rel.id, "title", e.target.value)
+                        }
+                        placeholder="e.g. Autumn 2026 Collection Release"
+                        className="w-full px-3 py-2 text-sm bg-stone-50 border border-[#E8E2D5] rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-bold text-stone-700">
+                      Release Notes (Markdown supported):
+                    </label>
+                    <textarea
+                      rows={12}
+                      value={rel.notes}
+                      onChange={(e) =>
+                        handleChangeRelease(rel.id, "notes", e.target.value)
+                      }
+                      placeholder="Write release notes, list new features, improvements, and bug fixes..."
+                      className="w-full p-4 font-mono text-xs sm:text-sm leading-relaxed bg-stone-50 border border-[#E8E2D5] rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
+                    />
+                    <p className="text-[11px] text-stone-400 italic">
+                      Tip: Use Markdown headers (### Header) and bullet points (- Feature) to organize release highlights.
+                    </p>
+                  </div>
+                </div>
+              );
+            }
+
+            return (
+              <div
+                key={rel.id}
+                className="bg-white border border-[#E8E2D5] rounded-2xl shadow-xs p-6 sm:p-10 space-y-6 relative group transition-all"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E8E2D5] pb-4">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      {index === 0 && (
+                        <span className="text-[10px] font-mono text-emerald-700 font-bold uppercase tracking-wider bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                          Latest Release
+                        </span>
+                      )}
+                      <p className="text-xs font-mono text-[#2563EB] font-semibold">
+                        Published {rel.date}
+                      </p>
+                    </div>
+                    <h2 className="text-xl sm:text-2xl font-bold text-stone-900 mt-1">
+                      {rel.title || "Archive Updates"}
+                    </h2>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setIsEditing(true);
+                        setEditingPostId(rel.id);
+                      }}
+                      className="text-xs font-serif opacity-0 group-hover:opacity-100 transition-opacity bg-stone-50 hover:bg-white border-stone-200 text-stone-600"
+                    >
+                      <Pencil className="w-3 h-3 mr-1 text-stone-400" />
+                      <span>Edit</span>
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="text-stone-800 text-sm sm:text-base leading-relaxed">
+                  <FormattedText text={rel.notes} />
+                </div>
               </div>
-
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-stone-700">
-                  Release Title / Version:
-                </label>
-                <input
-                  type="text"
-                  value={content.release_title || ""}
-                  onChange={(e) => handleChange("release_title", e.target.value)}
-                  placeholder="e.g. Autumn 2026 Collection Release"
-                  className="w-full px-3 py-2 text-sm bg-stone-50 border border-[#E8E2D5] rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-stone-700">
-                Release Notes (Markdown supported):
-              </label>
-              <textarea
-                rows={14}
-                value={content.release_notes || ""}
-                onChange={(e) => handleChange("release_notes", e.target.value)}
-                placeholder="Write release notes, list new features, improvements, and bug fixes..."
-                className="w-full p-4 font-mono text-xs sm:text-sm leading-relaxed bg-stone-50 border border-[#E8E2D5] rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
-              />
-              <p className="text-[11px] text-stone-400 italic">
-                Tip: Use Markdown headers (### Header) and bullet points (- Feature) to organize release highlights.
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="bg-white border border-[#E8E2D5] rounded-2xl shadow-xs p-6 sm:p-10 space-y-6">
-            <div className="border-b border-[#E8E2D5] pb-4">
-              <h2 className="text-xl sm:text-2xl font-bold text-stone-900">
-                {content.release_title || "Archive Updates"}
-              </h2>
-              <p className="text-xs font-mono text-[#2563EB] mt-1 font-semibold">
-                Published {content.release_date}
-              </p>
-            </div>
-
-            <div className="text-stone-800 text-sm sm:text-base leading-relaxed">
-              <FormattedText text={content.release_notes} />
-            </div>
-          </div>
-        )}
+            );
+          })}
+        </div>
       </main>
 
       {/* Curator Passphrase Modal */}

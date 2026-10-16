@@ -40,6 +40,38 @@ describe("Release Notes Page & Footer Integration", () => {
     expect(screen.getByRole("button", { name: /Cancel/i })).toBeDefined();
   });
 
+  it("renders Add Release button on Release Notes page", () => {
+    render(<EditableReleasesPage />);
+
+    const addBtn = screen.getByRole("button", { name: /Add Release/i });
+    expect(addBtn).toBeDefined();
+  });
+
+  it("clicking Add Release prepends a new pre-populated release post in edit mode", () => {
+    render(
+      <EditableReleasesPage
+        initialContent={{
+          release_date: "October 2026",
+          release_title: "Initial Release",
+          release_notes: "- First initial feature",
+        }}
+      />
+    );
+
+    const addBtn = screen.getByRole("button", { name: /Add Release/i });
+    fireEvent.click(addBtn);
+
+    // Should now show input fields with pre-populated content
+    const titleInputs = screen.getAllByPlaceholderText(/e\.g\. Autumn 2026 Collection Release/i);
+    expect(titleInputs.length).toBeGreaterThanOrEqual(1);
+
+    // Notes textarea should have pre-populated template
+    expect(screen.getByText(/### What's New & Enhancements/i)).toBeDefined();
+
+    // Save Changes button should be visible
+    expect(screen.getByRole("button", { name: /Save Changes/i })).toBeDefined();
+  });
+
   it("Footer includes link to Release Notes", () => {
     render(<Footer />);
 
