@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { BookmarkWithDetails } from "@/lib/db/queries";
 import { parseDimensions } from "@/lib/utils/dimensions";
@@ -26,18 +26,48 @@ export type SpreadSlot =
     };
 
 /**
+ * Determines whether a bookmark is horizontal/landscape based on:
+ * 1. Explicitly detected landscape IDs (from image natural aspect ratio inspection)
+ * 2. Specimen metadata keywords (e.g. Garcia Street Books, Shaker Mill Books, Scribner Book Store, or horizontal/landscape/strip)
+ * 3. Numerical dimensions parsing (e.g. 7.5" × 2.25" or W > H)
+ */
+export function isBookmarkLandscape(
+  bm: BookmarkWithDetails,
+  detectedLandscapeIds?: Set<string>
+): boolean {
+  if (detectedLandscapeIds && detectedLandscapeIds.has(bm.id)) {
+    return true;
+  }
+
+  const textToCheck = `${bm.title} ${bm.bookstore?.name || ""} ${bm.dimensions || ""}`.toLowerCase();
+  if (
+    textToCheck.includes("garcia street") ||
+    textToCheck.includes("shaker mill") ||
+    textToCheck.includes("scribner book") ||
+    /\b(horizontal|landscape|wide|strip)\b/i.test(textToCheck)
+  ) {
+    return true;
+  }
+
+  const dim = parseDimensions(bm.dimensions);
+  return dim.isLandscape;
+}
+
+/**
  * Groups bookmarks for the spread:
  * - Portrait bookmarks take 1 column.
  * - Landscape bookmarks are paired into stacked units spanning 2–3 columns.
  */
-export function groupBookmarksForSpread(bookmarks: BookmarkWithDetails[]): SpreadSlot[] {
+export function groupBookmarksForSpread(
+  bookmarks: BookmarkWithDetails[],
+  detectedLandscapeIds?: Set<string>
+): SpreadSlot[] {
   const slots: SpreadSlot[] = [];
 
   // Collect all landscape bookmarks in current order
   const landscapeQueue: BookmarkWithDetails[] = [];
   for (const bm of bookmarks) {
-    const dim = parseDimensions(bm.dimensions);
-    if (dim.isLandscape) {
+    if (isBookmarkLandscape(bm, detectedLandscapeIds)) {
       landscapeQueue.push(bm);
     }
   }
@@ -56,8 +86,7 @@ export function groupBookmarksForSpread(bookmarks: BookmarkWithDetails[]): Sprea
   const processedLandscapeIds = new Set<string>();
 
   for (const bm of bookmarks) {
-    const dim = parseDimensions(bm.dimensions);
-    if (!dim.isLandscape) {
+    if (!isBookmarkLandscape(bm, detectedLandscapeIds)) {
       slots.push({
         type: "portrait",
         id: bm.id,
@@ -88,6 +117,7 @@ function BookmarkPaperItem({
   hoveredId,
   setHoveredId,
   priority,
+  onDetectedLandscape,
 }: {
   bookmark: BookmarkWithDetails;
   isLandscape: boolean;
@@ -95,9 +125,13 @@ function BookmarkPaperItem({
   hoveredId: string | null;
   setHoveredId: (id: string | null) => void;
   priority?: boolean;
+  onDetectedLandscape?: (id: string) => void;
 }) {
-  const dim = parseDimensions(bookmark.dimensions);
-  const effectiveLandscape = isLandscape || dim.isLandscape;
+  const [naturalAspect, setNaturalAspect] = useState<number | null>(null);
+  const effectiveLandscape =
+    isLandscape ||
+    (naturalAspect !== null && naturalAspect > 1.15) ||
+    isBookmarkLandscape(bookmark);
   const isHovered = hoveredId === bookmark.id;
   const store = bookmark.bookstore;
   const locationStr = [store?.city, store?.stateProvince || store?.country]
@@ -154,6 +188,11 @@ function BookmarkPaperItem({
         >
           {/* Authentic Soft Paper Drop Shadow */}
           <div
+            style={
+              effectiveLandscape && naturalAspect && naturalAspect > 1.15
+                ? { aspectRatio: `${naturalAspect}` }
+                : undefined
+            }
             className={`relative w-full ${
               effectiveLandscape
                 ? "aspect-[3.2/1] max-h-[170px] drop-shadow-[0_4px_10px_rgba(24,24,27,0.13)] group-hover:drop-shadow-[0_12px_22px_rgba(24,24,27,0.20)]"
@@ -171,6 +210,16 @@ function BookmarkPaperItem({
               }
               className="object-contain filter contrast-[1.02] brightness-[0.99] rounded-xs"
               priority={priority}
+              onLoad={(e) => {
+                const target = e.currentTarget;
+                if (target.naturalWidth && target.naturalHeight) {
+                  const ratio = target.naturalWidth / target.naturalHeight;
+                  setNaturalAspect(ratio);
+                  if (ratio > 1.15) {
+                    onDetectedLandscape?.(bookmark.id);
+                  }
+                }
+              }}
             />
           </div>
         </motion.div>
@@ -186,7 +235,61 @@ export function BookmarkPaperSpread({
 }: BookmarkPaperSpreadProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
-  const slots = useMemo(() => groupBookmarksForSpread(bookmarks), [bookmarks]);
+  // Maintain reactive set of detected landscape IDs (initialized from localStorage cache)
+  const [detectedLandscapeIds, setDetectedLandscapeIds] = useState<Set<string>>(() => {
+    const initial = new Set<string>();
+    if (typeof window !== "undefined") {
+      try {
+        const cached = localStorage.getItem("archive_landscape_bookmark_ids");
+        if (cached) {
+          const arr = JSON.parse(cached);
+          if (Array.isArray(arr)) {
+            arr.forEach((id) => initial.add(id));
+          }
+        }
+      } catch {}
+    }
+    return initial;
+  });
+
+  const handleDetectedLandscape = useCallback((id: string) => {
+    setDetectedLandscapeIds((prev) => {
+      if (prev.has(id)) return prev;
+      const next = new Set(prev);
+      next.add(id);
+      try {
+        localStorage.setItem("archive_landscape_bookmark_ids", JSON.stringify(Array.from(next)));
+      } catch {}
+      return next;
+    });
+  }, []);
+
+  // Preload and detect image aspect ratios in the background
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    bookmarks.forEach((bm) => {
+      if (!bm.frontImageUrl || detectedLandscapeIds.has(bm.id)) return;
+
+      if (isBookmarkLandscape(bm, detectedLandscapeIds)) {
+        handleDetectedLandscape(bm.id);
+        return;
+      }
+
+      const img = new window.Image();
+      img.src = bm.frontImageUrl;
+      img.onload = () => {
+        if (img.naturalWidth && img.naturalHeight && img.naturalWidth / img.naturalHeight > 1.15) {
+          handleDetectedLandscape(bm.id);
+        }
+      };
+    });
+  }, [bookmarks, detectedLandscapeIds, handleDetectedLandscape]);
+
+  const slots = useMemo(
+    () => groupBookmarksForSpread(bookmarks, detectedLandscapeIds),
+    [bookmarks, detectedLandscapeIds]
+  );
 
   if (bookmarks.length === 0) {
     return (
@@ -248,6 +351,7 @@ export function BookmarkPaperSpread({
                     hoveredId={hoveredId}
                     setHoveredId={setHoveredId}
                     priority={slotIndex < 8}
+                    onDetectedLandscape={handleDetectedLandscape}
                   />
                 </motion.div>
               );
@@ -274,6 +378,7 @@ export function BookmarkPaperSpread({
                       hoveredId={hoveredId}
                       setHoveredId={setHoveredId}
                       priority={slotIndex < 6}
+                      onDetectedLandscape={handleDetectedLandscape}
                     />
                   ))}
                 </div>

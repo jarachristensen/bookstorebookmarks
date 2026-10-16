@@ -353,12 +353,35 @@ export function BookmarkForm({
           <ImageDropzone
             label="Bookmark Front Scan"
             value={formData.bookmark.frontImageUrl}
-            onChange={(url) =>
+            onChange={(url) => {
               setFormData((prev) => ({
                 ...prev,
                 bookmark: { ...prev.bookmark, frontImageUrl: url },
-              }))
-            }
+              }));
+              if (typeof window !== "undefined" && url) {
+                const img = new window.Image();
+                img.src = url;
+                img.onload = () => {
+                  if (img.naturalWidth > img.naturalHeight) {
+                    setFormData((prev) => {
+                      const curDim = parseDimensions(prev.bookmark.dimensions);
+                      if (!curDim.isLandscape) {
+                        const maxDim = Math.max(curDim.width, curDim.height);
+                        const minDim = Math.min(curDim.width, curDim.height);
+                        return {
+                          ...prev,
+                          bookmark: {
+                            ...prev.bookmark,
+                            dimensions: `${maxDim}" × ${minDim}"`,
+                          },
+                        };
+                      }
+                      return prev;
+                    });
+                  }
+                };
+              }
+            }}
             onUploadingChange={setIsUploadingFront}
             aspectRatio={parsedDimensions.isLandscape ? "landscape" : "bookmark"}
             required

@@ -36,6 +36,25 @@ describe("parseDimensions", () => {
     expect(res2.isLandscape).toBe(true);
   });
 
+  it("should detect landscape from explicit keywords like (horizontal) or (landscape)", () => {
+    const res1 = parseDimensions('2.25" × 7.5" (horizontal)');
+    expect(res1.isLandscape).toBe(true);
+    expect(res1.width).toBeCloseTo(7.5);
+    expect(res1.height).toBeCloseTo(2.25);
+
+    const res2 = parseDimensions("1.5 x 6 landscape");
+    expect(res2.isLandscape).toBe(true);
+    expect(res2.width).toBeCloseTo(6.0);
+    expect(res2.height).toBeCloseTo(1.5);
+  });
+
+  it("should parse explicit H and W labels regardless of order", () => {
+    const res = parseDimensions('1.5" H × 6.0" W');
+    expect(res.width).toBeCloseTo(6.0);
+    expect(res.height).toBeCloseTo(1.5);
+    expect(res.isLandscape).toBe(true);
+  });
+
   it("should handle atypical dimension strings gracefully with fallback", () => {
     const res = parseDimensions("vintage size");
     expect(res.width).toBe(2.25);

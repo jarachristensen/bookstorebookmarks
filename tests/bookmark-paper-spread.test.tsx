@@ -202,6 +202,79 @@ describe("BookmarkPaperSpread Component", () => {
     expect(handleInspect).toHaveBeenCalledWith(mockBookmarks[1]);
   });
 
+  it("allocates horizontal bookmarks like Garcia Street, Shaker Mill, and Scribner to landscape-stack even with standard dimensions", () => {
+    const specialBookmarks: BookmarkWithDetails[] = [
+      {
+        ...mockBookmarks[0],
+        id: "bm-garcia",
+        title: "Garcia Street Books Santa Fe Strip",
+        dimensions: '2.25" × 7.5"', // Default entered dimensions
+        bookstore: {
+          ...mockBookmarks[0].bookstore!,
+          name: "Garcia Street Books",
+        },
+      },
+      {
+        ...mockBookmarks[0],
+        id: "bm-shaker",
+        title: "Shaker Mill Books Rare & Out of Print",
+        dimensions: '2.25" × 7.5"',
+        bookstore: {
+          ...mockBookmarks[0].bookstore!,
+          name: "Shaker Mill Books",
+        },
+      },
+      {
+        ...mockBookmarks[0],
+        id: "bm-scribner",
+        title: "The Scribner Book Store Fifth Avenue Strip",
+        dimensions: '2.25" × 7.5"',
+        bookstore: {
+          ...mockBookmarks[0].bookstore!,
+          name: "The Scribner Book Store",
+        },
+      },
+      {
+        ...mockBookmarks[0],
+        id: "bm-regular-portrait",
+        title: "Standard Vertical Bookmark",
+        dimensions: '2.25" × 7.5"',
+      },
+    ];
+
+    const slots = groupBookmarksForSpread(specialBookmarks);
+    // Should have: 1 portrait slot and 2 landscape-stack slots (one pair of 2, and one single)
+    const portraitSlots = slots.filter((s) => s.type === "portrait");
+    const landscapeSlots = slots.filter((s) => s.type === "landscape-stack");
+
+    expect(portraitSlots).toHaveLength(1);
+    expect(portraitSlots[0].id).toBe("bm-regular-portrait");
+
+    expect(landscapeSlots).toHaveLength(2);
+    // Pair 1 has 2 bookmarks
+    expect(landscapeSlots[0].bookmarks).toHaveLength(2);
+    expect(landscapeSlots[0].bookmarks.map((b) => b.id)).toEqual(["bm-garcia", "bm-shaker"]);
+    // Pair 2 has 1 bookmark
+    expect(landscapeSlots[1].bookmarks).toHaveLength(1);
+    expect(landscapeSlots[1].bookmarks[0].id).toBe("bm-scribner");
+  });
+
+  it("dynamically respects detectedLandscapeIds passed to groupBookmarksForSpread", () => {
+    const bm: BookmarkWithDetails = {
+      ...mockBookmarks[0],
+      id: "bm-custom-landscape",
+      title: "Unknown Rare Bookmark",
+      dimensions: '2.25" × 7.5"',
+    };
+
+    const slotsBefore = groupBookmarksForSpread([bm]);
+    expect(slotsBefore[0].type).toBe("portrait");
+
+    const detectedSet = new Set(["bm-custom-landscape"]);
+    const slotsAfter = groupBookmarksForSpread([bm], detectedSet);
+    expect(slotsAfter[0].type).toBe("landscape-stack");
+  });
+
   it("renders empty state when bookmarks list is empty", () => {
     const handleReset = vi.fn();
 
