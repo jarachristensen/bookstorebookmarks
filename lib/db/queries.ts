@@ -51,8 +51,11 @@ export async function ensureDb() {
       dbInitPromise = null;
     });
   } else {
-    // Non-blocking background sync check
-    autoSyncStorefronts().catch(() => {});
+    try {
+      await autoSyncStorefronts();
+    } catch (err) {
+      console.warn("Storefronts auto-sync error:", err);
+    }
   }
   return dbInitPromise;
 }

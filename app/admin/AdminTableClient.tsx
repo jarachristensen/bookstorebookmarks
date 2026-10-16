@@ -35,6 +35,7 @@ import {
   Sliders,
   Camera,
   ZoomIn,
+  RefreshCw,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
@@ -138,6 +139,51 @@ export function AdminTableClient({
   const pendingTradesCount = tradeProposals.filter(
     (t) => t.status === "pending"
   ).length;
+
+  // Storefronts Sync State
+  const [isSyncingStorefronts, setIsSyncingStorefronts] = useState(false);
+  const [storefrontSyncMsg, setStorefrontSyncMsg] = useState("");
+  const [storefrontSyncError, setStorefrontSyncError] = useState("");
+
+  const handleSyncStorefronts = async () => {
+    setIsSyncingStorefronts(true);
+    setStorefrontSyncMsg("");
+    setStorefrontSyncError("");
+    try {
+      const res = await fetch("/api/storefronts/sync", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to scan storefronts");
+      }
+
+      const createdCount = data.newBookstoresCreated?.length || 0;
+      const linkedCount = data.mediaLinkedToExistingStores?.length || 0;
+      const total = data.totalFiles || 0;
+
+      let msg = `Scanned ${total} storefront files.`;
+      if (createdCount > 0 || linkedCount > 0) {
+        msg += ` ${createdCount} new bookstore(s) registered, ${linkedCount} photo(s) linked to existing stores.`;
+      } else {
+        msg += ` All ${total} storefronts are up-to-date and synced.`;
+      }
+
+      setStorefrontSyncMsg(msg);
+
+      // Re-fetch bookstores so table immediately updates
+      const bsRes = await fetch("/api/bookstores");
+      if (bsRes.ok) {
+        const bsData = await bsRes.json();
+        if (Array.isArray(bsData)) {
+          setBookstores(bsData);
+        }
+      }
+      router.refresh();
+    } catch (err: any) {
+      setStorefrontSyncError(err.message || "Failed to scan storefront images.");
+    } finally {
+      setIsSyncingStorefronts(false);
+    }
+  };
 
   const handleAcceptTrade = async (proposal: TradeProposal) => {
     let qtyMap = new Map<string, number>();
@@ -954,6 +1000,25 @@ export function AdminTableClient({
             )
           )}
 
+          {activeTab === "bookstores" && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleSyncStorefronts}
+              disabled={isSyncingStorefronts}
+              className="text-xs font-serif flex items-center gap-1.5 bg-white border-[#E8E2D5] text-stone-800 hover:text-[#2563EB] shrink-0 cursor-pointer shadow-2xs"
+              title="Scan public/images/storefronts on disk for newly added photos and bookstores"
+            >
+              {isSyncingStorefronts ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-[#2563EB]" />
+              ) : (
+                <RefreshCw className="w-3.5 h-3.5 text-[#2563EB]" />
+              )}
+              <span>{isSyncingStorefronts ? "Scanning..." : "Scan Storefronts"}</span>
+            </Button>
+          )}
+
           <div className="relative w-full sm:max-w-xs">
             <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
@@ -974,6 +1039,39 @@ export function AdminTableClient({
           </div>
         </div>
       </div>
+
+      {/* Storefront Sync Notifications Banner */}
+      {storefrontSyncMsg && (
+        <div className="px-4 py-2.5 bg-blue-50 border-b border-blue-200 text-blue-900 text-xs font-serif flex items-center justify-between shadow-2xs">
+          <div className="flex items-center gap-2">
+            <CheckCircle className="w-4 h-4 text-[#2563EB] shrink-0" />
+            <span className="font-medium">{storefrontSyncMsg}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setStorefrontSyncMsg("")}
+            className="text-blue-500 hover:text-blue-800 p-0.5 cursor-pointer"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
+      {storefrontSyncError && (
+        <div className="px-4 py-2.5 bg-rose-50 border-b border-rose-200 text-rose-900 text-xs font-serif flex items-center justify-between shadow-2xs">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+            <span className="font-medium">{storefrontSyncError}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setStorefrontSyncError("")}
+            className="text-rose-500 hover:text-rose-800 p-0.5 cursor-pointer"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
 
       {/* Trade Actions Notifications Banner */}
       {tradeSuccessMsg && (
