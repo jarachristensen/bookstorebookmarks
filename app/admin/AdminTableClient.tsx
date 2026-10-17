@@ -44,6 +44,7 @@ import { TagManagerModal } from "@/components/admin/TagManagerModal";
 import { EditOtherBookmarkModal } from "@/components/admin/EditOtherBookmarkModal";
 import { ImageDropzone } from "@/components/admin/ImageDropzone";
 import { BookmarkZoomLightbox } from "@/components/exhibit/BookmarkZoomLightbox";
+import { UploadStorefrontModal } from "@/components/admin/UploadStorefrontModal";
 
 
 
@@ -140,8 +141,9 @@ export function AdminTableClient({
     (t) => t.status === "pending"
   ).length;
 
-  // Storefronts Sync State
+  // Storefronts Sync & Upload State
   const [isSyncingStorefronts, setIsSyncingStorefronts] = useState(false);
+  const [isUploadStorefrontModalOpen, setIsUploadStorefrontModalOpen] = useState(false);
   const [storefrontSyncMsg, setStorefrontSyncMsg] = useState("");
   const [storefrontSyncError, setStorefrontSyncError] = useState("");
 
@@ -1001,22 +1003,35 @@ export function AdminTableClient({
           )}
 
           {activeTab === "bookstores" && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleSyncStorefronts}
-              disabled={isSyncingStorefronts}
-              className="text-xs font-serif flex items-center gap-1.5 bg-white border-[#E8E2D5] text-stone-800 hover:text-[#2563EB] shrink-0 cursor-pointer shadow-2xs"
-              title="Scan public/images/storefronts on disk for newly added photos and bookstores"
-            >
-              {isSyncingStorefronts ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin text-[#2563EB]" />
-              ) : (
-                <RefreshCw className="w-3.5 h-3.5 text-[#2563EB]" />
-              )}
-              <span>{isSyncingStorefronts ? "Scanning..." : "Scan Storefronts"}</span>
-            </Button>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsUploadStorefrontModalOpen(true)}
+                className="text-xs font-serif flex items-center gap-1.5 bg-white border-[#E8E2D5] text-stone-800 hover:text-[#2563EB] shrink-0 cursor-pointer shadow-2xs"
+                title="Upload a cutout storefront image and link to an existing or new bookstore"
+              >
+                <Upload className="w-3.5 h-3.5 text-[#2563EB]" />
+                <span>Upload Storefront</span>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleSyncStorefronts}
+                disabled={isSyncingStorefronts}
+                className="text-xs font-serif flex items-center gap-1.5 bg-white border-[#E8E2D5] text-stone-800 hover:text-[#2563EB] shrink-0 cursor-pointer shadow-2xs"
+                title="Scan public/images/storefronts on disk for newly added photos and bookstores"
+              >
+                {isSyncingStorefronts ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-[#2563EB]" />
+                ) : (
+                  <RefreshCw className="w-3.5 h-3.5 text-[#2563EB]" />
+                )}
+                <span>{isSyncingStorefronts ? "Scanning..." : "Scan Storefronts"}</span>
+              </Button>
+            </div>
           )}
 
           <div className="relative w-full sm:max-w-xs">
@@ -2155,6 +2170,30 @@ export function AdminTableClient({
           setOtherBookmarks((prev) =>
             prev.map((b) => (b.id === updated.id ? updated : b))
           );
+          router.refresh();
+        }}
+      />
+
+      {/* MODAL: UPLOAD STOREFRONT IMAGE */}
+      <UploadStorefrontModal
+        isOpen={isUploadStorefrontModalOpen}
+        onClose={() => setIsUploadStorefrontModalOpen(false)}
+        bookstores={bookstores}
+        onSuccess={async (result) => {
+          setStorefrontSyncMsg(
+            result.isNew
+              ? `Created new bookstore "${result.bookstoreName}" with uploaded storefront!`
+              : `Uploaded and attached storefront to "${result.bookstoreName}"!`
+          );
+          try {
+            const res = await fetch("/api/bookstores");
+            if (res.ok) {
+              const data = await res.json();
+              setBookstores(data);
+            }
+          } catch (e) {
+            console.error("Failed to refresh bookstores after storefront upload:", e);
+          }
           router.refresh();
         }}
       />
