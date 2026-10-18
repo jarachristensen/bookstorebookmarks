@@ -55,11 +55,10 @@ export async function POST(req: NextRequest) {
       .replace(/[^\w-]/g, "");
 
     const fileName = `${rawBaseName || "storefront"}${ext}`;
-    const bytes =
+    const buffer =
       typeof file.arrayBuffer === "function"
-        ? await file.arrayBuffer()
+        ? Buffer.from(await file.arrayBuffer())
         : Buffer.from((await (file as any).text?.()) || "");
-    const buffer = Buffer.from(bytes);
 
     const blobToken = getBlobToken();
     let imageUrl: string;
