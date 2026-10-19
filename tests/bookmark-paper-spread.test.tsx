@@ -4,6 +4,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import {
   BookmarkPaperSpread,
   groupBookmarksForSpread,
+  isBookmarkLandscape,
 } from "@/components/home/BookmarkPaperSpread";
 import { BookmarkWithDetails } from "@/lib/db/queries";
 
@@ -257,6 +258,46 @@ describe("BookmarkPaperSpread Component", () => {
     // Pair 2 has 1 bookmark
     expect(landscapeSlots[1].bookmarks).toHaveLength(1);
     expect(landscapeSlots[1].bookmarks[0].id).toBe("bm-scribner");
+  });
+
+  it("does not categorize vertical bookmarks titled with 'strip' or 'wide' as landscape", () => {
+    const stripBm: BookmarkWithDetails = {
+      ...mockBookmarks[0],
+      id: "bm-books-of-interest",
+      title: "Books of Interest Narrow Strip Bookmark",
+      dimensions: '1.75" × 7.5"',
+      bookstore: {
+        ...mockBookmarks[0].bookstore!,
+        name: "Books of Interest",
+      },
+    };
+
+    expect(isBookmarkLandscape(stripBm)).toBe(false);
+
+    const slots = groupBookmarksForSpread([stripBm]);
+    expect(slots[0].type).toBe("portrait");
+    expect(slots[0].id).toBe("bm-books-of-interest");
+  });
+
+  it("dynamically respects detectedPortraitIds and overrides dimensions or legacy landscape IDs", () => {
+    const bm: BookmarkWithDetails = {
+      ...mockBookmarks[0],
+      id: "bm-inverted-dimensions",
+      title: "Vertical Bookmark with Inverted Dimensions",
+      dimensions: '7.5" × 2.25"', // Inverted user input (length × width)
+    };
+
+    // Initially parsed as landscape due to 7.5 > 2.25
+    expect(isBookmarkLandscape(bm)).toBe(true);
+
+    // Once actual image is detected as portrait, detectedPortraitIds overrides it
+    const detectedPortraitSet = new Set(["bm-inverted-dimensions"]);
+    const isLandscapeAfter = isBookmarkLandscape(bm, undefined, detectedPortraitSet);
+    expect(isLandscapeAfter).toBe(false);
+
+    const slotsAfter = groupBookmarksForSpread([bm], undefined, detectedPortraitSet);
+    expect(slotsAfter[0].type).toBe("portrait");
+    expect(slotsAfter[0].id).toBe("bm-inverted-dimensions");
   });
 
   it("dynamically respects detectedLandscapeIds passed to groupBookmarksForSpread", () => {

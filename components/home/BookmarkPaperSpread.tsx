@@ -27,24 +27,37 @@ export type SpreadSlot =
 
 /**
  * Determines whether a bookmark is horizontal/landscape based on:
- * 1. Explicitly detected landscape IDs (from image natural aspect ratio inspection)
- * 2. Specimen metadata keywords (e.g. Garcia Street Books, Shaker Mill Books, Scribner Book Store, or horizontal/landscape/strip)
+ * 1. Physical image aspect ratio (detectedPortraitIds trumps everything, detectedLandscapeIds)
+ * 2. Specimen metadata keywords (e.g. Garcia Street Books, Shaker Mill Books, Scribner Book Store, or explicit horizontal/landscape)
  * 3. Numerical dimensions parsing (e.g. 7.5" × 2.25" or W > H)
  */
 export function isBookmarkLandscape(
   bm: BookmarkWithDetails,
-  detectedLandscapeIds?: Set<string>
+  detectedLandscapeIds?: Set<string>,
+  detectedPortraitIds?: Set<string>
 ): boolean {
+  // Physical image aspect ratio is the ground truth
+  if (detectedPortraitIds && detectedPortraitIds.has(bm.id)) {
+    return false;
+  }
   if (detectedLandscapeIds && detectedLandscapeIds.has(bm.id)) {
     return true;
   }
 
-  const textToCheck = `${bm.title} ${bm.bookstore?.name || ""} ${bm.dimensions || ""}`.toLowerCase();
+  const textToCheck = `${bm.title} ${bm.bookstore?.name || ""}`.toLowerCase();
   if (
     textToCheck.includes("garcia street") ||
     textToCheck.includes("shaker mill") ||
-    textToCheck.includes("scribner book") ||
-    /\b(horizontal|landscape|wide|strip)\b/i.test(textToCheck)
+    textToCheck.includes("scribner book")
+  ) {
+    return true;
+  }
+
+  // Only explicit "horizontal" or "landscape" keywords
+  const dimStr = (bm.dimensions || "").toLowerCase();
+  if (
+    /\b(horizontal|landscape)\b/i.test(textToCheck) ||
+    /\b(horizontal|landscape)\b/i.test(dimStr)
   ) {
     return true;
   }
@@ -60,14 +73,15 @@ export function isBookmarkLandscape(
  */
 export function groupBookmarksForSpread(
   bookmarks: BookmarkWithDetails[],
-  detectedLandscapeIds?: Set<string>
+  detectedLandscapeIds?: Set<string>,
+  detectedPortraitIds?: Set<string>
 ): SpreadSlot[] {
   const slots: SpreadSlot[] = [];
 
   // Collect all landscape bookmarks in current order
   const landscapeQueue: BookmarkWithDetails[] = [];
   for (const bm of bookmarks) {
-    if (isBookmarkLandscape(bm, detectedLandscapeIds)) {
+    if (isBookmarkLandscape(bm, detectedLandscapeIds, detectedPortraitIds)) {
       landscapeQueue.push(bm);
     }
   }
@@ -86,7 +100,7 @@ export function groupBookmarksForSpread(
   const processedLandscapeIds = new Set<string>();
 
   for (const bm of bookmarks) {
-    if (!isBookmarkLandscape(bm, detectedLandscapeIds)) {
+    if (!isBookmarkLandscape(bm, detectedLandscapeIds, detectedPortraitIds)) {
       slots.push({
         type: "portrait",
         id: bm.id,
@@ -118,6 +132,9 @@ function BookmarkPaperItem({
   setHoveredId,
   priority,
   onDetectedLandscape,
+  onDetectedPortrait,
+  detectedLandscapeIds,
+  detectedPortraitIds,
 }: {
   bookmark: BookmarkWithDetails;
   isLandscape: boolean;
@@ -126,12 +143,21 @@ function BookmarkPaperItem({
   setHoveredId: (id: string | null) => void;
   priority?: boolean;
   onDetectedLandscape?: (id: string) => void;
+  onDetectedPortrait?: (id: string) => void;
+  detectedLandscapeIds?: Set<string>;
+  detectedPortraitIds?: Set<string>;
 }) {
   const [naturalAspect, setNaturalAspect] = useState<number | null>(null);
-  const effectiveLandscape =
-    isLandscape ||
-    (naturalAspect !== null && naturalAspect > 1.15) ||
-    isBookmarkLandscape(bookmark);
+
+  // If actual image has loaded, physical aspect ratio is the ground truth
+  const isImagePortrait = naturalAspect !== null && naturalAspect < 1.05;
+  const isImageLandscape = naturalAspect !== null && naturalAspect >= 1.15;
+
+  const effectiveLandscape = isImagePortrait
+    ? false
+    : isImageLandscape
+    ? true
+    : isLandscape || isBookmarkLandscape(bookmark, detectedLandscapeIds, detectedPortraitIds);
   const isHovered = hoveredId === bookmark.id;
   const store = bookmark.bookstore;
   const locationStr = [store?.city, store?.stateProvince || store?.country]
@@ -189,7 +215,9 @@ function BookmarkPaperItem({
           {/* Authentic Soft Paper Drop Shadow */}
           <div
             style={
-              effectiveLandscape && naturalAspect && naturalAspect > 1.15
+              effectiveLandscape && naturalAspect && naturalAspect >= 1.15
+                ? { aspectRatio: `${naturalAspect}` }
+                : !effectiveLandscape && naturalAspect && naturalAspect < 1.05
                 ? { aspectRatio: `${naturalAspect}` }
                 : undefined
             }
@@ -215,8 +243,10 @@ function BookmarkPaperItem({
                 if (target.naturalWidth && target.naturalHeight) {
                   const ratio = target.naturalWidth / target.naturalHeight;
                   setNaturalAspect(ratio);
-                  if (ratio > 1.15) {
+                  if (ratio >= 1.15) {
                     onDetectedLandscape?.(bookmark.id);
+                  } else if (ratio < 1.05) {
+                    onDetectedPortrait?.(bookmark.id);
                   }
                 }
               }}
@@ -252,7 +282,16 @@ export function BookmarkPaperSpread({
     return initial;
   });
 
+  const [detectedPortraitIds, setDetectedPortraitIds] = useState<Set<string>>(new Set());
+
   const handleDetectedLandscape = useCallback((id: string) => {
+    setDetectedPortraitIds((prev) => {
+      if (!prev.has(id)) return prev;
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+
     setDetectedLandscapeIds((prev) => {
       if (prev.has(id)) return prev;
       const next = new Set(prev);
@@ -264,31 +303,50 @@ export function BookmarkPaperSpread({
     });
   }, []);
 
-  // Preload and detect image aspect ratios in the background
+  const handleDetectedPortrait = useCallback((id: string) => {
+    setDetectedPortraitIds((prev) => {
+      if (prev.has(id)) return prev;
+      const next = new Set(prev);
+      next.add(id);
+      return next;
+    });
+
+    setDetectedLandscapeIds((prev) => {
+      if (!prev.has(id)) return prev;
+      const next = new Set(prev);
+      next.delete(id);
+      try {
+        localStorage.setItem("archive_landscape_bookmark_ids", JSON.stringify(Array.from(next)));
+      } catch {}
+      return next;
+    });
+  }, []);
+
+  // Preload and verify image aspect ratios in the background
   useEffect(() => {
     if (typeof window === "undefined") return;
 
     bookmarks.forEach((bm) => {
-      if (!bm.frontImageUrl || detectedLandscapeIds.has(bm.id)) return;
-
-      if (isBookmarkLandscape(bm, detectedLandscapeIds)) {
-        handleDetectedLandscape(bm.id);
-        return;
-      }
+      if (!bm.frontImageUrl) return;
 
       const img = new window.Image();
       img.src = bm.frontImageUrl;
       img.onload = () => {
-        if (img.naturalWidth && img.naturalHeight && img.naturalWidth / img.naturalHeight > 1.15) {
-          handleDetectedLandscape(bm.id);
+        if (img.naturalWidth && img.naturalHeight) {
+          const ratio = img.naturalWidth / img.naturalHeight;
+          if (ratio >= 1.15) {
+            handleDetectedLandscape(bm.id);
+          } else if (ratio < 1.05) {
+            handleDetectedPortrait(bm.id);
+          }
         }
       };
     });
-  }, [bookmarks, detectedLandscapeIds, handleDetectedLandscape]);
+  }, [bookmarks, handleDetectedLandscape, handleDetectedPortrait]);
 
   const slots = useMemo(
-    () => groupBookmarksForSpread(bookmarks, detectedLandscapeIds),
-    [bookmarks, detectedLandscapeIds]
+    () => groupBookmarksForSpread(bookmarks, detectedLandscapeIds, detectedPortraitIds),
+    [bookmarks, detectedLandscapeIds, detectedPortraitIds]
   );
 
   if (bookmarks.length === 0) {
@@ -352,6 +410,9 @@ export function BookmarkPaperSpread({
                     setHoveredId={setHoveredId}
                     priority={slotIndex < 8}
                     onDetectedLandscape={handleDetectedLandscape}
+                    onDetectedPortrait={handleDetectedPortrait}
+                    detectedLandscapeIds={detectedLandscapeIds}
+                    detectedPortraitIds={detectedPortraitIds}
                   />
                 </motion.div>
               );
@@ -379,6 +440,9 @@ export function BookmarkPaperSpread({
                       setHoveredId={setHoveredId}
                       priority={slotIndex < 6}
                       onDetectedLandscape={handleDetectedLandscape}
+                      onDetectedPortrait={handleDetectedPortrait}
+                      detectedLandscapeIds={detectedLandscapeIds}
+                      detectedPortraitIds={detectedPortraitIds}
                     />
                   ))}
                 </div>

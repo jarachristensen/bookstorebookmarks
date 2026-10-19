@@ -378,6 +378,22 @@ export function BookmarkForm({
                       }
                       return prev;
                     });
+                  } else if (img.naturalWidth < img.naturalHeight) {
+                    setFormData((prev) => {
+                      const curDim = parseDimensions(prev.bookmark.dimensions);
+                      if (curDim.isLandscape) {
+                        const maxDim = Math.max(curDim.width, curDim.height);
+                        const minDim = Math.min(curDim.width, curDim.height);
+                        return {
+                          ...prev,
+                          bookmark: {
+                            ...prev.bookmark,
+                            dimensions: `${minDim}" × ${maxDim}"`,
+                          },
+                        };
+                      }
+                      return prev;
+                    });
                   }
                 };
               }

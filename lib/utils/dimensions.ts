@@ -19,7 +19,7 @@ export function parseDimensions(dimStr?: string | null): ParsedDimensions {
     return fallback;
   }
 
-  const isExplicitLandscape = /\b(horizontal|landscape|wide|strip)\b/i.test(dimStr);
+  const isExplicitLandscape = /\b(horizontal|landscape)\b/i.test(dimStr);
   const isExplicitPortrait = /\b(vertical|portrait|tall)\b/i.test(dimStr);
 
   // Check if labeled like "1.5 H x 6 W" or "6 W x 1.5 H"
